@@ -58,7 +58,7 @@ def new_doc(request):
                 date = f"{data_end[2]}-{data_end[1]}-{data_end[0]} 00:00:00"
             else:
                 date = str(context['in_7'])
-            engine.execute(f"INSERT INTO doc_date (doc_name, work_name, date_end) VALUES('{context['in_4']}', '{w_name[i]}', '{date}');")
+            engine.execute(f"INSERT INTO doc_date (doc_name, work_name, date_end) VALUES('{context['in_4']}', 'Дата начала работ', '{date}');")
 
             for i in range(len(w_name)):
                 if w_name[i] is not None:
