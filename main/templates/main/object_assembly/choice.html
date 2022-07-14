@@ -1,0 +1,208 @@
+{% extends 'main/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block style %}
+<style>
+    .modalDialog {
+	position: fixed;
+	font-family: Arial, Helvetica, sans-serif;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background: rgba(0,0,0,0.8);
+	z-index: 99999;
+	-webkit-transition: opacity 400ms ease-in;
+	-moz-transition: opacity 400ms ease-in;
+	transition: opacity 400ms ease-in;
+	display: none;
+	pointer-events: none;
+}
+    .modalDialog:target {
+	display: block;
+	pointer-events: auto;
+}
+
+.modalDialog > div {
+	width: 1400px;
+	position: relative;
+	margin: 10% auto;
+	padding: 5px 20px 13px 20px;
+	border-radius: 10px;
+	background: #fff;
+
+}
+
+    .close {
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	-moz-box-shadow: 1px 1px 1px #000;
+	-webkit-box-shadow: 1px 1px 3px #000;
+	box-shadow: 5px 5px 5px #000;
+
+</style>
+{% endblock %}
+{% block body %}
+    <br/>
+    <br/>
+    <div style="text-align:center">
+        <span style="font-family:Times New Roman,Times,serif">
+            <span style="font-size:24px">
+                    <form method=POST id="update" name="update">
+                        {% csrf_token %}
+                        {{ form }}
+                        {% if title == 'Объектная сборка' %}
+                        <a class="related-widget-wrapper-link add-related" id="add_doc" href="{% url 'new_doc' %}" title='Добавить'><img src="/static/admin/img/icon-addlink.svg" alt="Добавить"></a>
+                        {% else %}
+                        <a class="related-widget-wrapper-link add-related" id="edit_id_purchased" href="#openRenameModal" title='Переименовать'><img src="/static/admin/img/icon-changelink.svg" alt="Переименовать"></a>
+                        <a class="related-widget-wrapper-link add-related" id="add_id_purchased" href="#openModal" title='Добавить'><img src="/static/admin/img/icon-addlink.svg" alt="Добавить"></a>
+                        {% endif %}
+                    </form>
+                <form method=POST action="{{ url }}" id="edit" name="edit">
+                    {% csrf_token %}
+                    {% if title == 'Объектная сборка' %}
+                        <input name="edit" type='hidden' value="assembly_unit">
+                    {% else %}
+                        <input name="edit" type='hidden' value="details">
+                    {% endif %}
+                        <input name="choice_id" type='hidden' value="{{ choice_id }}">
+                        <button type="submit" onchange = "document.getElementById('edit').submit()">Изменить</button>
+                </form>
+                {% if title == 'Объектная сборка' %}{% if obj1 or obj2 %}
+                <form method=POST action="{% url 'report' %}" id="id_edit" >
+                    {% csrf_token %}
+                        <input name="choice_id" type='hidden' value="{{ choice_id }}">
+                        <button type="submit" onchange = "document.getElementById('id_edit').submit()">Закупочная ведомость</button>
+                </form>
+                {% endif %}{% endif %}
+                <div id="openModal" class="modalDialog">
+                    <div>
+                        <a href="" title="Закрыть" class="close">Закрыть</a>
+                        <form method=POST id="save" name="save">
+                            {% csrf_token %}
+                                <div>{% if messages %}
+                                    {% for message in messages %}
+                                        {% if message.tags == 'error'%}
+                                            <div class="alert alert-danger" role="alert">
+                                                {{ message }}
+                                            </div>
+                                        {% else %}
+                                            <div class="alert alert-{{ message.tags }}" role="alert">
+                                                {{ message }}
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% endif %}</div>
+                                <p><label for="id_name">Введите наименование {% if title == 'Подузел' %}подузла{% elif title == 'Узел' %}узла{% else %}сборочной единицы{% endif %}:</label></p>
+                                <p><input type="text" name="name" class="form-control" required id="id_name"></p>
+                            <input name="choice_id" type='hidden' value="{{ choice_id }}">
+                            <input name="save_all" type='hidden' value="save">
+                        <button type="submit" onchange = "document.getElementById('save').submit()">Добавить</button>
+                        </form>
+                    </div>
+                </div>
+                <div id="openRenameModal" class="modalDialog">
+                    <div>
+                        <a href="" title="Закрыть" class="close">Закрыть</a>
+                        <form method=POST id="id_rename">
+                            {% csrf_token %}
+                                <div>{% if messages %}
+                                    {% for message in messages %}
+                                        {% if message.tags == 'error'%}
+                                            <div class="alert alert-danger" role="alert">
+                                                {{ message }}
+                                            </div>
+                                        {% else %}
+                                            <div class="alert alert-{{ message.tags }}" role="alert">
+                                                {{ message }}
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% endif %}</div>
+                                <p><label for="id_name">Введите новое наименование {% if title == 'Подузел' %}подузла{% elif title == 'Узел' %}узла{% else %}сборочной единицы{% endif %}:</label></p>
+                                <p><input type="text" name="rename" class="form-control" required ></p>
+                            <input name="pk" type='hidden' value="{{ choice_id }}">
+                            <input name="model" type='hidden' value="{{ title }}">
+                        <button type="submit" onchange = "document.getElementById('id_rename').submit()">Переименовать</button>
+                        </form>
+                    </div>
+                </div>
+            </span>
+        </span>
+    </div><br/>
+    <table class="table_center_by_css" border="1" cellpadding="1" cellspacing="1" style="width:90%">
+            <tbody>
+                <tr>
+                    {% if obj1 %}
+                        <td style="text-align:center;width:25%"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">{% if title == 'Объектная сборка' %}Сборочные единицы{% else %}Детали{% endif %}</span></span></span></td>
+                    {% endif %}
+                    {% if obj2 %}
+                        <td style="text-align:center;width:25%"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">Покупное оборудование</span></span></span></td>
+                    {% endif %}
+                    {% if obj3 %}
+                        <td style="text-align:center;width:25%"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">Подузел</span></span></span></td>
+                    {% endif %}
+                    {% if obj4 %}
+                        <td style="text-align:center;width:25%"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">Узел</span></span></span></td>
+                    {% endif %}
+                </tr>
+                <tr>
+                    {% if obj1 %}
+                        <td style="text-align:center;width:25%">
+                            <span style="font-size:12pt">
+                                <span style="color:black">
+                                    <span style="font-family:Calibri,sans-serif">
+                                        {% for items in obj1 %}
+                                            {% if title == 'Объектная сборка' %}
+                                                {{ items.name }} - {{ items.quantity }}шт.<br/>
+                                            {% else %}
+                                                {{ items.name }} - {{ items.quantity }}шт.<br/>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </span>
+                                </span>
+                            </span>
+                        </td>
+                    {% endif %}
+                    {% if obj2 %}
+                        <td style="text-align:center;width:25%">
+                            <span style="font-size:12pt">
+                                <span style="color:black">
+                                    <span style="font-family:Calibri,sans-serif">
+                                        {% for items in obj2 %}
+                                            {{ items.name }} - {{ items.quantity }}шт.<br/>
+                                        {% endfor %}
+                                    </span>
+                                </span>
+                            </span>
+                        </td>
+                    {% endif %}
+                    {% if obj3 %}
+                        <td style="text-align:center;width:25%">
+                            <span style="font-size:12pt">
+                                <span style="color:black">
+                                    <span style="font-family:Calibri,sans-serif">
+                                        {% for items in obj3 %}
+                                            {{ items.name }} - {{ items.quantity }}шт.<br/>
+                                        {% endfor %}
+                                    </span>
+                                </span>
+                            </span>
+                        </td>
+                    {% endif%}
+                    {% if obj4 %}
+                        <td style="text-align:center;width:25%">
+                            <span style="font-size:12pt">
+                                <span style="color:black">
+                                    <span style="font-family:Calibri,sans-serif">
+                                        {% for items in obj4 %}
+                                            {{ items.name }} - {{ items.quantity }}шт.<br/>
+                                        {% endfor %}
+                                    </span>
+                                </span>
+                            </span>
+                        </td>
+                    {% endif%}
+            </tbody>
+    </table>
+{% endblock %}

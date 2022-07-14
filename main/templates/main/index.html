@@ -1,0 +1,22 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Главная страница{% endblock %}
+{% block body %}
+         <h4 style="text-align:center"><br />
+            <a href="{% url 'new_doc' %}">Добавить новый документ</a><br /><br />
+            <a href="{% url 'list_doc' %}">Список документов</a><br /><br />
+            <a href="{% url 'not_an_agreed_doc' %}">Список не согласованных документов</a><br /><br />
+             {% if request.user.is_staff %}
+            <a href="{% url 'afpe' %}">Добавление покупного оборудования</a><br /><br />
+            <a href="{% url 'aosaed' %}">Добавление расшифровок услуг или оборудования</a><br /><br />
+            <a href="{% url 'aosae' %}">Добавление услуг или оборудования</a><br /><br />
+
+             -=Проклятое меню=-<br /><br />
+            <a href="{% url 'details' %}">Детали</a><br /><br />
+            <a href="{% url 'utn' %}">Подузлы</a><br /><br />
+            <a href="{% url 'unit' %}">Узлы</a><br /><br />
+            <a href="{% url 'assembly_unit' %}">Сборочная единица</a><br /><br />
+            <a href="{% url 'object_assembly' %}">Объектная сборка</a><br /><br />
+             {% endif %}
+        </h4>
+{% endblock %}

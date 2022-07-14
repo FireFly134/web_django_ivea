@@ -1,0 +1,11 @@
+{% extends 'main/base2.html' %}
+
+{% block title %}Авторизация{% endblock %}
+{% block body %}
+    <br/>
+    <form method=POST>
+         {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit"><span style="font-family:Times New Roman,Times,serif"><span style="font-size:16px">Авторизация</span></span></button>
+    </form>
+{% endblock %}

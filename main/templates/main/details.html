@@ -1,0 +1,134 @@
+{% extends 'main/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block style %}
+<style>
+    .modalDialog {
+	position: fixed;
+	font-family: Arial, Helvetica, sans-serif;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background: rgba(0,0,0,0.8);
+	z-index: 99999;
+	-webkit-transition: opacity 400ms ease-in;
+	-moz-transition: opacity 400ms ease-in;
+	transition: opacity 400ms ease-in;
+	display: none;
+	pointer-events: none;
+}
+    .modalDialog:target {
+	display: block;
+	pointer-events: auto;
+}
+
+.modalDialog > div {
+	width: 1400px;
+	position: relative;
+	margin: 10% auto;
+	padding: 5px 20px 13px 20px;
+	border-radius: 10px;
+	background: #fff;
+
+}
+
+    .close {
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	-moz-box-shadow: 1px 1px 1px #000;
+	-webkit-box-shadow: 1px 1px 3px #000;
+	box-shadow: 5px 5px 5px #000;
+
+</style>
+{% endblock %}
+{% block body %}
+    <br/>
+    <br/>
+    <div style="text-align:center">
+        <span style="font-family:Times New Roman,Times,serif">
+            <span style="font-size:24px">
+                <form method=POST id="update" name="update">
+                    {% csrf_token %}
+                    {{ form }}
+                    <a class="related-widget-wrapper-link add-related" id="edit_id_purchased" href="#openRenameModal" title='Переименовать'><img src="/static/admin/img/icon-changelink.svg" alt="Переименовать"></a>
+                    <a class="related-widget-wrapper-link add-related" id="add_id_purchased" href="#openModal" title='Добавить'><img src="/static/admin/img/icon-addlink.svg" alt="Добавить"></a><br/>
+                </form>
+                <form method=POST id="edit" name="edit">
+                    {% csrf_token %}
+                    <label for="id_link">Ссылка на чертёж:</label>
+                    <input type="text" name="link" style="width:50%" maxlength="200" id="id_link"><br/>
+                    <input name="name" type='hidden' value="{{ choice_id }}">
+                    <input name="save" type='hidden' value="save">
+                    <button type="submit" onchange = "document.getElementById('edit').submit()"><span style="font-family:Times New Roman,Times,serif"><span style="font-size:16px">Отправить данные</span></span></button>
+                </form>
+                <div id="openModal" class="modalDialog">
+                    <div>
+                        <a href="" title="Закрыть" class="close">Закрыть</a>
+                        <form method=POST id="id_save_new_purchased" name="save">
+                            {% csrf_token %}
+                                <div>{% if messages %}
+                                    {% for message in messages %}
+                                        {% if message.tags == 'error'%}
+                                            <div class="alert alert-danger" role="alert">
+                                                {{ message }}
+                                            </div>
+                                        {% else %}
+                                            <div class="alert alert-{{ message.tags }}" role="alert">
+                                                {{ message }}
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% endif %}</div>
+                                <p><label for="id_name">Наименование покупного оборудования:</label></p>
+                                <p><input type="text" name="name" class="form-control" required id="id_name"></p>
+                            <input name="choice_id" type='hidden' value="{{ choice_id }}">
+                            <input name="save_new_purchased" type='hidden' value="save">
+                        <button type="submit" onchange = "document.getElementById('id_save_new_purchased').submit()">Добавить</button>
+                        </form>
+                    </div>
+                </div>
+                <div id="openRenameModal" class="modalDialog">
+                    <div>
+                        <a href="" title="Закрыть" class="close">Закрыть</a>
+                        <form method=POST id="id_rename" >
+                            {% csrf_token %}
+                                <div>{% if messages %}
+                                    {% for message in messages %}
+                                        {% if message.tags == 'error'%}
+                                            <div class="alert alert-danger" role="alert">
+                                                {{ message }}
+                                            </div>
+                                        {% else %}
+                                            <div class="alert alert-{{ message.tags }}" role="alert">
+                                                {{ message }}
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% endif %}</div>
+                                <p><label for="id_name">Введите новое наименование покупного оборудования:</label></p>
+                                <p><input type="text" name="rename" class="form-control" required ></p>
+                            <input name="pk" type='hidden' value="{{ choice_id }}">
+                        <button type="submit" onchange = "document.getElementById('id_rename').submit()">Переименовать</button>
+                        </form>
+                    </div>
+                </div>
+            </span>
+        </span>
+    </div><br/>
+    <table class="table_center_by_css" border="1" cellpadding="1" cellspacing="1" style="width:80%">
+            <tbody>
+                <tr>
+                    <td style="text-align:center"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">Наименование {{ table_name }}</span></span></span></td>
+                    <td style="text-align:center; width:50%"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">Ссылка на чертеж</span></span></span></td>
+                </tr>
+                {% for item in table %}
+                <tr>
+                    <td><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">&nbsp;&nbsp;{{ item.name }}</span></span></span></td>
+                    <td><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">&nbsp;&nbsp;{{ item.link }}</span></span></span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tbody>
+    </table>
+{% endblock %}
