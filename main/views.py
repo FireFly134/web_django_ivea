@@ -15,20 +15,6 @@ user_triger = {}
 def index(request):
     return render(request, "main/index.html")
 
-# # def register(request):
-# #     if request.method == 'POST':
-# #         form = UserRegisterForms(request.POST)
-# #         if form.is_valid():
-# #             user = form.save()
-# #             login(request, user)
-# #             messages.success(request, 'Регистрация прошла успешно!')
-# #             return redirect('home')
-# #         else:
-# #             messages.error(request, 'Ошибка при регистрации!')
-# #     else:
-# #         form = UserRegisterForms()
-# #     return render(request, "main/register.html", context={'form': form})
-
 def list_doc(request):
     info = pd.read_sql_query(f"SELECT id, number_doc, short_name FROM documents ORDER BY id DESC;", engine)
     html = ''
@@ -61,17 +47,10 @@ def new_doc(request):
                 engine.execute(
                     f"INSERT INTO documents (number_doc, counterparty, name, scan, date, short_name, link, type_works, mail, teg, text_for_call) "
                     f"VALUES('{context['in_1']}', '{context['in_2']}', '{context['in_3']}', '1', '{context['in_7']}', '{context['in_4']}', '{context['in_5']}', '{context['in_6']}', 'info@ivea-water.ru;cherkas1@yandex.ru;nm@ivea-water.ru;ks@ivea-water.ru;ds@ivea-water.ru', '{context['in_29']}', '{context['text_for_call']}');")
-                # print(
-                #     f"INSERT INTO documents (number_doc, counterparty, name, scan, date, short_name, link, type_works, mail, teg, text_for_call) "
-                #     f"VALUES('{context['in_1']}', '{context['in_2']}', '{context['in_3']}', '1', '{context['in_7']}', '{context['in_4']}', '{context['in_5']}', '{context['in_6']}', 'info@ivea-water.ru;cherkas1@yandex.ru;nm@ivea-water.ru;ks@ivea-water.ru;ds@ivea-water.ru', '{context['in_29']}', '{context['text_for_call']}');")
-
             else:
                 engine.execute(
                     f"INSERT INTO documents (number_doc, counterparty, name, scan, date, short_name, link, type_works, mail, text_for_call) "
                     f"VALUES('{context['in_1']}', '{context['in_2']}', '{context['in_3']}', '1', '{context['in_7']}', '{context['in_4']}', '{context['in_5']}', '{context['in_6']}', 'info@ivea-water.ru;cherkas1@yandex.ru;nm@ivea-water.ru;ks@ivea-water.ru;ds@ivea-water.ru', '{context['text_for_call']}');")
-                # print(
-                #     f"INSERT INTO documents (number_doc, counterparty, name, scan, date, short_name, link, type_works, mail, text_for_call) "
-                #     f"VALUES('{context['in_1']}', '{context['in_2']}', '{context['in_3']}', '1', '{context['in_7']}', '{context['in_4']}', '{context['in_5']}', '{context['in_6']}', 'info@ivea-water.ru;cherkas1@yandex.ru;nm@ivea-water.ru;ks@ivea-water.ru;ds@ivea-water.ru', '{context['text_for_call']}');")
             w_name = [context['in_9'], context['in_11'], context['in_13'], context['in_15'], context['in_17'], context['in_19'], context['in_21'], context['in_23'], context['in_25'], context['in_27']]
             w_date = [context['in_10'], context['in_12'], context['in_14'], context['in_16'], context['in_18'], context['in_20'], context['in_22'], context['in_24'], context['in_26'], context['in_28']]
             if "." in str(context['in_7']):
@@ -80,10 +59,7 @@ def new_doc(request):
             else:
                 date = str(context['in_7'])
             engine.execute(f"INSERT INTO doc_date (doc_name, work_name, date_end) VALUES('{context['in_4']}', '{w_name[i]}', '{date}');")
-            # print(f"INSERT INTO doc_date (doc_name, work_name, date_end) VALUES('{context['in_4']}', 'Дата начала работ', '{date}');")
 
-            # print(w_name)
-            # print(len(w_name))
             for i in range(len(w_name)):
                 if w_name[i] is not None:
                     date = w_date[i]
@@ -167,7 +143,6 @@ def add_one_value(request, table, form, get_name='name'):
                     except Exception as err:
                         print(err)
                     сounter += 1
-            # table.filter(name=request.POST.get("name")).delete()
             else:
                 messages.error(request, 'Такая запись уже присутствует.')
         elif get_name == 'description':
@@ -176,7 +151,6 @@ def add_one_value(request, table, form, get_name='name'):
                 print('services= ', request.POST.getlist('services'))
                 table.create(description=request.POST.get('description'), services=request.POST.getlist('services'))
                 messages.success(request, 'Запись успешно добавлена.')
-            # table.filter(name=request.POST.get("name")).delete()
             else:
                 messages.error(request, 'Такая запись уже присутствует.')
     return render(request, "main/add_one_value.html", context={'form': form, 'table': table.all(), 'table_name': table_name})
@@ -233,26 +207,6 @@ def details_def(request):
         form = choice_form()
         choice_id = '1'
     return render(request, "main/details.html", context={'form': form, 'table': details.objects.all(), 'table_name': "детали", 'choice_id': choice_id})
-# def edit_one_value(request):
-#     edit_data_dist = {
-#     ### Модель покупное оборудование ###
-#     'purchased': accounting_for_purchased_equipment,
-#         ### Модель подузел ###
-#     'Подузел': under_the_node,
-#         ### Модель узел ###
-#     'Узел': unit,
-#         ### Модель сборочная единица ###
-#     'Сборочная единица': assembly_unit,
-#     }
-#     if request.method == 'POST':
-#         model = request.POST.get('model')
-#         pk = request.POST.get('pk')
-#         rename = edit_data_dist[model].objects.get(pk=pk)
-#         rename.name = request.POST.get('rename')
-#         rename.save()
-#         form = details_form()
-#         return render(request, "main/edit_one_value.html", context={'form': form, 'table_name': "детали"})
-#
 def choice(request, model_obj, label):
     class choice_form(forms.Form):
         list_under_the_node = []
@@ -265,17 +219,6 @@ def choice(request, model_obj, label):
             'onchange': "document.getElementById('update').submit()",
             'style': 'width:400px'
         }), )
-    # edit_data_dist = {
-    #                 # 'details': details,
-    #                 # ### Модель покупное оборудование ###
-    #                 # 'purchased': accounting_for_purchased_equipment,
-    #                 ### Модель подузел ###
-    #                 'Подузел': under_the_node,
-    #                 ### Модель узел ###
-    #                 'Узел': unit,
-    #                 ### Модель сборочная единица ###
-    #                 'Сборочная единица': assembly_unit,
-    #                 }
     if request.method == 'POST':
         if request.POST.get('save_all') is not None:
             form = choice_form(request.POST)
@@ -483,7 +426,6 @@ def edit_object_assembly(request):
             user_triger.pop(username)
         info = pd.read_sql_query(f"SELECT short_name FROM documents WHERE id = {request.POST.get('choice_id')};", engine)
         print(info)
-        # obj = object_assembly.objects.filter(pk=request.POST.get('choice_id'))
         user_triger[username] = {'pk': request.POST.get('choice_id'),
                                              'edit': 'assembly_unit',
                                             'name': info.loc[0, 'short_name'],}
