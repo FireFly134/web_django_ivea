@@ -1,0 +1,39 @@
+{% extends 'main/base.html' %}
+{% block title %}Добавление {{ table_name }}{% endblock %}
+{% block body %}
+    <form method='POST'>
+        {% csrf_token %}
+        </br>
+        <div style="text-align:center">
+            {{ form.as_p }}
+            <span style="font-family:Times New Roman,Times,serif"><span style="font-size:16px"><button type="submit">Отправить данные</button></span></span>
+        </div>
+    </form>
+    <table class="table_center_by_css" border="1" cellpadding="1" cellspacing="1" style="width:1500px">
+            <tbody>
+                <tr>
+                    <td style="text-align:center"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">ID</span></span></span></td>
+                    <td style="text-align:center"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">Наименование {{ table_name }}</span></span></span></td>
+                    {% comment %}{% if table[0].link %}
+                    <td style="text-align:center"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">Ссылка на чертеж</span></span></span></td>
+                    {% endif%}
+                    {% endcomment %}
+                </tr>
+                {% for item in table %}
+                <tr>
+                    <td style="text-align:center"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">{{item.id}}</span></span></span></td>
+                    {% if item.name %}
+                    <td><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">&nbsp;&nbsp;{{item.name}}</span></span></span></td>
+                    {% endif%}
+                    {% if item.link %}
+                    <td><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">&nbsp;&nbsp;{{item.link}}</span></span></span></td>
+                    {% endif%}
+                    {% if item.description %}
+                    <td><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">&nbsp;&nbsp;{{item.description}}</span></span></span></td>
+                    <td><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">{% for qwe in item.services.all %} &nbsp;&nbsp;{{ qwe.name }}</br>{% endfor %}</span></span></span></td>
+                    {% endif%}
+                </tr>
+                {% endfor %}
+            </tbody>
+    </table>
+{% endblock %}

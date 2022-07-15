@@ -1,0 +1,1 @@
+ivea_metrika = 'postgresql://telegram:gjsbUKEu5c2JruU@10.10.1.251:5432/ivea_metrika'

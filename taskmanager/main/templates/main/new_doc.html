@@ -1,0 +1,36 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Добавление нового документа{% endblock %}
+{% block body %}
+   {% if context != 'save' %}
+<h1 style="text-align:center"><strong><span style="font-family:Times New Roman,Times,serif">Добавление нового документа</span></strong></h1>
+<hr />
+    <form method=POST>
+         {% csrf_token %}
+         <h1 style="text-align:center"><span style="font-family:Times New Roman,Times,serif"><span style="font-size:16px">
+         № договора или ТС:&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; <input name="in_1" required="required" type="text" placeholder='ТС№ ...' {% if in_1 %} value='{{ in_1 }}' {% endif %}/><br />
+         Контрагент:&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <input name="in_2" required="required" type="text" placeholder='OOO "ИВЕА"' {% if in_2 %} value='{{ in_2 }}' {% endif %}/><br />
+         Условное название:&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <input name="in_3" required="required" type="text" {% if in_3 %} value='{{ in_3 }}' {% endif %}/><br />
+         Краткое название:&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;<input name="in_4" required="required" type="text" {% if in_4 %} value='{{ in_4 }}' {% endif %}/><br />
+         Название для озвучки:&nbsp; &nbsp;<input name="text_for_call" required="required" type="text" {% if text_for_call %} value='{{ text_for_call }}' {% endif %}/><br />
+         Ссылка на договор: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<input name="in_5" required="required" type="url" placeholder='http://www.ivea-water.ru/' {% if in_5 %} value='{{ in_5 }}' {% endif %}/><br />
+         Виды работ:&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<input name="in_6" required="required" type="text" {% if in_6 %} value='{{ in_6 }}' {% endif %}/><br />
+         Дата:&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;<input name="in_7" required="required" type="text" placeholder="01.06.2022" {% if in_7 %} value='{{ in_7 }}' {% endif %}/><br />
+         Теги:&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp;<input name="in_29" type="text" placeholder='#New_doc#Документ#...' {% if in_29 %} value='{{ in_29 }}' {% endif %}/>
+    {% if context == 'GET' %}
+         <div style="background:#eeeeee; border:1px solid #cccccc; padding:5px 10px; text-align:center"><span style="font-family:Times New Roman,Times,serif"><span style="font-size:16px">Количество видов работ: </span></span></div>
+         <div style="background:#eeeeee; border:1px solid #cccccc; padding:5px 10px; text-align:center"><span style="font-family:Times New Roman,Times,serif"><span style="font-size:16px"></span></span><input maxlength="1" name="in_8" required="required" size="1" type="text" /></div>
+         <p style="text-align:center"><input type="submit" value="Далее" /></p>
+   {% elif context == 'POST' %}
+        {{ enter|safe }}
+        <input name="save" required="required" type="hidden" value='save'/>
+        <div style="text-align:center"><button type="submit"><span style="font-family:Times New Roman,Times,serif"><span style="font-size:16px">Отправить данные</span></span></button></div>
+  {% endif %}
+    </form>
+   {% else %}
+         <div style="background:#eeeeee; border:1px solid #cccccc; padding:5px 10px; text-align:center"><span style="font-family:Times New Roman,Times,serif"><span style="font-size:16px">Данные сохранены!</span></span></div>
+        <div style="background:#eeeeee; border:1px solid #cccccc; padding:5px 10px; text-align:center"><a href=''><span style="font-family:Times New Roman,Times,serif"><span style="font-size:16px">Добавить еще документ.</span></span></a></div>
+        <div style="background:#eeeeee; border:1px solid #cccccc; padding:5px 10px; text-align:center"><a href='/list_doc'><span style="font-family:Times New Roman,Times,serif"><span style="font-size:16px">Список документов.</span></span></a></div>
+        <div style="background:#eeeeee; border:1px solid #cccccc; padding:5px 10px; text-align:center"><a href='/'><span style="font-family:Times New Roman,Times,serif"><span style="font-size:16px">Перейти на главную страницу.</span></span></a></div>
+  {% endif %}
+{% endblock %}

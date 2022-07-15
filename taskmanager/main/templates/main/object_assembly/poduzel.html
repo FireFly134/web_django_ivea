@@ -1,0 +1,103 @@
+{% extends 'main/base.html' %}
+{% block title %}Редактирование {% if edit == 'details' %}деталей{% elif edit == 'purchased' %}покупного оборудования{% elif edit == 'poduzel' %}подузла{% endif %} в {% if model == 1 %}выбранном подузле{% elif model == 2 %}выбранном узле{% elif model == 3 %}выбранной сборочной единице{% elif model == 4 %}выбранной объектной сборке{% endif %} "{{ name_poduzel }}"{% endblock %}
+{% block style %}
+    <!-- Bootstrap CSS -->
+    <link href="https://getbootstrap.com/docs/5.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+{% endblock %}
+{% block body %}
+<div style="text-align:center"><p><h3 style="font-family:Times New Roman,sans-serif">Редактирование {% if edit == 'details' %}деталей{% elif edit == 'purchased' %}покупного оборудования{% elif edit == 'poduzel' %}подузла{% endif %} в {% if model == 1 %}выбранном подузле{% elif model == 2 %}выбранном узле{% elif model == 3 %}выбранной сборочной единице{% elif model == 4 %}выбранной объектной сборке{% endif %} "{{ name_poduzel }}"</h3></p></div>
+    <br/>
+
+<table border="1" cellpadding="1" cellspacing="1" style="width:100%; border: 1px solid white">
+    <tbody>
+        <tr>
+            <td style="width:300px">
+               <div class="btn-group-vertical" role="group" aria-label="Vertical button group">
+                    <form method=POST>
+                        {% csrf_token %}
+                        {% if  model == 4 %}
+                            <input name="edit" type='hidden' value="assembly_unit">
+                            <button type="submit" class="btn {% if edit == 'assembly_unit' %}btn-info{% else %}btn-secondary{% endif %}">Сборочная единица</button>
+                        {% else %}
+                            <input name="edit" type='hidden' value="details">
+                            <button type="submit" class="btn {% if edit == 'details' %}btn-info{% else %}btn-secondary{% endif %}">Детали</button>
+                        {% endif %}
+                    </form>
+                    <form method=POST>
+                        {% csrf_token %}
+                        <input name="edit" type='hidden' value="purchased">
+                        <button type="submit" class="btn {% if edit == 'purchased' %}btn-info{% else %}btn-secondary{% endif %}">Покупное оборудование</button>
+                    </form>
+                   {% if  1 < model and model < 4 %}
+                    <form method=POST>
+                        {% csrf_token %}
+                        <input name="edit" type='hidden' value="poduzel">
+                        <button type="submit" class="btn {% if edit == 'poduzel' %}btn-info{% else %}btn-secondary{% endif %}">Подузел</button>
+                    </form>
+                   {% endif %}
+                   {% if model == 3 %}
+                    <form method=POST>
+                        {% csrf_token %}
+                        <input name="edit" type='hidden' value="uzel">
+                        <button type="submit" class="btn {% if edit == 'uzel' %}btn-info{% else %}btn-secondary{% endif %}">Узел</button>
+                    </form>
+                   {% endif %}
+                </div>
+            </td>
+            <td>
+                <table border="1" cellpadding="1" cellspacing="1" style="width:100%; border: 1px solid white">
+                    <tbody>
+                        <tr>
+                            <td style="text-align:center; width:49%">
+                                <form method=POST id = 'add'>
+                                    {% csrf_token %}
+                                    <select name="name_add" id="id_choice_id" style="width:100%">
+
+                                        <option selected disabled="true">----Выбрать элемент----</option>
+                                        {% for items in obj %}
+                                            <option value="{{ items.name }}">{{ items.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <p>
+                                        <label for="id_kol-vo">Введите колличество</label>
+                                        <input type="number" style="width:50px" value="1" name="kol-vo" class="form-control" required="" id="id_kol-vo" data-select2-id="id_kol-vo">
+                                    </p>
+                            </td>
+                            <td style="text-align:center; width:2%">
+                                <button type="submit" class="btn " onchange="document.getElementById('add').submit()">+</button><br/><br/>
+                                </form>
+                                <form method=POST id="del">
+                                {% csrf_token %}
+                                <button type="submit" class="btn " onchange="document.getElementById('del').submit()">-</button><br/><br/>
+                            </td>
+                            <td>
+                                    <select class="form-select" size="10" aria-label="size 5 select example" name="name_del" style="width:100%">
+                                        {% for key, dist in data.items %}
+                                            {% if key == edit %}
+                                                {% for key, value in dist.items %}
+                                                    <option value="{{ key }}">{{ key }} - {{ value }}шт.</option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </tbody>
+</table>
+    <div style="text-align:center">
+        <form method="POST">
+            {% csrf_token %}
+            <input name="save" type='hidden' value="save">
+            <button type="submit" class="btn " >Сохранить</button>
+        </form>
+        <a href="{% if model == 1 %}/under_the_node/{% elif model == 2 %}/unit/{% elif model == 3 %}/assembly_unit/{% elif model == 4 %}/object_assembly/{% endif %}"
+           class="btn" role="button" aria-pressed="true">
+            Вернуться в "{% if model == 1 %}Подузлы{% elif model == 2 %}Узлы{% elif model == 3 %}Сборочные единицы{% elif model == 4 %}Объектные сборки{% endif %}"
+        </a>
+    </div>
+{% endblock %}

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    {% block style %}{% endblock %}
+    <style>
+        .table_center_by_css {
+            width: 300px;
+            border: 1px solid #000;
+            margin: auto;
+        }
+    </style>
+    <link href="http://ivea-water.ru/templates/wt_plussone_jom/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon">
+    <link rel="stylesheet" href="http://ivea-water.ru/templates/wt_plussone_jom/css-compiled/menu-15e57d4007d38afd200e3d6bdb49e5cb.css" type="text/css"> <!-- Стиль с выдвижным списком в меню-->
+    <link rel="stylesheet" href="http://ivea-water.ru/libraries/gantry/css/grid-responsive.css" type="text/css"><!--    Стиль который центроет меню-->
+    <link rel="stylesheet" href="http://ivea-water.ru/templates/wt_plussone_jom/css-compiled/bootstrap.css" type="text/css"> <!--    Стиль который убирает отступы от краев-->
+    <link rel="stylesheet" href="http://ivea-water.ru/templates/wt_plussone_jom/css-compiled/master-ac58b0dbe5532d9e575562bad23fa5de.css" type="text/css"><!--    Стил который нужен, закоментируй глянь, убирает почти все...каша-->
+    <link rel="stylesheet" href="http://ivea-water.ru/templates/wt_plussone_jom/css/sp.css" type="text/css"> <!--    Стиль который убирает кнопки ссылки в мню шапки -->
+    <link rel="stylesheet" href="http://ivea-water.ru/templates/wt_plussone_jom/css-compiled/1200fixed.css" type="text/css"><!--    Без этой строки меню из шапки пропадает (кнопки главная...) -->
+    <style type="text/css">
+    #rt-logo {background: url(http://ivea-water.ru/images/frontpage/logo.png) 50% 0 no-repeat !important;}
+    #rt-logo {width: 265px;height: 40px;}
+    </style>
+    <link rel="stylesheet" href="http://ivea-water.ru/css/css.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js" integrity="sha512-2ImtlRlf2VVmiGZsjm9bEyhjGW4dU7B6TNwh/hx/iSByxNENtj3WVE6o/9Lj4TJeVXPi4bnOIMXFIJJAeufa0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" integrity="sha512-nMNlpuaDPrqlEls3IX/Q56H36qvBASwb3ipuo3MxeWbsQB1881ox0cRv7UPTgBlriqoynt35KjEwgGUeUXIPnw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script>
+        $(document).ready(function()
+        {
+            $('#id_choice_id').select2();
+            $('#id_purchased').select2();
+            $('#id_details').select2();
+        });
+    </script>
+</head>
+<body class="page-fixed-0 page-fixedheader-disable page-headerstyle-hstyleone page-type-none logo-type-custom font-size-is-default rttop-type-none rtheader-type-none rtshowcase-fixed-0 rtshowcase-type-none rtfeature-type-none rtutility-type-none rtbreadcrumbs-type-none rtmaintop-type-maintopimg rtmainbottom-type-none rtextension-type-none rtbottom-type-none rtfooter-type-none rtcopyright-type-none menu-type-dropdownmenu layout-mode-1200fixed breadfeature-1 col12">
+    <header id="rt-top-surround">
+        <div id="rt-top">
+            <div class="rt-container">
+                <div class="rt-grid-12 rt-alpha rt-omega">
+                    <div class="rt-block nopaddingtopbottom">
+                        <div class="module-surround">
+                            <div class="module-content">
+                                <div class="customnopaddingtopbottom">
+                                    <style>
+
+                                    .blue_text_shapka {
+
+                                      color: #0088cc;
+                                      margin-left: 13px;
+                                    }
+
+                                    #open_window
+                                    {
+                                      padding-left: 5px;
+                                    }
+
+                                    .top-header {
+                                        font-size: 15px;
+                                        float: right;
+                                        margin-bottom: 10px;
+                                    }
+                                    </style>
+
+                                    <a data-config="commands=chat,call,videocall,add;size=14;status=on;theme=logo;bgcolor=#e8e8e8" id="skaip-buttons" href="http://www.skaip.su/" style="font-size: 15px; display: none;">Skype</a><script src="http://apps.skaip.su/buttons/widget/core.min.js" defer="defer"></script>
+                                    <!--<a href="/component/xmap/html/1?view=html"> &nbsp; &nbsp; &nbsp; Карта сайта</a>-->
+                                </div>
+	                	    </div>
+                	    </div>
+                    </div>
+                </div>
+                <div class="clear"></div>
+            </div>
+        </div>
+        <div id="rt-header">
+            <div class="rt-container">
+                <div class="rt-grid-4 rt-alpha">
+                    <div class="rt-block logo-block">
+                        <a href="http://ivea-water.ru/" id="rt-logo"></a>
+                    </div>
+                </div>
+                <div class="rt-grid-4">
+                    <div class="customrt-logo">
+                        <style>
+                            #header_text {
+                                font-size: 15px;
+                                margin: 15px auto 0px auto;
+                                line-height: 19px;
+                              }
+                        </style>
+                        <div id="header_text">
+                            <b>Мы производим очистные сооружения<br> и насосные станции,</b> а также оказываем<br><b> услуги по согласованиям</b>
+                        </div>
+                    </div>
+                </div>
+                <div class="clear"></div>
+            </div>
+        </div>
+        <div id="rt-apostos">
+            <div class="rt-container">
+                <div class="rt-grid-6 rt-alpha">
+                    <div class="rt-block menu-block">
+                        <div class="gf-menu-device-container responsive-type-panel"></div>
+                        <ul class="gf-menu l1 ">
+                            <li class="item101 active last">
+                                <a class="item" href="{% url 'home' %}">Главная</a>
+                            </li>
+                            <li class="item101 active last">
+                                <a class="item" href="http://ivea-water.ru/">www.ivea-water.ru </a>
+                            </li>
+                            {% if request.user.is_authenticated %}
+                                <li>
+                                    <a class="item" href="javascript:void(0);">Для сотрудников<span class="border-fixer"></span></a>
+                                    <div class="dropdown columns-1 " style="width:250px;">
+                                        <div class="column col1" style="width:250px;">
+                                            <ul class="l2">
+                                                <li>
+                                                    <a class="item" href="{% url 'new_doc' %}">Добавить новый документ</a>
+                                                </li>
+                                                <li>
+                                                    <a class="item" href="{% url 'list_doc' %}">Список документов</a>
+                                                </li>
+                                                <li>
+                                                    <a class="item"  href="{% url 'not_an_agreed_doc' %}">Список не согласованных документов</a>
+                                                </li>
+                                                {% if request.user.is_staff %}
+                                                <li>
+                                                    <a class="item"  href="{% url 'afpe' %}">Добавление покупного оборудования</a>
+                                                </li>
+<!--                                                 <li> -->
+<!--                                                     <a class="item"  href="{% url 'aosaed' %}">Добавление расшифровок услуг или оборудования</a> -->
+<!--                                                 </li> -->
+                                                <li>
+                                                    <a class="item"  href="{% url 'aosae' %}">Добавление услуг или оборудования</a>
+                                                </li>
+                                                <li>
+                                                    <a class="item"  href="javascript:void(0);">Объектные сборки<span class="border-fixer"></span></a>
+                                                    <div class="dropdown flyout columns-1 " style="width:220px;">
+                                                        <div class="column col1" style="width:220px;">
+                                                            <ul class="l3">
+                                                                <li>
+                                                                    <a class="item"  href="{% url 'details' %}">Детали</a>
+                                                                </li>
+                                                                <li>
+                                                                    <a class="item"  href="{% url 'utn' %}">Подузлы</a>
+                                                                </li>
+                                                                <li>
+                                                                    <a class="item"  href="{% url 'unit' %}">Узлы</a>
+                                                                </li>
+                                                                <li>
+                                                                    <a class="item"  href="{% url 'assembly_unit' %}">Сборочные единицы</a>
+                                                                </li>
+                                                                <li>
+                                                                    <a class="item"  href="{% url 'object_assembly' %}">Объектные сборки</a>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                                {% endif %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% else %}
+                                <li class="item138 parent">
+                                    <a class="item" href="javascript:void(0);">О компании<span class="border-fixer"></span></a>
+                                    <div class="dropdown columns-1 " style="width:220px;">
+                                        <div class="column col1" style="width:220px;">
+                                            <ul class="l2">
+                                                <li class="item173">
+                                                    <a class="item" href="http://ivea-water.ru/about-us/novosti-kompanii">Новости компании</a>
+                                                </li>
+                                                <li class="item146">
+                                                    <a class="item" href="http://ivea-water.ru/about-us/contact-us">Контакты</a>
+                                                </li>
+                                                <li class="item178 parent">
+                                                    <a class="item" href="javascript:void(0);">Справочные материалы<span class="border-fixer"></span></a>
+                                                    <div class="dropdown flyout columns-1 " style="width:190px;">
+                                                        <div class="column col1" style="width:190px;">
+                                                        <ul class="l3">
+                                                            <li class="item174">
+                                                                <a class="item" href="http://ivea-water.ru/about-us/spravochnye-materialy/gosudarstvennye-organy">Государственные органы</a>
+                                                            </li>
+                                                            <li class="item171">
+                                                                <a class="item" href="http://ivea-water.ru/about-us/spravochnye-materialy/terminy-i-opredeleniya">Термины и определения</a>
+                                                            </li>
+                                                        </ul>
+                                                        </div>
+                                                    </div>
+
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endif %}
+                        </ul>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+                <div class="rt-grid-6 rt-omega">
+                    <div class="rt-block  module_rokajaxsearch textright">
+                        <div class="module-surround">
+                            <div class="module-content">
+                                <form name="rokajaxsearch" id="rokajaxsearch" class="light" action="http://ivea-water.ru/" method="get">
+                                    <div class="rokajaxsearch  module_rokajaxsearch textright">
+                                        <div class="roksearch-wrapper">
+                                            {% if request.user.is_authenticated %}
+                                                {{ user.first_name }} {{ user.last_name }} | <a href="{% url 'logout' %}">Выход</a>
+                                            {% else %}
+                                                <a href="{% url 'login' %}">Авторизация</a>
+                                            {% endif %}
+                                        </div>
+
+                                        <input type="hidden" name="searchphrase" value="any">
+                                        <input type="hidden" name="limit" value="20">
+                                        <input type="hidden" name="ordering" value="newest">
+                                        <input type="hidden" name="view" value="search">
+                                        <input type="hidden" name="option" value="com_search">
+
+                                    </div>
+                                    <div id="rokajaxsearch_tmp" style="visibility:hidden;display:none;"></div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="clear"></div>
+        </div>
+    </header>
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == 'error'%}
+                <div class="alert alert-danger" role="alert">
+                  {{ message }}
+                </div>
+            {% else %}
+                <div class="alert alert-{{ message.tags }}" role="alert">
+                  {{ message }}
+                </div>
+            {% endif %}
+        {% endfor %}
+
+    {% endif %}
+    {% if request.user.is_authenticated %}
+         {% block body %}{% endblock %}
+    {% else %}
+        <h4 style="text-align:center">
+            Для того чтобы пользоваться функционалом, необходимо <a href="{% url 'login' %}">авторизоваться</a> !
+        </h4>
+    {% endif %}
+</body>
+</html>

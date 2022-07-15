@@ -1,0 +1,23 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Главная страница{% endblock %}
+{% block body %}
+         <h4 style="text-align:center"><br />
+            <a href="{% url 'new_doc' %}">Добавить новый документ</a><br /><br />
+            <a href="{% url 'list_doc' %}">Список документов</a><br /><br />
+            <a href="{% url 'not_an_agreed_doc' %}">Список не согласованных документов</a><br /><br />
+             {% if request.user.is_staff %}
+            <a href="{% url 'afpe' %}">Добавление покупного оборудования</a><br /><br />
+<!--             <a href="{% url 'aosaed' %}">Добавление расшифровок услуг или оборудования</a><br /><br /> -->
+            <a href="{% url 'aosae' %}">Добавление услуг или оборудования</a><br /><br />
+<!--             <a href="{% url 'utn' %}">Добавить подузел</a><br /><br />
+         	<a href="{% url 'object_assembly' %}">Показать объектную сборку</a><br /><br /> -->
+         <br /><br />
+                     <a href="{% url 'details' %}">Добавление деталей</a><br /><br />
+                     <a href="{% url 'utn' %}">Добавление и изменение параметров подузла</a><br /><br />
+                     <a href="{% url 'unit' %}">Добавление и изменение параметров узла</a><br /><br />
+                     <a href="{% url 'assembly_unit' %}">Добавление и изменение параметров сборочной единицы</a><br /><br />
+                     <a href="{% url 'object_assembly' %}">Добавление и изменение параметров обектной сборки</a><br /><br />
+             {% endif %}
+        </h4>
+{% endblock %}
