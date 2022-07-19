@@ -265,6 +265,7 @@ def choice(request, model_obj, label):
             'onchange': "document.getElementById('update').submit()",
             'style': 'width:400px'
         }), )
+
     # edit_data_dist = {
     #                 # 'details': details,
     #                 # ### Модель покупное оборудование ###
@@ -300,16 +301,14 @@ def choice(request, model_obj, label):
             form = choice_form(request.POST)
             choice_id = request.POST.get('choice_id')
     else:
+        first_id = ''
         form = choice_form()
-        choice_id = '1'
+        for item in model_obj.all():
+            if first_id == '':
+                first_id = str(item.id)
+                break
+        choice_id = first_id
     return form, choice_id
-
-# def choice_detais(request):
-#     model_obj = details.objects
-#     form, choice_id = choice(request, model_obj)
-#     obj1 = utn_details.objects.filter(under_the_node_id=choice_id)
-#     obj2 = utn_purchased.objects.filter(under_the_node_id=choice_id)
-#     return render(request, "main/object_assembly/choice.html", context={'form': form, 'obj1': obj1, 'obj2': obj2, 'choice_id': choice_id, 'url': '/edit_under_the_node/', 'title': 'Подузел', })
 
 def choice_poduzel(request):
     label = 'Выбор подузла'
@@ -317,7 +316,7 @@ def choice_poduzel(request):
     form, choice_id = choice(request, model_obj,label)
     obj1 = utn_details.objects.filter(belongs_id=choice_id)
     obj2 = utn_purchased.objects.filter(belongs_id=choice_id)
-    return render(request, "main/object_assembly/choice.html", context={'form': form, 'obj1': obj1, 'obj2': obj2, 'choice_id': choice_id, 'url': '/edit_under_the_node/', 'title': 'Подузел', })
+    return render(request, "main/object_assembly/choice.html", context={'form': form, 'obj1': obj1, 'obj2': obj2, 'choice_id': choice_id, 'url': '/edit_under_the_node/', 'title': 'Подузел', 'report_url': '/report_under_the_node/', })
 
 def choice_uzel(request):
     label = 'Выбор узла'
@@ -326,7 +325,7 @@ def choice_uzel(request):
     obj1 = unit_details.objects.filter(belongs_id=choice_id)
     obj2 = unit_purchased.objects.filter(belongs_id=choice_id)
     obj3 = unit_under_the_node.objects.filter(belongs_id=choice_id)
-    return render(request, "main/object_assembly/choice.html", context={'form': form, 'obj1': obj1, 'obj2': obj2, 'obj3': obj3, 'choice_id': choice_id, 'url': '/edit_unit/', 'title': 'Узел', })
+    return render(request, "main/object_assembly/choice.html", context={'form': form, 'obj1': obj1, 'obj2': obj2, 'obj3': obj3, 'choice_id': choice_id, 'url': '/edit_unit/', 'title': 'Узел', 'report_url': '/report_unit/', })
 
 def choice_assembly_unit(request):
     label = 'Выбор cборочной единицы'
@@ -336,7 +335,7 @@ def choice_assembly_unit(request):
     obj2 = assembly_unit_purchased.objects.filter(belongs_id=choice_id)
     obj3 = assembly_unit_under_the_node.objects.filter(belongs_id=choice_id)
     obj4 = assembly_unit_unit.objects.filter(belongs_id=choice_id)
-    return render(request, "main/object_assembly/choice.html", context={'form': form, 'obj1': obj1, 'obj2': obj2, 'obj3': obj3, 'obj4': obj4, 'choice_id': choice_id, 'url': '/edit_assembly_unit/', 'title': 'Сборочная единица', })
+    return render(request, "main/object_assembly/choice.html", context={'form': form, 'obj1': obj1, 'obj2': obj2, 'obj3': obj3, 'obj4': obj4, 'choice_id': choice_id, 'url': '/edit_assembly_unit/', 'title': 'Сборочная единица', 'report_url': '/report_assembly_unit/', })
 
 def choice_object_assembly(request):
     info = pd.read_sql_query(f"SELECT id, short_name FROM documents ORDER BY id DESC;", engine)
@@ -359,7 +358,7 @@ def choice_object_assembly(request):
         choice_id = info.loc[0,'id']
     obj1 = object_assembly_assembly_unit.objects.filter(belongs=choice_id)
     obj2 = object_assembly_purchased.objects.filter(belongs=choice_id)
-    return render(request, "main/object_assembly/choice.html", context={'form': form, 'obj1': obj1, 'obj2': obj2, 'choice_id': choice_id, 'url': '/edit_object_assembly/', 'title': 'Объектная сборка', })
+    return render(request, "main/object_assembly/choice.html", context={'form': form, 'obj1': obj1, 'obj2': obj2, 'choice_id': choice_id, 'url': '/edit_object_assembly/', 'title': 'Объектная сборка', 'report_url': '/report_object_assembly/', })
 
 ### общая функция для изменения списков ###
 def edit_general(request, model_obj, name_model):
@@ -735,6 +734,63 @@ def edit_object_assembly(request):
 #####################################
 ### Составляем отчетную ведомость ###
 #####################################
+def report_general(request, name, object1, object2):
+    global data_list
+    data_list = {'details': {},
+       'purchased': {}}
+    if object1:
+        items_details(object1)
+    if object2:
+        items_purchased(object2)
+    return render(request, "main/object_assembly/report_object_assembly.html", context={'name': name, "data": data_list, })
+
+def report_poduzel(request):
+    global data_list
+    data_list = {'details': {},
+       'purchased': {}}
+    name = under_the_node.objects.get(pk=int(request.POST.get('choice_id'))).name
+    object1 = utn_details.objects.filter(belongs_id=int(request.POST.get('choice_id')))
+    object2 = utn_purchased.objects.filter(belongs_id=int(request.POST.get('choice_id')))
+    if object1:
+        items_details(object1)
+    if object2:
+        items_purchased(object2)
+    return render(request, "main/object_assembly/report_object_assembly.html", context={'name': name, "data": data_list, })
+
+def report_unit(request):
+    global data_list
+    data_list = {'details': {},
+       'purchased': {}}
+    name = unit.objects.get(pk=int(request.POST.get('choice_id'))).name
+    object1 = unit_under_the_node.objects.filter(belongs_id=int(request.POST.get('choice_id')))
+    object2 = unit_details.objects.filter(belongs_id=int(request.POST.get('choice_id')))
+    object3 = unit_purchased.objects.filter(belongs_id=int(request.POST.get('choice_id')))
+    if object1:
+        items_under_the_node(object1)
+    if object2:
+        items_details(object2)
+    if object3:
+        items_purchased(object3)
+    return render(request, "main/object_assembly/report_object_assembly.html", context={'name': name, "data": data_list, })
+
+def report_assembly_unit(request):
+    global data_list
+    data_list = {'details': {},
+       'purchased': {}}
+    name = assembly_unit.objects.get(pk=int(request.POST.get('choice_id'))).name
+    object1 = assembly_unit_unit.objects.filter(belongs_id=int(request.POST.get('choice_id')))
+    object2 = assembly_unit_under_the_node.objects.filter(belongs_id=int(request.POST.get('choice_id')))
+    object3 = assembly_unit_details.objects.filter(belongs_id=int(request.POST.get('choice_id')))
+    object4 = assembly_unit_purchased.objects.filter(belongs_id=int(request.POST.get('choice_id')))
+    if object1:
+        items_unit(object1)
+    if object2:
+        items_under_the_node(object2)
+    if object3:
+        items_details(object3)
+    if object4:
+        items_purchased(object4)
+    return render(request, "main/object_assembly/report_object_assembly.html", context={'name': name, "data": data_list, })
 
 def report_object_assembly(request):
     if request.POST.get('choice_id') is not None:
