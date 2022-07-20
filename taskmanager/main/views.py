@@ -44,6 +44,27 @@ def list_doc(request):
     return render(request, 'main/list_doc.html', context={'html': html})
 
 def new_doc(request):
+    """
+    Обьяснения in_*
+    in_1 - Номер договора (number_doc)
+    in_2 - Контрагент (counterparty)
+    in_3 - Наименование договора (name)
+    in_4 - Краткое название договора (short_name)
+    in_5 - Ссылка на договор (link)
+    in_6 - Тип работ (type_works)
+    in_7 - Дата (date), она же и дата начала работ.
+    in_8 - Количество работ и дат завершения.
+    in_29 - Теги
+
+    когда заполняем первую форму мы вводим количества работ. и исходя из этого мы берем веременные работа(in_9) и дата(in_10) ее завершения. И т.д.
+    in_9, in_11, in_13, in_15, in_17, in_19, in_21, in_23, in_25, in_27 - Наименование работ которые записываются в таблицу doc_date
+    (нечетные числа, полюбому есть вариант лучше этого, но когда делал я не особо парился.)
+    in_10, in_12, in_14, in_16, in_18, in_20, in_22, in_24, in_26, in_28 - Дата завершения данных работ которые записываются в таблицу doc_date
+    (тут уже четные числа.)
+
+    :param request:
+    :return:
+    """
     if request.method=='POST':
         context = {"context": "POST"}
         for i in range(1, 30):
@@ -301,12 +322,15 @@ def choice(request, model_obj, label):
             form = choice_form(request.POST)
             choice_id = request.POST.get('choice_id')
     else:
-        first_id = ''
+        first_id = '0'
         form = choice_form()
-        for item in model_obj.all():
-            if first_id == '':
-                first_id = str(item.id)
-                break
+        try:
+            for item in model_obj.all():
+                if first_id == '0':
+                    first_id = str(item.id)
+                    break
+        except ValueError:
+            pass
         choice_id = first_id
     return form, choice_id
 
@@ -466,190 +490,19 @@ def edit_poduzel(request):
     print(request.POST)
     username = str(request.user.username)
     obj = edit_general(request, under_the_node.objects, 'under_the_node')
-    # if request.POST.get('choice_id') is not None:
-    #     if username in user_triger:
-    #         user_triger.pop(username)
-    #     obj = under_the_node.objects.filter(pk=request.POST.get('choice_id'))
-    #     user_triger[username] = {'pk': request.POST.get('choice_id'),
-    #                                          'edit': 'details',
-    #                                         'name': obj[0].name,}
-    #     data_list = {
-    #         'data':{'purchased': {},
-    #                  'details': {}},
-    #         'add': {'purchased': {},
-    #                  'details': {}},
-    #         'del': {'purchased': {},
-    #                      'details': {}}
-    #     }
-    # if request.method == 'POST':
-    #     if request.POST.get('edit') == 'purchased' or (request.POST.get('edit') is None and user_triger[username]['edit'] == 'purchased'):
-    #         user_triger[username]['edit'] = 'purchased'
-    #         obj = accounting_for_purchased_equipment.objects
-    #         obj2 = utn_purchased.objects
-    #         if request.POST.get('edit') is not None:
-    #             data_list['add'][user_triger[username]['edit']] = {}
-    #             data_list['del'][user_triger[username]['edit']] = {}
-    #             data_list['data'][user_triger[username]['edit']] = {}
-    #             for items in obj2.filter(belongs_id=user_triger[username]['pk']):
-    #                 data_list['data'][user_triger[username]['edit']][items.name.name] = items.quantity
-    #     elif request.POST.get('edit') == 'details' or (request.POST.get('edit') is None and user_triger[username]['edit'] == 'details'):
-    #         user_triger[username]['edit'] = 'details'
-    #         obj = details.objects
-    #         obj2 = utn_details.objects
-    #         if request.POST.get('edit') is not None:
-    #             data_list['add'][user_triger[username]['edit']] = {}
-    #             data_list['del'][user_triger[username]['edit']] = {}
-    #             data_list['data'][user_triger[username]['edit']] = {}
-    #             for items in obj2.filter(belongs_id=user_triger[username]['pk']):
-    #                 data_list['data'][user_triger[username]['edit']][items.name.name.name] = items.quantity
-    #     if request.POST.get('name_add') is not None:
-    #         data_list['data'][user_triger[username]['edit']][request.POST.get('name_add')] = request.POST.get('kol-vo')
-    #         data_list['add'][user_triger[username]['edit']][request.POST.get('name_add')] = request.POST.get('kol-vo')
-    #     if request.POST.get('name_del') is not None:
-    #         data_list['data'][user_triger[username]['edit']].pop(request.POST.get('name_del'))
-    #         if request.POST.get('name_del') in data_list['add'][user_triger[username]['edit']]:
-    #             data_list['add'][user_triger[username]['edit']].pop(request.POST.get('name_del'))
-    #             data_list['del'][user_triger[username]['edit']][request.POST.get('name_del')] = False
-    #         else:
-    #             data_list['del'][user_triger[username]['edit']][request.POST.get('name_del')] = True
-    #     if request.POST.get('save') is not None:
-    #         for key in data_list['del'][user_triger[username]['edit']]:
-    #             if data_list['del'][user_triger[username]['edit']][key]:
-    #                 get_id = accounting_for_purchased_equipment.objects.get(name=key).pk
-    #                 # for pkw in purchased_id:
-    #                 #     print(pkw.pk)
-    #                 if user_triger[username]['edit'] == 'purchased':
-    #                     obj2.filter(belongs_id=user_triger[username]['pk'], name_id=get_id).delete()
-    #                 elif user_triger[username]['edit'] == 'details':
-    #                     obj2.filter(belongs_id=user_triger[username]['pk'], name_id=get_id).delete()
-    #         for key in data_list['add'][user_triger[username]['edit']]:
-    #             value = data_list['add'][user_triger[username]['edit']][key]
-    #             get_id = accounting_for_purchased_equipment.objects.get(name=key).pk
-    #             if user_triger[username]['edit'] == 'purchased':
-    #                 if obj2.filter(name_id=get_id, belongs_id=user_triger[username]['pk']).exists() != True:
-    #                     obj2.create(belongs_id=user_triger[username]['pk'], name_id=get_id, quantity=value)
-    #                 elif obj2.filter(name_id=get_id, belongs_id=user_triger[username]['pk'],quantity=value).exists() != True:
-    #                     edit_obj = obj2.get(name_id=get_id, belongs_id=user_triger[username]['pk'])
-    #                     edit_obj.quantity = value
-    #                     edit_obj.save()
-    #             elif user_triger[username]['edit'] == 'details':
-    #                 if obj2.filter(name_id=get_id, belongs_id=user_triger[username]['pk']).exists() != True:
-    #                     obj2.create(belongs_id=user_triger[username]['pk'], name_id=get_id, quantity=value)
-    #                 elif obj2.filter(name_id=get_id, belongs_id=user_triger[username]['pk'],quantity=value).exists() != True:
-    #                     edit_obj = obj2.get(name_id=get_id, belongs_id=user_triger[username]['pk'])
-    #                     edit_obj.quantity = value
-    #                     edit_obj.save()
-    return render(request, "main/object_assembly/poduzel.html", context={'edit': user_triger[username]['edit'], 'data': data_list['data'], 'name_poduzel': user_triger[username]['name'],'obj': obj.all(), 'model': 1, })
+    return render(request, "main/object_assembly/edit.html", context={'edit': user_triger[username]['edit'], 'data': data_list['data'], 'name_poduzel': user_triger[username]['name'],'obj': obj.all(), 'model': 1, })
 
 def edit_uzel(request):
     global data_list
     username = str(request.user.username)
     obj = edit_general(request, unit.objects, 'unit')
-    # if request.POST.get('choice_id') is not None:
-    #     if username in user_triger:
-    #         user_triger.pop(username)
-    #     obj = unit.objects.filter(pk=request.POST.get('choice_id'))
-    #     user_triger[username] = {'pk': request.POST.get('choice_id'),
-    #                                          'edit': 'details',
-    #                                         'name': obj[0].name,}
-    #     data_list = {
-    #         'data':{'purchased': {},
-    #                 'poduzel': {},
-    #                  'details': {}},
-    #         'add': {'purchased': {},
-    #                 'poduzel': {},
-    #                  'details': {}},
-    #         'del': {'purchased': {},
-    #                 'poduzel': {},
-    #                      'details': {}}
-    #     }
-    # if request.method == 'POST':
-    #     if request.POST.get('edit') == 'purchased' or (request.POST.get('edit') is None and user_triger[username]['edit'] == 'purchased'):
-    #         user_triger[username]['edit'] = 'purchased'
-    #         obj = accounting_for_purchased_equipment.objects
-    #         obj2 = unit_purchased.objects
-    #         if request.POST.get('edit') is not None:
-    #             data_list['add'][user_triger[username]['edit']] = {}
-    #             data_list['del'][user_triger[username]['edit']] = {}
-    #             data_list['data'][user_triger[username]['edit']] = {}
-    #             for items in obj2.filter(belongs_id=user_triger[username]['pk']):
-    #                 data_list['data'][user_triger[username]['edit']][items.name.name] = items.quantity
-    #     elif request.POST.get('edit') == 'details' or (request.POST.get('edit') is None and user_triger[username]['edit'] == 'details'):
-    #         user_triger[username]['edit'] = 'details'
-    #         obj = details.objects
-    #         obj2 = unit_details.objects
-    #         if request.POST.get('edit') is not None:
-    #             data_list['add'][user_triger[username]['edit']] = {}
-    #             data_list['del'][user_triger[username]['edit']] = {}
-    #             data_list['data'][user_triger[username]['edit']] = {}
-    #             for items in obj2.filter(belongs_id=user_triger[username]['pk']):
-    #                 data_list['data'][user_triger[username]['edit']][items.name.name.name] = items.quantity
-    #     elif request.POST.get('edit') == 'poduzel' or (request.POST.get('edit') is None and user_triger[username]['edit'] == 'poduzel'):
-    #         user_triger[username]['edit'] = 'poduzel'
-    #         obj = under_the_node.objects
-    #         obj2 = unit_under_the_node.objects
-    #         if request.POST.get('edit') is not None:
-    #             data_list['add'][user_triger[username]['edit']] = {}
-    #             data_list['del'][user_triger[username]['edit']] = {}
-    #             data_list['data'][user_triger[username]['edit']] = {}
-    #             for items in obj2.filter(belongs_id=user_triger[username]['pk']):
-    #                 data_list['data'][user_triger[username]['edit']][items.name.name] = items.quantity
-    #     if request.POST.get('name_add') is not None:
-    #         data_list['data'][user_triger[username]['edit']][request.POST.get('name_add')] = request.POST.get('kol-vo')
-    #         data_list['add'][user_triger[username]['edit']][request.POST.get('name_add')] = request.POST.get('kol-vo')
-    #     if request.POST.get('name_del') is not None:
-    #         data_list['data'][user_triger[username]['edit']].pop(request.POST.get('name_del'))
-    #         if request.POST.get('name_del') in data_list['add'][user_triger[username]['edit']]:
-    #             data_list['add'][user_triger[username]['edit']].pop(request.POST.get('name_del'))
-    #             data_list['del'][user_triger[username]['edit']][request.POST.get('name_del')] = False
-    #         else:
-    #             data_list['del'][user_triger[username]['edit']][request.POST.get('name_del')] = True
-    #     if request.POST.get('save') is not None:
-    #         for key in data_list['del'][user_triger[username]['edit']]:
-    #             if data_list['del'][user_triger[username]['edit']][key]:
-    #                 if user_triger[username]['edit'] == 'purchased':
-    #                     get_id = accounting_for_purchased_equipment.objects.get(name=key).pk
-    #                     obj2.filter(belongs_id=user_triger[username]['pk'], name_id=get_id).delete()
-    #                 elif user_triger[username]['edit'] == 'details':
-    #                     get_id = accounting_for_purchased_equipment.objects.get(name=key).pk
-    #                     obj2.filter(belongs_id=user_triger[username]['pk'], name_id=get_id).delete()
-    #                 elif user_triger[username]['edit'] == 'poduzel':
-    #                     get_id = under_the_node.objects.get(name=key).pk
-    #                     obj2.filter(belongs_id=user_triger[username]['pk'], name_id=get_id).delete()
-    #         for key in data_list['add'][user_triger[username]['edit']]:
-    #             value = data_list['add'][user_triger[username]['edit']][key]
-    #             if user_triger[username]['edit'] == 'purchased' or user_triger[username]['edit'] == 'details':
-    #                 get_id = accounting_for_purchased_equipment.objects.get(name=key).pk
-    #             if user_triger[username]['edit'] == 'purchased':
-    #                 if obj2.filter(name_id=get_id, belongs_id=user_triger[username]['pk']).exists() != True:
-    #                     obj2.create(belongs_id=user_triger[username]['pk'], name_id=get_id, quantity=value)
-    #                 elif obj2.filter(name_id=get_id, belongs_id=user_triger[username]['pk'],quantity=value).exists() != True:
-    #                     edit_obj = obj2.get(name_id=get_id, belongs_id=user_triger[username]['pk'])
-    #                     edit_obj.quantity = value
-    #                     edit_obj.save()
-    #             elif user_triger[username]['edit'] == 'details':
-    #                 if obj2.filter(name_id=get_id, belongs_id=user_triger[username]['pk']).exists() != True:
-    #                     obj2.create(belongs_id=user_triger[username]['pk'], name_id=get_id, quantity=value)
-    #                 elif obj2.filter(name_id=get_id, belongs_id=user_triger[username]['pk'],quantity=value).exists() != True:
-    #                     edit_obj = obj2.get(name_id=get_id, belongs_id=user_triger[username]['pk'])
-    #                     edit_obj.quantity = value
-    #                     edit_obj.save()
-    #             elif user_triger[username]['edit'] == 'poduzel':
-    #                 get_id = under_the_node.objects.get(name=key).pk
-    #                 if obj2.filter(name_id=get_id, belongs_id=user_triger[username]['pk']).exists() != True:
-    #                     obj2.create(belongs_id=user_triger[username]['pk'], name_id=get_id, quantity=value)
-    #                 elif obj2.filter(name_id=get_id, belongs_id=user_triger[username]['pk'],quantity=value).exists() != True:
-    #                     edit_obj = obj2.get(name_id=get_id, belongs_id=user_triger[username]['pk'])
-    #                     edit_obj.quantity = value
-    #                     edit_obj.save()
-    return render(request, "main/object_assembly/poduzel.html", context={'edit': user_triger[username]['edit'], 'data': data_list['data'], 'name_poduzel': user_triger[username]['name'],'obj': obj.all(), 'model': 2, })
+    return render(request, "main/object_assembly/edit.html", context={'edit': user_triger[username]['edit'], 'data': data_list['data'], 'name_poduzel': user_triger[username]['name'],'obj': obj.all(), 'model': 2, })
 
 def edit_assembly_unit(request):
     global data_list
     username = str(request.user.username)
-    print(1)
     obj = edit_general(request, assembly_unit.objects, 'assembly_unit')
-    return render(request, "main/object_assembly/poduzel.html", context={'edit': user_triger[username]['edit'], 'data': data_list['data'], 'name_poduzel': user_triger[username]['name'],'obj': obj.all(), 'model': 3, })
+    return render(request, "main/object_assembly/edit.html", context={'edit': user_triger[username]['edit'], 'data': data_list['data'], 'name_poduzel': user_triger[username]['name'],'obj': obj.all(), 'model': 3, })
 
 def edit_object_assembly(request):
     global data_list
@@ -729,7 +582,7 @@ def edit_object_assembly(request):
                     edit_obj = obj2.get(name_id=get_id, belongs=user_triger[username]['pk'])
                     edit_obj.quantity = value
                     edit_obj.save()
-    return render(request, "main/object_assembly/poduzel.html", context={'edit': user_triger[username]['edit'], 'data': data_list['data'], 'name_poduzel': user_triger[username]['name'],'obj': obj.all(), 'model': 4, })
+    return render(request, "main/object_assembly/edit.html", context={'edit': user_triger[username]['edit'], 'data': data_list['data'], 'name_poduzel': user_triger[username]['name'],'obj': obj.all(), 'model': 4, })
 
 #####################################
 ### Составляем отчетную ведомость ###

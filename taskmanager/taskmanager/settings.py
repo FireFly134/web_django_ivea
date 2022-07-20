@@ -26,7 +26,7 @@ SECRET_KEY = secret_key_from_file_work
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True#False#
 
-ALLOWED_HOSTS = ['84.201.175.124']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition

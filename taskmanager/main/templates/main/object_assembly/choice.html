@@ -68,13 +68,13 @@
                         <input name="choice_id" type='hidden' value="{{ choice_id }}">
                         <button type="submit" onchange = "document.getElementById('edit').submit()">Изменить</button>
                 </form>
-                {% if title == 'Объектная сборка' %}{% if obj1 or obj2 %}
-                <form method=POST action="{% url 'report' %}" id="id_edit" >
+                {% if obj1 or obj2 or obj3 or obj4 %}
+                <form method=POST action="{{ report_url }}" id="id_edit" >
                     {% csrf_token %}
                         <input name="choice_id" type='hidden' value="{{ choice_id }}">
                         <button type="submit" onchange = "document.getElementById('id_edit').submit()">Закупочная ведомость</button>
                 </form>
-                {% endif %}{% endif %}
+                {% endif %}
                 <div id="openModal" class="modalDialog">
                     <div>
                         <a href="" title="Закрыть" class="close">Закрыть</a>

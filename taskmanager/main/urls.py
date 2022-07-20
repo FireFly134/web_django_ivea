@@ -26,7 +26,10 @@ urlpatterns = [
     path('edit_assembly_unit/', views.edit_assembly_unit, name='edit_assembly_unit'),
     path('edit_object_assembly/', views.edit_object_assembly, name='edit_object_assembly'),
 ###########################
-    path('report/', views.report_object_assembly, name='report'),
+    path('report_under_the_node/', views.report_poduzel, name='report_under_the_node'),
+    path('report_unit/', views.report_unit, name='report_unit'),
+    path('report_assembly_unit/', views.report_assembly_unit, name='report_assembly_unit'),
+    path('report_object_assembly/', views.report_object_assembly, name='report'),
 ]
 
 if settings.DEBUG:
