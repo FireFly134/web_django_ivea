@@ -1,0 +1,231 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% block title %}{{ documentTitle }}{% endblock %}
+{% block style %}
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+		<link href="{% static 'css/modal_window.css' %}" rel="stylesheet" type="text/css">
+<style>.doc_table {
+  font-size: 12pt;
+  font-family: Arial;
+  color: black;
+}</style>
+
+{% endblock %}
+
+{% block body %}
+<table class="table_center_by_css table table-sm table-bordered" border="1" cellpadding="1" cellspacing="1" style="width:98%" id="DocTable">
+	<thead>
+		<tr>
+			<td class="doc_table" style="background: #ebebeb;text-align:center; width:30px">№ п/п</td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center; width:40px">ID</td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center; width:250px">Контрагент</td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center; width:250px">Договор</td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center">Оригинал</td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center">%</td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center; width:350px">Краткое название</td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center">Сумма договора, руб.</td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center">Выполнение, руб.</td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center">Остаток по договору, руб.</td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center">Оплачено, руб.</td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center">Оплачено по УПД, руб.</td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center">ИТОГО задолженность покупателя, руб.</td>
+		</tr>
+	</thead>
+	<tbody id="tbody"></tbody>
+</table>
+<table class="table_center_by_css table table-bordered table-hover" border="1" cellpadding="1" cellspacing="1" style="width:95%" id="myTable">
+	<thead style="position: sticky;top: 0">
+		<tr>
+			<td class="doc_table" style="background:#ebebeb; text-align:center">№ п/п</td>
+			<td class="doc_table" style="background:#ebebeb; text-align:center">ID</td>
+			<td class="doc_table" style="background:#ebebeb; text-align:center">Виды работ</td>
+			<td class="doc_table" style="background:#ebebeb; text-align:center">Этап работ</td>
+			<td class="doc_table" style="background:#ebebeb; text-align:center">Этап оплат</td>
+			<td class="doc_table" style="background:#ebebeb; text-align:center">Этап УПД</td>
+			<td class="doc_table" style="background:#ebebeb; text-align:center">Оригинал</td>
+			<td class="doc_table" style="background:#ebebeb; text-align:center">Сумма этапа, руб.</td>
+			<td class="doc_table" style="background:#ebebeb; text-align:center">Номер п/п</td>
+			<td class="doc_table" style="background:#ebebeb; text-align:center">Дата п/п</td>
+			<td class="doc_table" style="background:#ebebeb; text-align:center">Оплачено/Закрыто</td>
+			<td class="doc_table" style="background:#ebebeb; text-align:center">Выставлен счет</td>
+			<td class="doc_table" style="background:#ebebeb; text-align:center">Дата</td>
+			<td class="doc_table" style="background:#ebebeb; text-align:center">Номер документа</td>
+			<td class="doc_table" style="background:#ebebeb; text-align:center">Дата договора</td>
+			<td class="doc_table" style="background:#ebebeb; text-align:center">Комментарий</td>
+		</tr>
+	</thead>
+	<tbody id="tbody_myTable"></tbody>
+</table>
+		{% if find_doc_id == 'true' %}
+			<div style="text-align:center"><button type="button" class="btn btn-light" onclick="addRow()">Добавить строку</button></div>
+			<input type="hidden" id="counterField" name="counter_new_element" value="0">
+			<input type="hidden" id="dict_new_elements" name="dict_new_elements" value="{}">
+			<input name="doc_id" required="required" type="hidden" value='{{ doc_id }}'/>
+			<input name="doc_date_id_list" id="doc_date_id_list" required="required" type="hidden" value='{{ doc_date_id_list }}'/>
+			<input name="dop_doc_date_id_list" id="dop_doc_date_id_list" required="required" type="hidden" value='{{ dop_doc_date_id_list }}'/>
+			</form>
+			<br>
+			<div style="text-align:center"><button type="button" class="btn btn-light send_save" onclick="save_ajax('form_for_ajax','/documents/list_doc/change_status_doc/')" name="save" value='true' id="save_btn"><span style="font-family:Times New Roman,Times,serif; font-size:16px">Сохранить изменения</span></button></div>
+			<div style="text-align:center"><button type="button" class="btn btn-light" onclick="redirectTo('{% url 'list_doc' %}')"><span style="font-family:Times New Roman,Times,serif; font-size:16px">Вернуться к списку документов</span></button></div>
+			<div style="text-align:center"><button id="{{ doc_id }}-button2" type="button" class="btn btn-light" onclick="myFunction('19941007', '{{ doc_id }}-button2')"><span style="font-family:Times New Roman,Times,serif; font-size:16px">Журнал работ</span></button></div>
+			<div class="container">
+				<div id="19941007" style="display: none">
+					<br>
+					{% for text in textLines %}
+					<div style="font-size: 12pt; font-family: Arial; color: black;">&nbsp;&nbsp;&nbsp;{{ text|safe }}</div>
+					{% endfor %}
+					<div style="font-size: 12pt; font-family: Arial; color: black;">&nbsp;&nbsp;&nbsp;<button class="btn btn-light open-modal" id="add_logging">Добавить запись</button></div>
+					<br>
+					{{ table_html|safe }}
+				</div>
+			</div>
+			{% if doc_id in invoices.keys %}
+			<div style="text-align:center"><button id="{{ doc_id }}-button" type="button" class="btn btn-light" onclick="myFunction({{ doc_id }}, '{{ doc_id }}-button')"><span style="font-family:Times New Roman,Times,serif; font-size:16px">Открыть дополнительную информацию</span></button></div>
+			<div class="container">
+			<br>
+			{% for id, invoice in invoices.items %}
+				<div id="{{ id }}" style="display: none">
+					<p style="margin-top: 30px">Общие затраты по данному объекту: <strong>{{ invoice.0 }} руб.</strong></p>
+					<table id="table-{{ id }}" class="table table-sm" style="margin-bottom: 80px">
+
+					<thead style="position: sticky;top: 0" class="thead-dark">
+					<tr>
+						{% for header in headers %}
+					{% if header == "Сумма.1" %}
+						<th class="header" scope="col">Сумма, руб.</th>
+					{% elif header == "Номенклатура.Единица" %}
+						<th class="header" scope="col">Ед.изм.</th>
+					{% elif header == "Количество" %}
+						<th class="header" scope="col">Кол</th>
+					{% elif header == "Цена" %}
+						<th class="header" scope="col">Цена, руб.</th>
+					{% elif header == "НДС" %}
+						<th class="header" scope="col">НДС, руб.</th>
+					{% elif header == "Всего" %}
+						<th class="header" scope="col">Всего, руб.</th>
+					{% else %}
+						<th class="header" scope="col">{{ header }}</th>
+
+							{% endif %}
+						{% endfor %}
+					</tr>
+					</thead>
+
+					<tbody>
+						{% for value in invoice %}
+							{% if value.percent >= 95 %}
+								<tr class="table-danger">
+							{% elif value.percent >= 80 %}
+								<tr class="table-warning">
+							{% elif not value.percent %}
+                    			<tr>
+							{% else %}
+								<tr class="table-success">
+							{% endif %}
+								{% for val  in value.items %}
+									{% if val.0 in headers %}
+										<td>{{ val.1 }}</td>
+									{% endif %}
+								{% endfor %}
+							</tr>
+						{% endfor %}
+					</tbody>
+					</table>
+				</div>
+			{% endfor %}
+			</div>
+			{% endif %}
+		{% endif %}
+			<div class="modal" id="myModal">
+				<div class="modal-content">
+					<span class="close" id="closeModal">&times;</span>
+					<form method="POST" id="add_new_log">
+						{% csrf_token %}
+						<label for="new_log">Введите сообщение для записи в журнал работ.</label>
+			<!--            <p><input type="text" name="new_log" class="form-control" required id="new_log"></p>-->
+						<textarea name="new_log" required="required" style="width:457px; height: 100px;" id="new_log"></textarea>
+						<input name="new_log_user_name" type='hidden' value="{{ user.last_name }} {{ user.first_name }}">
+						<input name="new_log_doc_id" type='hidden' value="{{ doc_id }}">
+					</form>
+						<button type="button" class="btn btn-light" onclick="save_ajax('add_new_log','/documents/list_doc/change_status_doc/','save_new_log')">Сохранить</button>
+				</div>
+			</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/list_doc.js' %}"></script>
+<script src="{% static 'js/redirectToUrl.js' %}"></script>
+<script>
+	function myFunction(id, buttonId) {
+		  let x = document.getElementById(id);
+		  let button = document.getElementById(buttonId);
+
+		  if (x.style.display === "none") {
+			x.style.display = "block";
+			button.className = 'btn btn-primary';
+		  } else {
+			x.style.display = "none";
+			button.className = 'btn btn-light';
+		  }
+	}
+
+	document.addEventListener('DOMContentLoaded', function () {
+		const openModalButton = document.getElementById('add_logging');
+		const closeModalButton = document.getElementById('closeModal');
+		const modal = document.getElementById('myModal');
+		const input = document.getElementById('new_log');
+
+		openModalButton.addEventListener('click', function () {
+			modal.style.display = 'flex';
+		});
+
+		closeModalButton.addEventListener('click', function () {
+			modal.style.animation = 'fadeOut 0.3s ease-in-out';
+			setTimeout(() => {
+				modal.style.display = 'none';
+				modal.style.animation = '';
+				input.value = ''; // Очищаем input
+			}, 300); // Время анимации
+		});
+
+		// Закрытие модального окна при клике вне контента
+		window.addEventListener('click', function (event) {
+			if (event.target === modal) {
+				closeModalButton.click();
+			}
+		});
+
+		// Добавьте обработчик события для кнопки "Сохранить"
+		const saveButton = document.querySelector('.btn-light[onclick="save_ajax(\'add_new_log\',\'/list_doc/change_status_doc/\',\'save_new_log\')"]');
+		if (saveButton) {
+			saveButton.addEventListener('click', function () {
+				input.value = ''; // Очищаем input
+				closeModalButton.click();
+
+			});
+		}
+	});
+</script>
+<script>document.addEventListener("DOMContentLoaded", function() {
+    const sortButton = document.getElementById("save_btn");
+    sortButton.addEventListener("click", function() {
+		const table = document.getElementById("myTable");
+	    const tbody = table.querySelector("tbody");
+	    const rows = Array.from(tbody.querySelectorAll("tr"));
+        rows.sort((a, b) => {
+            const aInput = a.querySelector(".date-input-npp");
+            const bInput = b.querySelector(".date-input-npp");
+            if (aInput && bInput) {
+                const aNpp = parseInt(aInput.value);
+                const bNpp = parseInt(bInput.value);
+                return aNpp - bNpp;
+            }
+            return 0;
+        });
+
+        rows.forEach(row => row.remove());
+        rows.forEach(row => tbody.appendChild(row));
+	});
+});</script>
+<script src="{% static 'js/dop_pp.js' %}"></script>
+<!--<script src="/media/js/test.js"></script>-->
+{% endblock %}

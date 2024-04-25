@@ -1,0 +1,67 @@
+{% extends 'router_table/base.html' %}
+
+{% block title2 %}
+    Роутер
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Информация о роутере</h4>
+                        <ul class="list-group list-group-flush">
+                            {% if router.router_user_id %}
+                                <li class="list-group-item"><strong>ID:</strong> {{ router.router_user_id }}</li>
+                            {% endif %}
+                            {% if router.antenna %}
+                                {% if router.router %}
+                                    <li class="list-group-item"><strong>Роутер:</strong> {{ router.router }}, {{ router.antenna }}</li>
+                                {% else %}
+                                    <li class="list-group-item"><strong>Роутер:</strong>-, {{ router.antenna }}</li>
+                                {% endif %}
+                            {% else %}
+                                {% if router.router %}
+                                    <li class="list-group-item"><strong>Роутер:</strong> {{ router.router }}</li>
+                                {% endif %}
+                            {% endif %}
+                            {% if router.station %}
+                                {% if router.station.is_monitoring %}
+                                    <li class="list-group-item"><strong>Связь:</strong>
+                                        {% if router.station.connect >= 90 %}
+                                            🟩
+                                        {% elif router.station.connect >= 55 %}
+                                            🟨
+                                        {% else %}
+                                            🟥
+                                        {% endif %}
+                                        {{ router.station.connect }}%
+                                    </li>
+                                    {% else %}
+                                    <li class="list-group-item"><strong>Связь:</strong>
+                                       ⬜ 0%
+                                    </li>
+                                {% endif %}
+                            {% endif %}
+                            {% if router.ip_static %}
+                                <li class="list-group-item"><strong>IP статика:</strong> {{ router.ip_static }}</li>
+                            {% endif %}
+                            <li class="list-group-item"><strong>Договор:</strong> {{ router.contract }}</li>
+                            <li class="list-group-item"><strong>СИМ:</strong><a href="{% url 'sim_detail' router.sim.pk %}">{{ router.sim }}</a></li>
+                            <li class="list-group-item"><strong>Сумма:</strong> {{ router.total }}</li>
+                            {% if router.note %}
+                                <li class="list-group-item"><strong>Примечание:</strong> {{ router.note }}</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-3 text-center">
+            <div class="col-md-12">
+                <a href="{% url 'router_list' %}" class="btn btn-secondary">Назад</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

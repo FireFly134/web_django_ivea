@@ -1,0 +1,74 @@
+{% extends 'router_table/base.html' %}
+
+{% block title2 %}
+    Редактирование роутера
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h2 class="mt-5">Редактирование роутера</h2>
+        <form action="" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+                <div class="form-group mt-1">
+                    {{ form.router_user_id.label_tag }}
+                    {{ form.router_user_id }}
+                </div>
+
+                <div class="form-group mt-1">
+                    {{ form.router.label_tag }}
+                    {{ form.router }}
+                </div>
+
+                <div class="form-group mt-1">
+                    {{ form.antenna.label_tag }}
+                    {{ form.antenna }}
+                </div>
+
+                <div class="form-group mt-1">
+                    {{ form.station.label_tag }}
+                    {{ form.station }}
+                </div>
+
+                <div class="form-group mt-1">
+                    {{ form.ip_static.label_tag }}
+                    {{ form.ip_static }}
+                </div>
+
+                <div class="form-group mt-1">
+                    {{ form.contract.label_tag }}
+                    {{ form.contract }}
+                </div>
+
+                <div class="form-group mt-1">
+                    {{ form.sim.label_tag }}
+                    {{ form.sim }}
+                </div>
+
+                <div class="form-group mt-1">
+                    {{ form.note.label_tag }}
+                    {{ form.note }}
+                </div>
+
+            <div class="row">
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary" value="Create">Сохранить</button>
+                </div>
+                <div class="col-md-1">
+                    <a href="{% url 'router_list' %}" class="btn btn-secondary">Отмена</a>
+                </div>
+                <div class="col-md-1">
+                    <a href="{% url 'router_delete' router.id %}" class="btn btn-danger">Удалить</a>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2(); // Инициализация Select2 для полей с классом select2
+        });
+    </script>
+</div>
+
+{% endblock %}

@@ -1,11 +1,11 @@
 {% extends 'main/base.html' %}
-{% block title %}Редактирование {% if edit == 'details' %}деталей{% elif edit == 'purchased' %}покупного оборудования{% elif edit == 'poduzel' %}подузла{% endif %} в {% if model == 1 %}выбранном подузле{% elif model == 2 %}выбранном узле{% elif model == 3 %}выбранной сборочной единице{% elif model == 4 %}выбранной объектной сборке{% endif %} "{{ name_poduzel }}"{% endblock %}
+{% block title %}Редактирование {% if edit == 'details' %}деталей{% elif edit == 'purchased' %}покупного оборудования{% elif edit == 'poduzel' %}подузла{% elif edit == 'assembly_unit' %}сборочной единицы{% endif %} в {% if model == 1 %}выбранном подузле{% elif model == 2 %}выбранном узле{% elif model == 3 %}выбранной сборочной единице{% elif model == 4 %}выбранной объектной сборке{% endif %} "{{ name_poduzel }}"{% endblock %}
 {% block style %}
     <!-- Bootstrap CSS -->
     <link href="https://getbootstrap.com/docs/5.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
 {% endblock %}
 {% block body %}
-<div style="text-align:center"><p><h3 style="font-family:Times New Roman,sans-serif">Редактирование {% if edit == 'details' %}деталей{% elif edit == 'purchased' %}покупного оборудования{% elif edit == 'poduzel' %}подузла{% endif %} в {% if model == 1 %}выбранном подузле{% elif model == 2 %}выбранном узле{% elif model == 3 %}выбранной сборочной единице{% elif model == 4 %}выбранной объектной сборке{% endif %} "{{ name_poduzel }}"</h3></p></div>
+<div style="text-align:center"><p><h3 style="font-family:Times New Roman,sans-serif">Редактирование {% if edit == 'details' %}деталей{% elif edit == 'purchased' %}покупного оборудования{% elif edit == 'poduzel' %}подузла{% elif edit == 'assembly_unit' %}сборочной единицы{% endif %} в {% if model == 1 %}выбранном подузле{% elif model == 2 %}выбранном узле{% elif model == 3 %}выбранной сборочной единице{% elif model == 4 %}выбранной объектной сборке{% endif %} "{{ name_poduzel }}"</h3></p></div>
     <br/>
 
 <table border="1" cellpadding="1" cellspacing="1" style="width:100%; border: 1px solid white">
@@ -51,7 +51,7 @@
                             <td style="text-align:center; width:49%">
                                 <form method=POST id = 'add'>
                                     {% csrf_token %}
-                                    <select name="name_add" id="id_choice_id" style="width:100%">
+                                    <select name="name_add" id="id_choice_id" style="width:100%" class="form-control select2">
 
                                         <option selected disabled="true">----Выбрать элемент----</option>
                                         {% for items in obj %}
@@ -95,9 +95,17 @@
             <input name="save" type='hidden' value="save">
             <button type="submit" class="btn " >Сохранить</button>
         </form>
-        <a href="{% if model == 1 %}/under_the_node/{% elif model == 2 %}/unit/{% elif model == 3 %}/assembly_unit/{% elif model == 4 %}/object_assembly/{% endif %}"
+        <a href="{% if model == 1 %}{% url 'utn' %}{% elif model == 2 %}{% url 'unit' %}{% elif model == 3 %}{% url 'assembly_unit' %}{% elif model == 4 %}{% url 'object_assembly' %}{% endif %}"
            class="btn" role="button" aria-pressed="true">
             Вернуться в "{% if model == 1 %}Подузлы{% elif model == 2 %}Узлы{% elif model == 3 %}Сборочные единицы{% elif model == 4 %}Объектные сборки{% endif %}"
         </a>
     </div>
+{% endblock %}
+{% block script %}
+<script>
+  $(document).ready(function () {
+    // Используем Select2 для стилизации и добавления функциональности поиска
+    $(".select2").select2();
+  });
+</script>
 {% endblock %}

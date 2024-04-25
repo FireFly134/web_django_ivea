@@ -1,0 +1,305 @@
+/*
+ * Main File : /templates/wt_plussone_jom/less/1200fixed.less
+ */
+body {
+  padding-left: 0;
+  padding-right: 0;
+  overflow: visible;
+  min-width: 1200px !important;
+}
+body .visible-large,
+body .visible-desktop {
+  display: inherit !important;
+}
+body .hidden-large,
+body .hidden-desktop {
+  display: none !important;
+}
+body .rt-container {
+  width: 1200px;
+  min-width: 1200px;
+}
+body .rt-container .rt-grid-1 {
+  width: 100px;
+}
+body .rt-container .rt-grid-2 {
+  width: 200px;
+}
+body .rt-container .rt-grid-3 {
+  width: 300px;
+}
+body .rt-container .rt-grid-4 {
+  width: 400px;
+}
+body .rt-container .rt-grid-5 {
+  width: 500px;
+}
+body .rt-container .rt-grid-6 {
+  width: 600px;
+}
+body .rt-container .rt-grid-7 {
+  width: 700px;
+}
+body .rt-container .rt-grid-8 {
+  width: 800px;
+}
+body .rt-container .rt-grid-9 {
+  width: 900px;
+}
+body .rt-container .rt-grid-10 {
+  width: 1000px;
+}
+body .rt-container .rt-grid-11 {
+  width: 1100px;
+}
+body .rt-container .rt-grid-12 {
+  width: 1200px;
+}
+body .rt-container .rt-push-1 {
+  left: 100px;
+}
+body .rt-container .rt-push-2 {
+  left: 200px;
+}
+body .rt-container .rt-push-3 {
+  left: 300px;
+}
+body .rt-container .rt-push-4 {
+  left: 400px;
+}
+body .rt-container .rt-push-5 {
+  left: 500px;
+}
+body .rt-container .rt-push-6 {
+  left: 600px;
+}
+body .rt-container .rt-push-7 {
+  left: 700px;
+}
+body .rt-container .rt-push-8 {
+  left: 800px;
+}
+body .rt-container .rt-push-9 {
+  left: 900px;
+}
+body .rt-container .rt-push-10 {
+  left: 1000px;
+}
+body .rt-container .rt-push-11 {
+  left: 1100px;
+}
+body .rt-container .rt-pull-1 {
+  left: -100px;
+}
+body .rt-container .rt-pull-2 {
+  left: -200px;
+}
+body .rt-container .rt-pull-3 {
+  left: -300px;
+}
+body .rt-container .rt-pull-4 {
+  left: -400px;
+}
+body .rt-container .rt-pull-5 {
+  left: -500px;
+}
+body .rt-container .rt-pull-6 {
+  left: -600px;
+}
+body .rt-container .rt-pull-7 {
+  left: -700px;
+}
+body .rt-container .rt-pull-8 {
+  left: -800px;
+}
+body .rt-container .rt-pull-9 {
+  left: -900px;
+}
+body .rt-container .rt-pull-10 {
+  left: -1000px;
+}
+body .rt-container .rt-pull-11 {
+  left: -1100px;
+}
+body .rt-container .rt-prefix-1 {
+  padding-left: 100px;
+}
+body .rt-container .rt-prefix-2 {
+  padding-left: 200px;
+}
+body .rt-container .rt-prefix-3 {
+  padding-left: 300px;
+}
+body .rt-container .rt-prefix-4 {
+  padding-left: 400px;
+}
+body .rt-container .rt-prefix-5 {
+  padding-left: 500px;
+}
+body .rt-container .rt-prefix-6 {
+  padding-left: 600px;
+}
+body .rt-container .rt-prefix-7 {
+  padding-left: 700px;
+}
+body .rt-container .rt-prefix-8 {
+  padding-left: 800px;
+}
+body .rt-container .rt-prefix-9 {
+  padding-left: 900px;
+}
+body .rt-container .rt-prefix-10 {
+  padding-left: 1000px;
+}
+body .rt-container .rt-prefix-11 {
+  padding-left: 1100px;
+}
+body .rt-container-full {
+  width: 100%;
+  min-width: 100%;
+}
+body .rt-container-full .rt-grid-1 {
+  width: 8.33333333333333%;
+}
+body .rt-container-full .rt-grid-2 {
+  width: 16.6666666666667%;
+}
+body .rt-container-full .rt-grid-3 {
+  width: 25%;
+}
+body .rt-container-full .rt-grid-4 {
+  width: 33.3333333333333%;
+}
+body .rt-container-full .rt-grid-5 {
+  width: 41.6666666666667%;
+}
+body .rt-container-full .rt-grid-6 {
+  width: 50%;
+}
+body .rt-container-full .rt-grid-7 {
+  width: 58.3333333333333%;
+}
+body .rt-container-full .rt-grid-8 {
+  width: 66.6666666666667%;
+}
+body .rt-container-full .rt-grid-9 {
+  width: 75%;
+}
+body .rt-container-full .rt-grid-10 {
+  width: 83.3333333333333%;
+}
+body .rt-container-full .rt-grid-11 {
+  width: 91.6666666666667%;
+}
+body .rt-container-full .rt-grid-12 {
+  width: 100%;
+}
+body .rt-container-full .rt-push-1 {
+  left: 8.33333333333333%;
+}
+body .rt-container-full .rt-push-2 {
+  left: 16.6666666666667%;
+}
+body .rt-container-full .rt-push-3 {
+  left: 25%;
+}
+body .rt-container-full .rt-push-4 {
+  left: 33.3333333333333%;
+}
+body .rt-container-full .rt-push-5 {
+  left: 41.6666666666667%;
+}
+body .rt-container-full .rt-push-6 {
+  left: 50%;
+}
+body .rt-container-full .rt-push-7 {
+  left: 58.3333333333333%;
+}
+body .rt-container-full .rt-push-8 {
+  left: 66.6666666666667%;
+}
+body .rt-container-full .rt-push-9 {
+  left: 75%;
+}
+body .rt-container-full .rt-push-10 {
+  left: 83.3333333333333%;
+}
+body .rt-container-full .rt-push-11 {
+  left: 91.6666666666667%;
+}
+body .rt-container-full .rt-pull-1 {
+  left: -8.3333333333333%;
+}
+body .rt-container-full .rt-pull-2 {
+  left: -16.666666666667%;
+}
+body .rt-container-full .rt-pull-3 {
+  left: -25%;
+}
+body .rt-container-full .rt-pull-4 {
+  left: -33.333333333333%;
+}
+body .rt-container-full .rt-pull-5 {
+  left: -41.666666666667%;
+}
+body .rt-container-full .rt-pull-6 {
+  left: -50%;
+}
+body .rt-container-full .rt-pull-7 {
+  left: -58.333333333333%;
+}
+body .rt-container-full .rt-pull-8 {
+  left: -66.666666666667%;
+}
+body .rt-container-full .rt-pull-9 {
+  left: -75%;
+}
+body .rt-container-full .rt-pull-10 {
+  left: -83.333333333333%;
+}
+body .rt-container-full .rt-pull-11 {
+  left: -91.666666666667%;
+}
+body .rt-container-full .rt-prefix-1 {
+  padding-left: 8.33333333333333%;
+}
+body .rt-container-full .rt-prefix-2 {
+  padding-left: 16.6666666666667%;
+}
+body .rt-container-full .rt-prefix-3 {
+  padding-left: 25%;
+}
+body .rt-container-full .rt-prefix-4 {
+  padding-left: 33.3333333333333%;
+}
+body .rt-container-full .rt-prefix-5 {
+  padding-left: 41.6666666666667%;
+}
+body .rt-container-full .rt-prefix-6 {
+  padding-left: 50%;
+}
+body .rt-container-full .rt-prefix-7 {
+  padding-left: 58.3333333333333%;
+}
+body .rt-container-full .rt-prefix-8 {
+  padding-left: 66.6666666666667%;
+}
+body .rt-container-full .rt-prefix-9 {
+  padding-left: 75%;
+}
+body .rt-container-full .rt-prefix-10 {
+  padding-left: 83.3333333333333%;
+}
+body .rt-container-full .rt-prefix-11 {
+  padding-left: 91.6666666666667%;
+}
+body .rt-container [class*="rt-grid"] {
+  display: inline;
+  float: left;
+}
+.rt-menu-mobile {
+  display: none !important;
+}
+.gf-menu-device-container.responsive-type-panel ~ ul.gf-menu {
+  display: inherit !important;
+}

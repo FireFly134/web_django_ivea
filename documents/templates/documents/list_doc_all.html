@@ -1,0 +1,219 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% block title %}{{ documentTitle }}{% endblock %}
+{% block style %}
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+		<link href="{% static 'css/modal_window.css' %}" rel="stylesheet" type="text/css">
+<style>.doc_table {
+  font-size: 12pt;
+  font-family: Arial;
+  color: black;
+}</style>
+<style>
+  th {
+    cursor: pointer; /* Изменение курсора при наведении */
+  }
+
+  th.sorted-asc::after,
+  th.sorted-desc::after {
+    content: "";
+    display: inline-block;
+    margin-left: 5px; /* Расстояние между текстом и стрелкой */
+  }
+
+  th.sorted-asc::after {
+    content: "\25B2"; /* Стрелка вверх */
+  }
+
+  th.sorted-desc::after {
+    content: "\25BC"; /* Стрелка вниз */
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center" style="margin-left: 25px; margin-right: 25px;">
+	<div class="btn-group" role="group" aria-label="Первая группа">
+		<button type="button" class="btn btn-primary" onclick="filterTableButton('true', 'true')" id="btn-group-1">Активные договоры</button>
+		<button type="button" class="btn btn-dark" onclick="filterTableButton('false', 'true')" id="btn-group-2">Архивированные договоры</button>
+		<button type="button" class="btn btn-dark" onclick="filterTableButton('true', 'false')" id="btn-group-3">Нет строительной готовности</button>
+	</div>
+	{% if 'Добавить новый договор' in user_groups %}
+		<a href="{% url 'new_doc' %}" class="btn btn-dark">Добавить новый договор</a>
+	{% endif %}
+</div>
+<br>
+<div style="margin-left: 25px; margin-right: 25px;">
+	<input type="text" id="filterInput" placeholder="Введите значение для фильтрации" oninput="handleInput(event)">
+	<input type="image" src="{% static 'img/icon-deletelink.svg' %}" alt="Очистить фильтр" title="Очистить фильтр" onclick="NullFilterTable()" style="width: 20px; height: 20px; margin-top: -10px;">
+</div>
+<table class="table_center_by_css table table-sm table-bordered" border="1" cellpadding="1" cellspacing="1" style="width:98%" id="DocTable">
+	<thead style="position: sticky;top: 0">
+		<tr>
+			<td class="doc_table" style="background: #ebebeb;width:30px"></td>
+			<td class="doc_table" style="background: #ebebeb;width:40px"></td>
+			<td class="doc_table" style="background: #ebebeb;width:250px"></td>
+			<td class="doc_table" style="background: #ebebeb;width:250px"></td>
+			<td class="doc_table" style="background: #ebebeb;"></td>
+			<td class="doc_table" style="background: #ebebeb;text-align:right;"></td>
+			<td class="doc_table" style="background: #ebebeb;width:350px"></td>
+			<td class="doc_table" style="background: #ebebeb;text-align:right; width:250px"></td>
+			<td class="doc_table" style="background: #ebebeb;text-align:right; width:250px"></td>
+			<td class="doc_table" style="background: #ebebeb;text-align:right; width:250px"></td>
+			<td class="doc_table" style="background: #ebebeb;text-align:right; width:250px"></td>
+			<td class="doc_table" style="background: #ebebeb;text-align:right; width:250px"></td>
+			<td class="doc_table" style="background: #ebebeb;text-align:right; width:250px"></td>
+			<td class="doc_table" style="display: none"></td>
+			<td class="doc_table" style="display: none"></td>
+			<td class="doc_table" style="display: none"></td>
+		</tr>
+		<tr>
+			<td class="doc_table" scope="col" id="N" data-column="N" style="background: #ebebeb;text-align:center; width:30px">№ п/п</td>
+			<td class="doc_table" scope="col" id="id" data-column="id" style="background: #ebebeb;text-align:center; width:40px">ID</td>
+			<td class="doc_table" scope="col" id="counterparty" data-column="counterparty" style="background: #ebebeb;text-align:center; width:250px">Контрагент</td>
+			<td class="doc_table" scope="col" id="number_doc" data-column="number_doc" style="background: #ebebeb;text-align:center; width:250px">Договор</td>
+			<td class="doc_table" scope="col" id="flag" data-column="flag" style="background: #ebebeb;text-align:center">Оригинал</td>
+			<td class="doc_table" scope="col" id="procent" data-column="procent" style="background: #ebebeb;text-align:center">%</td>
+			<td class="doc_table" scope="col" id="short_name" data-column="short_name" style="background: #ebebeb;text-align:center; width:350px">Краткое название</td>
+			<td class="doc_table" scope="col" id="sum_stage" data-column="sum_stage" style="background: #ebebeb;text-align:center">Сумма договора, руб.</td>
+			<td class="doc_table" scope="col" id="accomplishment" data-column="accomplishment" style="background: #ebebeb;text-align:center">Выполнение, руб.</td>
+			<td class="doc_table" scope="col" id="balance_contract" data-column="balance_contract" style="background: #ebebeb;text-align:center">Остаток по договору, руб.</td>
+			<td class="doc_table" scope="col" id="payment" data-column="payment" style="background: #ebebeb;text-align:center">Оплачено, руб.</td>
+			<td class="doc_table" scope="col" id="payment_upd" data-column="payment_upd" style="background: #ebebeb;text-align:center">Оплачено по УПД, руб.</td>
+			<td class="doc_table" scope="col" id="result_dolg" data-column="result_dolg" style="background: #ebebeb;text-align:center">ИТОГО задолженность покупателя, руб.</td>
+			<td class="doc_table" scope="col" style="text-align:center; display: none">#Теги</td>
+			<td class="doc_table" scope="col" style="text-align:center; display: none">Договор открыт</td>
+			<td class="doc_table" scope="col" style="text-align:center; display: none">Нет строительной готовности</td>
+		</tr>
+	</thead>
+	<tbody id="tbody"></tbody>
+</table>
+{% endblock %}
+{% block script %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Получите JSON из контекста шаблона и преобразуйте его в JavaScript объект
+    var info = JSON.parse('{{ info_json|escapejs }}');
+    var flag_N = false
+
+    // Найдите table элемент таблицы
+    var table = document.getElementById("DocTable");
+    // Найдите tbody элемент таблицы
+    var tbody = document.getElementById("tbody");
+
+    // Переменная для отслеживания направления сортировки
+    var sortDirection = {};
+
+    // Функция для преобразования строки с суммой в числовой формат
+    function parseCurrencyString(currencyString) {
+        return parseFloat(currencyString.replace(/\s+/g, '').replace(',', '.'));
+    }
+
+    // Функция для сортировки данных
+    function sortData(column) {
+        if (column === "sum_stage") {
+            // Определите направление сортировки (по возрастанию или убыванию)
+            if (sortDirection[column] === 'asc') {
+                info.sort((a, b) => parseCurrencyString(a[column]) - parseCurrencyString(b[column]));
+                sortDirection[column] = 'desc';
+            } else {
+                info.sort((a, b) => parseCurrencyString(b[column]) - parseCurrencyString(a[column]));
+                sortDirection[column] = 'asc';
+            }
+        }else{
+             // Определите направление сортировки (по возрастанию или убыванию)
+            if (sortDirection[column] === 'asc') {
+                info.sort((a, b) => (a[column] > b[column]) ? 1 : -1);
+                sortDirection[column] = 'desc';
+            } else {
+                info.sort((a, b) => (a[column] > b[column]) ? -1 : 1);
+                sortDirection[column] = 'asc';
+            }
+        }
+    }
+
+    // Обработчик события нажатия на заголовок столбца
+    table.addEventListener("click", function (e) {
+        if (e.target && e.target.tagName === "TH") {
+            var column = e.target.getAttribute("data-column");
+            sortData(column);
+            renderTable();
+
+            // Обновляем стрелочку в заголовке колонки
+            updateSortIndicator(column);
+        }
+    });
+
+    // Функция для обновления стрелочки в заголовке колонки
+    function updateSortIndicator(column) {
+        var columns = table.querySelectorAll("th[data-column]");
+        columns.forEach(function (col) {
+            col.classList.remove("sorted-asc", "sorted-desc");
+            if (column === "N") {
+                    return;
+                }
+            if (col.getAttribute("data-column") === column) {
+                if (sortDirection[column] === "asc") {
+                    col.classList.add("sorted-asc");
+                } else if (sortDirection[column] === "desc") {
+                    col.classList.add("sorted-desc");
+                }
+            }
+        });
+    }
+
+    // Функция для отрисовки таблицы после сортировки
+    function renderTable() {
+        tbody.innerHTML = "";
+        // Проверяем, существует ли массив "N" в объекте JSON
+        if (!info[0].hasOwnProperty("N")) {
+          flag_N = true;
+        }
+        // Заполните таблицу данными из JavaScript объекта
+        for (var i = 0; i < info.length; i++) {
+            var row = document.createElement("tr");
+            if (flag_N){
+                // Добавление цифры i в массив "N"
+                info[i]["N"] = i+1;
+            };
+
+            row.innerHTML = `
+                <td class="doc_table" style="text-align:center">${info[i]["N"]}</td>
+                <td class="doc_table" style="text-align:center">${info[i]["id"]}</td>
+                <td class="doc_table">${info[i]["counterparty"]}</td>
+                <td class="doc_table">
+                	<a href="${info[i]["id"]}">${info[i]["number_doc"]} от ${info[i]["date"]}</a>
+                </td>
+                <td style="text-align:center">
+  					<input name="flag_${info[i]["id"]}" type="checkbox" class="flags" ${info[i]["flag"] ? 'checked' : ''}>
+				</td>
+                <td class="doc_table" style="text-align:center">${info[i]["procent"]}</td>
+                <td class="doc_table">${info[i]["short_name"]}</td>
+                <td class="doc_table" style="text-align:center">${info[i]["sum_stage"]}</td>
+                <td class="doc_table" style="text-align:center">${info[i]["accomplishment"]}</td>
+                <td class="doc_table" style="text-align:center">${info[i]["balance_contract"]}</td>
+                <td class="doc_table" style="text-align:center">${info[i]["payment"]}</td>
+                <td class="doc_table" style="text-align:center">${info[i]["payment_upd"]}</td>
+                <td class="doc_table" style="text-align:center">${info[i]["result_dolg"]}</td>
+                <td class="doc_table" style="text-align:center; display: none">${info[i]["teg"]}</td>
+                <td class="doc_table" style="text-align:center; display: none">${info[i]["doc_open"]}</td>
+                <td class="doc_table" style="text-align:center; display: none">${info[i]["doc_bild_done"]}</td>
+            `;
+            tbody.appendChild(row);
+        }
+        flag_N = false;
+        filterTable()
+    }
+
+    // Инициализируйте направление сортировки для каждого столбца
+    var columns = table.querySelectorAll("th[data-column]");
+    columns.forEach(function (column) {
+        sortDirection[column.getAttribute("data-column")] = 'asc';
+    });
+
+    renderTable();
+});
+</script>
+
+<script src="{% static 'js/list_doc_filter_table.js' %}"></script>
+{% endblock %}

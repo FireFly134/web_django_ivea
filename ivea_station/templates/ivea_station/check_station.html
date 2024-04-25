@@ -1,0 +1,18 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Уровень связи на станциях{% endblock %}
+{% block body %}
+⬜ - не мониторим, 🟩 - отличный уровень, 🟨 - средний уровень, 🟥 - все пропало (паника) :)
+    <br /><h4 style="text-align:center">Уровень связи на станциях</h4><br />
+    <table class="table_center_by_css" border="1" cellpadding="1" cellspacing="1" style="width:50%">
+            <tbody>
+                <tr>
+                    <td style="text-align:center; width:50%"><span style="font-size:12pt; color:black; font-family:Calibri,sans-serif">Номер станции</span></td>
+                    <td style="text-align:center; width:25%"><span style="font-size:12pt; color:black; font-family:Calibri,sans-serif">Наличие связи</span></td>
+                    <td style="text-align:center; width:25%"><span style="font-size:12pt; color:black; font-family:Calibri,sans-serif">Наличие питания 220в</span></td>
+                </tr>
+                {{ table|safe }}
+            </tbody>
+    </table>
+
+{% endblock %}

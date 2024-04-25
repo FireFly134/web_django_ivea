@@ -1,0 +1,496 @@
+/*!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~ Table of contents ~~~~~~~~~~~~~~~~~~~~~~
+
+Custom
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Hide recaptcha
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!*/
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>>> Start: Custom
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+.fw-medium {
+  font-weight: 500;
+}
+.text-black {
+  color: #000;
+}
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<<< Close: Custom
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+/*--------------------------------------------------------------
+>> Reset css
+--------------------------------------------------------------*/
+.reset-html {
+  overflow-x: hidden;
+}
+.reset-body {
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+.reset-h {
+  margin: 0;
+  padding: 0;
+}
+.reset-a {
+  color: inherit;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+.reset-btn {
+  cursor: pointer;
+  letter-spacing: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.reset-btn,
+.reset-input {
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  border-radius: 0;
+  padding: 0;
+}
+.reset-input[type="submit"],
+.reset-input[type="button"] {
+  cursor: pointer;
+}
+.reset-menu,
+.reset-ul,
+.reset-ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.reset-p,
+.reset-hr,
+.reset-figure {
+  margin: 0;
+  padding: 0;
+}
+.reset-input {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: none;
+}
+.reset-textarea {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  resize: vertical;
+  background: none;
+  font-family: inherit;
+  box-sizing: border-box;
+  font-size: inherit;
+}
+.reset-select {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+.reset-img {
+  max-width: 100%;
+  height: auto;
+}
+.reset-address {
+  font-style: normal;
+}
+.reset-summary {
+  cursor: pointer;
+  list-style: none;
+}
+.reset-summary::-webkit-details-marker {
+  display: none;
+}
+/* Styles: Special */
+.none {
+  display: none !important;
+}
+.hide {
+  position: absolute !important;
+  visibility: hidden !important;
+}
+.grid-min-width > * {
+  min-width: 0;
+}
+/*--------------------------------------------------------------
+<< Reset css
+--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------
+>> Р”Р»СЏ СЃС‚Р°С‚РµР№
+--------------------------------------------------------------*/
+.article-h4-color {
+  line-height: 100%;
+  color: #0088cc;
+}
+.article-img-full {
+  max-width: 100%;
+  width: 100%;
+  height: auto;
+}
+.btn-nasosy-back {
+  box-sizing: border-box;
+  display: inline-block;
+  text-align: center;
+  color: #563181;
+  border: 1px solid #563181;
+  border-radius: 6px;
+  margin-top: 24px;
+  padding: 10px 20px 10px 15px;
+}
+.btn-nasosy-back:hover {
+  color: #0f7bba;
+  border: 1px solid #0f7bba;
+}
+.btn-nasosy-back:before {
+  content: "\f053";
+  font-family: FontAwesome;
+  margin: 0 8px 0 0;
+}
+/*--------------------------------------------------------------
+<< Р”Р»СЏ СЃС‚Р°С‚РµР№
+--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------
+>> РњРµРЅСЋ
+--------------------------------------------------------------*/
+.gf-menu > li {
+  margin-right: 0;
+}
+.gf-menu.l1 > li > .item {
+  font-size: 13px;
+}
+/*--------------------------------------------------------------
+<< РњРµРЅСЋ
+--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------
+>> РќР°СЃРѕСЃС‹: РљРЅРѕРїРєРё
+--------------------------------------------------------------*/
+.btn-nasosy-orange {
+  box-sizing: border-box;
+  display: inline-block;
+  text-align: center;
+  color: white;
+  background: #563181;
+  border: none;
+  border-radius: 6px;
+  margin-top: 24px;
+  padding: 10px 20px;
+}
+.btn-nasosy-orange:hover {
+  color: #fff;
+  background: rgba(86, 49, 129, 0.7);
+}
+/*--------------------------------------------------------------
+<< РќР°СЃРѕСЃС‹: РљРЅРѕРїРєРё
+--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------
+>> РќР°СЃРѕСЃС‹: РЎР»Р°Р№РґРµСЂ
+--------------------------------------------------------------*/
+.cnp-slider + .rev_slider_wrapper .tp-bgimg {
+  background-color: #fff !important;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+/*--------------------------------------------------------------
+<< РќР°СЃРѕСЃС‹: РЎР»Р°Р№РґРµСЂ
+--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------
+>> РўР°Р±Р»РёС†Р° РЅР°СЃРѕСЃРѕРІ
+--------------------------------------------------------------*/
+.table-nasosy-wq {
+  display: grid;
+  grid-template-columns: 200px repeat(7, 1fr);
+}
+.table-nasosy-wq.table-nasosy-wq_standard-version
+  ~ .table-nasosy-wq
+  .table-nasosy-wq__title {
+  display: none;
+}
+.table-nasosy-wq[style*="display: none"]
+  ~ .table-nasosy-wq[style*="display: grid"]
+  .table-nasosy-wq__title {
+  display: flex;
+}
+.table-nasosy-wq__col + .table-nasosy-wq__col {
+  border-left: 1px solid rgba(0, 0, 0, 0.15);
+}
+.table-nasosy-wq__title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 70px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 130%;
+  font-weight: bold;
+  color: #000;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+  padding: 10px 5px;
+}
+.table-nasosy-wq__content {
+  font-size: 15px;
+}
+.table-nasosy-wq__field {
+  display: block;
+  padding: 10px 5px;
+}
+.table-nasosy-wq .table-nasosy-wq__col:first-child .table-nasosy-wq__field {
+  text-align: left;
+  white-space: nowrap;
+}
+.table-nasosy-wq__col:nth-child(n + 2) .table-nasosy-wq__field {
+  text-align: center;
+}
+.table-nasosy-wq__field:nth-child(even) {
+  background-color: #f1f1f1;
+}
+.table-nasosy-wq__content a {
+  color: inherit;
+  text-decoration: underline;
+}
+.table-nasosy-wq__content a:hover {
+  text-decoration: none;
+}
+/*--------------------------------------------------------------
+<< РўР°Р±Р»РёС†Р° РЅР°СЃРѕСЃРѕРІ
+--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------
+>> РўР°Р±Р»РёС†Р° РЅР°СЃРѕРѕСЃРІ: Price
+--------------------------------------------------------------*/
+.table-nasosy-wq_price {
+  display: grid;
+  grid-template-columns: auto auto auto auto 120px auto auto;
+}
+.table-nasosy-wq_price
+  .table-nasosy-wq__col:last-child
+  .table-nasosy-wq__field {
+  text-align: left;
+  white-space: nowrap;
+}
+.table-nasosy-wq_price .table-nasosy-wq__content {
+  font-size: 14px;
+}
+.table-nasosy-wq_price .table-nasosy-wq__field {
+  height: 60px;
+}
+.table-nasosy-order {
+  box-sizing: border-box;
+  display: inline-block;
+  text-align: center;
+  color: #563181;
+  border-radius: 6px;
+  border: 1px solid #563181;
+  padding: 10px 20px 10px 15px;
+}
+.table-nasosy-order:hover {
+  color: #0f7bba;
+  border: 1px solid #0f7bba;
+}
+.form-table-order .form-control {
+  height: calc(2.25rem + 4px) !important;
+}
+.form-table-order .call_request.disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: rgba(86, 49, 129, 0.7);
+}
+/*--------------------------------------------------------------
+<< РўР°Р±Р»РёС†Р° РЅР°СЃРѕРѕСЃРІ: Price
+--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------
+>> Р¤РёР»СЊС‚СЂ РЅР°СЃРѕСЃРѕРІ
+--------------------------------------------------------------*/
+.filter-nasosy-wq {
+  display: block;
+  width: initial;
+  height: initial;
+  margin-bottom: 25px;
+  padding: 10px;
+}
+/*--------------------------------------------------------------
+<< Р¤РёР»СЊС‚СЂ РЅР°СЃРѕСЃРѕРІ
+--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------
+>> РџРѕРёСЃРє РґР»СЏ РЅР°СЃРѕСЃРѕРІ
+--------------------------------------------------------------*/
+.search-nasosy-wq {
+  position: relative;
+  border: 1px solid #e4e4e4;
+  border-radius: 5px;
+  padding-right: 5px;
+  align-self: flex-start;
+}
+.search-nasosy-wq input {
+  height: 40px;
+  border: none;
+  box-shadow: none;
+  margin: 0;
+  padding: 0 10px;
+}
+.search-nasosy-wq button {
+  background: transparent;
+  border: none;
+}
+.search-nasosy-wq button:hover {
+  color: #563181;
+}
+.search-nasosy-wq__close {
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  right: 40px;
+  font-size: 19px;
+  font-weight: bold;
+  padding: 0 5px;
+  transform: translate(0, -50%);
+}
+.search-nasosy-wq__close:hover {
+  color: #563181;
+}
+/*--------------------------------------------------------------
+<< РџРѕРёСЃРє РґР»СЏ РЅР°СЃРѕСЃРѕРІ
+--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------
+>>> Start: РўРµРі Р°СѓРґРёРѕ
+--------------------------------------------------------------*/
+.mejs-container {
+  background-color: #fff;
+}
+.mejs-container .mejs-controls {
+  background: url(/media/widgetkit/widgets/mediaplayer/mediaelement/background.png);
+  background: rgba(0, 0, 0, 0.3);
+  background: -webkit-gradient(
+    linear,
+    0% 0%,
+    0% 100%,
+    from(rgba(50, 50, 50, 0.3)),
+    to(rgba(0, 0, 0, 0.3))
+  );
+  background: -webkit-linear-gradient(
+    top,
+    rgba(50, 50, 50, 0.3),
+    rgba(0, 0, 0, 0.3)
+  );
+  background: -moz-linear-gradient(
+    top,
+    rgba(50, 50, 50, 0.3),
+    rgba(0, 0, 0, 0.3)
+  );
+  background: -o-linear-gradient(
+    top,
+    rgba(50, 50, 50, 0.3),
+    rgba(0, 0, 0, 0.3)
+  );
+  background: -ms-linear-gradient(
+    top,
+    rgba(50, 50, 50, 0.3),
+    rgba(0, 0, 0, 0.3)
+  );
+  background: linear-gradient(rgba(50, 50, 50, 0.3), rgba(0, 0, 0, 0.3));
+}
+.mejs-controls .mejs-time-rail .mejs-time-total {
+  background: rgba(50, 50, 50, 0.3);
+  background: -webkit-gradient(
+    linear,
+    0% 0%,
+    0% 100%,
+    from(rgba(30, 30, 30, 0.3)),
+    to(rgba(60, 60, 60, 0.3))
+  );
+  background: -webkit-linear-gradient(
+    top,
+    rgba(30, 30, 30, 0.3),
+    rgba(60, 60, 60, 0.3)
+  );
+  background: -moz-linear-gradient(
+    top,
+    rgba(30, 30, 30, 0.3),
+    rgba(60, 60, 60, 0.3)
+  );
+  background: -o-linear-gradient(
+    top,
+    rgba(30, 30, 30, 0.3),
+    rgba(60, 60, 60, 0.3)
+  );
+  background: -ms-linear-gradient(
+    top,
+    rgba(30, 30, 30, 0.3),
+    rgba(60, 60, 60, 0.3)
+  );
+  background: linear-gradient(rgba(30, 30, 30, 0.3), rgba(60, 60, 60, 0.3));
+}
+.mejs-controls .mejs-horizontal-volume-slider .mejs-horizontal-volume-total {
+  background: rgba(50, 50, 50, 0.3);
+  background: -webkit-gradient(
+    linear,
+    0% 0%,
+    0% 100%,
+    from(rgba(30, 30, 30, 0.3)),
+    to(rgba(60, 60, 60, 0.3))
+  );
+  background: -webkit-linear-gradient(
+    top,
+    rgba(30, 30, 30, 0.3),
+    rgba(60, 60, 60, 0.3)
+  );
+  background: -moz-linear-gradient(
+    top,
+    rgba(30, 30, 30, 0.3),
+    rgba(60, 60, 60, 0.3)
+  );
+  background: -o-linear-gradient(
+    top,
+    rgba(30, 30, 30, 0.3),
+    rgba(60, 60, 60, 0.3)
+  );
+  background: -ms-linear-gradient(
+    top,
+    rgba(30, 30, 30, 0.3),
+    rgba(60, 60, 60, 0.3)
+  );
+  background: linear-gradient(rgba(30, 30, 30, 0.3), rgba(60, 60, 60, 0.3));
+}
+/*--------------------------------------------------------------
+<<< Close: РўРµРі Р°СѓРґРёРѕ
+--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------
+>>> Start: РћРєРЅРѕ Cookie
+--------------------------------------------------------------*/
+.alert-cookie {
+  color: #6e6e6e;
+  background-color: #fff;
+}
+.alert-cookie .close {
+  right: 0;
+}
+/*--------------------------------------------------------------
+<<< Close: РћРєРЅРѕ Cookie
+--------------------------------------------------------------*/
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>>> Start: Hide recaptcha
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+.grecaptcha-badge {
+  display: none !important;
+}
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<<< Close: Hide recaptcha
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/

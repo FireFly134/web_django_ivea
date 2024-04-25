@@ -1,0 +1,53 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Добавление нового документа{% endblock %}
+{% block style %}
+<script src="{% static 'js/new_doc.js' %}"></script>
+<style>.doc_table {
+  font-size: 12pt;
+  font-family: Arial;
+  color: black;
+}</style>
+{% endblock %}
+{% block body %}
+   {% if context != 'save' %}
+<h1 style="text-align:center"><strong><span style="font-family:Times New Roman,Times,serif">Добавление нового документа</span></strong></h1>
+<hr />
+    <form method=POST>
+         {% csrf_token %}
+         <h1 style="text-align:center"><span style="font-family:Times New Roman,Times,serif"><span style="font-size:16px">
+         № договора или ТС:&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; <input name="in_1" required="required" type="text" placeholder='ТС№ ...' {% if in_1 %} value='{{ in_1 }}' {% endif %}/><br />
+         Предмет договора:&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;<input name="in_subject_contract" required="required" type="text" {% if in_subject_contract %} value='{{ in_subject_contract }}' {% endif %}/><br />
+         Контрагент:&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <input name="in_2" required="required" type="text" placeholder='OOO "ИВЕА"' {% if in_2 %} value='{{ in_2 }}' {% endif %}/><br />
+         Условное название:&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <input name="in_3" required="required" type="text" {% if in_3 %} value='{{ in_3 }}' {% endif %}/><br />
+         Краткое название:&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;<input name="in_4" required="required" type="text" {% if in_4 %} value='{{ in_4 }}' {% endif %}/><br />
+         Название для озвучки:&nbsp; &nbsp;<input name="text_for_call" required="required" type="text" {% if text_for_call %} value='{{ text_for_call }}' {% endif %}/><br />
+         Ссылка на договор: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<input name="in_5" required="required" type="url" placeholder='http://www.ivea-water.ru/' {% if in_5 %} value='{{ in_5 }}' {% endif %}/><br />
+         Виды работ:&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<input name="in_6" required="required" type="text" {% if in_6 %} value='{{ in_6 }}' {% endif %}/><br />
+         Дата:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<input name="in_7" required="required" type="date" {% if in_7 %} value='{{ in_7 }}' {% endif %}/><br />
+         Теги:&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp;<input name="in_29" type="text" placeholder='#New_doc#Документ#...' {% if in_29 %} value='{{ in_29 }}' {% endif %}/></span></span></h1>
+        <table class="table_center_by_css" border="0" cellpadding="1" cellspacing="1" style="width:620px" id="DocTable">
+				<tbody>
+						<tr>
+							<td class="doc_table" style="background:#ebebeb; text-align:center; width:10px">№ п/п</td>
+							<td class="doc_table" style="background:#ebebeb; text-align:center; width:200px">Наименование работ</td>
+							<td class="doc_table" style="background:#ebebeb; text-align:center; width:200px">Дата</td>
+							<td class="doc_table" style="background:#ebebeb; text-align:center; width:200px">Сумма этапа</td>
+							<td class="doc_table" style="background:#ebebeb; text-align:center; width:10px"></td>
+						</tr>
+                        <tr>
+                            <td style="text-align: center;"><input name="name=npp_new0" required="required" size="5" type="text" value="1" style="width: 30px;"></td>
+                            <td style="text-align: center;"><input name="in_work_name_new0" required="required" size="25" type="text" value="Дата заключения договора"></td>
+                            <td style="text-align: center;"><input name="in_date_new0" required="required" size="10" type="date"></td>
+                            <td style="text-align: center;"><input name="in_sum_stage_new0" required="required" size="10" type="text"></td>
+                            <td></td>
+                        </tr>
+				</tbody>
+		</table>
+        <div style="text-align:center"><button type="button" onclick="addRow()">Добавить строку</button></div>
+        <center><input checked="checked" type="checkbox" name="checkbox">Создать группу в Telegram</input><br><input checked="checked" type="checkbox" name="flag_upd">УПД на всю сумму</input></center>
+        <div style="text-align:center"><button type="submit" name="save" value='save'><span style="font-family:Times New Roman,Times,serif"><span style="font-size:16px">Отправить данные</span></span></button></div>
+    </form>
+  {% endif %}
+        {% endblock %}

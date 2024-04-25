@@ -1,0 +1,28 @@
+{% extends "overhead_costs/base.html" %}
+{% block title2 %}Загрузка банковской выписки{% endblock%}
+
+{% block content %}
+    <div class="container">
+        <div class="container d-flex justify-content-center mt-5">
+            <div class="col-md-6">
+                <h2 class="mb-1">Загрузка банковской выписки</h2>
+                <h5 class="mb-4">Файл должен иметь формат XLSX</h5>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        {{ form.file }}
+                    </div>
+
+                    <div class="form-group mt-2">
+                        <button type="submit" class="btn btn-success" value="Create">Загрузить</button>
+                        <a href="{% url 'overhead_costs' %}" class="btn btn-secondary">Назад</a>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+

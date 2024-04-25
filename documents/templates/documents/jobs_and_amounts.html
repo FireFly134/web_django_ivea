@@ -1,0 +1,211 @@
+{% extends 'main/base.html' %}
+
+{% load static %}
+
+{% block title %}Работы и суммы в перспективе{% endblock %}
+{% block style %}
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+		<link href="{% static 'css/modal_window.css' %}" rel="stylesheet" type="text/css">
+<style>.doc_table {
+  font-size: 12pt;
+  font-family: Arial;
+  color: black;
+}</style>
+<style>
+  th {
+    cursor: pointer; /* Изменение курсора при наведении */
+  }
+
+  th.sorted-asc::after,
+  th.sorted-desc::after {
+    content: "";
+    display: inline-block;
+    margin-left: 5px; /* Расстояние между текстом и стрелкой */
+  }
+
+  th.sorted-asc::after {
+    content: "\25B2"; /* Стрелка вверх */
+  }
+
+  th.sorted-desc::after {
+    content: "\25BC"; /* Стрелка вниз */
+  }
+</style>
+<script>
+  //////////////////////////////////////////////////////////////////////
+ //Фильтр по значениям в таблицах , работает через окошко ввода input//
+//////////////////////////////////////////////////////////////////////
+function numberWithSpace(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u00A0").replace('.', ',');
+}
+
+function NullFilterTable() {
+// Обновляем значение поля
+    document.getElementById('filterInput').value = '';
+    filterTable()
+    }
+function filterTable(inputElement = document.getElementById("filterInput").value) {
+  var filter, table, tr, td, i, j, txtValue, totalAmount=0;
+  filter = inputElement.toUpperCase();
+  table = document.getElementById("DocTable");
+  tr = table.getElementsByTagName("tr");
+
+  // Проходим по каждой строке таблицы, начиная с индекса 1
+  for (i = 1; i < tr.length; i++) {
+    td = tr[i].getElementsByTagName("td");
+    var rowVisible = false;
+	for (j = 0; j < td.length; j++) {
+	  if (td[j]) {
+		txtValue = td[j].textContent || td[j].innerText;
+
+		if (txtValue.toUpperCase().indexOf(filter) > -1) {
+		  rowVisible = true;
+		  break;
+		}
+	  }
+	}
+    // Показываем или скрываем строку в зависимости от значения флага
+    tr[i].style.display = rowVisible ? "" : "none";
+    if (tr[i].style.display !== "none"){
+    	var amountText = td[td.length - 1].textContent || td[td.length - 1].innerText;
+    	amountText = amountText.replace(/ /g, '').replace(/,/g, '.').replace(/\u00A0/g, ' ');
+    	totalAmount += parseFloat(amountText); // Находим общую сумму этапа.
+    }
+  }
+  document.getElementById("totalAmount").innerHTML = "Общая сумма: <strong>" + numberWithSpace(totalAmount.toFixed(1)) + " руб.</strong>";
+}
+function handleInput(event) {
+    filterTable(event.target.value);
+}
+</script>
+{% endblock %}
+{% block body %}
+<p style="margin-top: 25px; margin-left: 25px;"><input type="text" id="filterInput" placeholder="Введите значение для фильтрации" oninput="handleInput(event)">
+<input type="image" src="{% static 'img/icon-deletelink.svg' %}" alt="Очистить фильтр" title="Очистить фильтр" onclick="NullFilterTable()" style="width: 20px; height: 20px; margin-top: -10px;"></p>
+<p style="margin-top: 25px; margin-left: 25px;" id="totalAmount">Общая сумма: <strong>{{ summa }} руб.</strong></p>
+<table class="table_center_by_css table table-sm table-bordered" style="width:98%" id="DocTable">
+<thead>
+<tr>
+    <th class="doc_table" style="background: #ebebeb; text-align:center; width: 45px" id="N" data-column="N">№ п/п</th>
+    <th class="doc_table" style="background: #ebebeb; text-align:center; width: 300px" id="counterparty" data-column="counterparty">Контрагент</th>
+    <th class="doc_table" style="background: #ebebeb; text-align:center; width: 200px" id="number_doc" data-column="number_doc">Договор</th>
+    <th class="doc_table" style="background: #ebebeb; text-align:center; width: 155px" id="date" data-column="date">Дата договора</th>
+    <th class="doc_table" style="background: #ebebeb; text-align:center; width: 300px" id="short_name" data-column="short_name">Краткое название</th>
+    <th class="doc_table" style="background: #ebebeb; text-align:center;" id="work_name" data-column="work_name">Наименование этапа</th>
+    <th class="doc_table" style="background: #ebebeb; text-align:center; width: 150px" id="sum_stage" data-column="sum_stage">Сумма этапа, руб.</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Получите JSON из контекста шаблона и преобразуйте его в JavaScript объект
+    var info = JSON.parse('{{ info_json|escapejs }}');
+    var flag_N = false
+
+    // Найдите table элемент таблицы
+    var table = document.getElementById("DocTable");
+    // Найдите tbody элемент таблицы
+    var tbody = document.getElementById("tbody");
+
+    // Переменная для отслеживания направления сортировки
+    var sortDirection = {};
+
+    // Функция для преобразования строки с суммой в числовой формат
+    function parseCurrencyString(currencyString) {
+        return parseFloat(currencyString.replace(/\s+/g, '').replace(',', '.'));
+    }
+
+    // Функция для сортировки данных
+    function sortData(column) {
+        if (column === "sum_stage") {
+            // Определите направление сортировки (по возрастанию или убыванию)
+            if (sortDirection[column] === 'asc') {
+                info.sort((a, b) => parseCurrencyString(a[column]) - parseCurrencyString(b[column]));
+                sortDirection[column] = 'desc';
+            } else {
+                info.sort((a, b) => parseCurrencyString(b[column]) - parseCurrencyString(a[column]));
+                sortDirection[column] = 'asc';
+            }
+        }else{
+             // Определите направление сортировки (по возрастанию или убыванию)
+            if (sortDirection[column] === 'asc') {
+                info.sort((a, b) => (a[column] > b[column]) ? 1 : -1);
+                sortDirection[column] = 'desc';
+            } else {
+                info.sort((a, b) => (a[column] > b[column]) ? -1 : 1);
+                sortDirection[column] = 'asc';
+            }
+        }
+    }
+
+    // Обработчик события нажатия на заголовок столбца
+    table.addEventListener("click", function (e) {
+        if (e.target && e.target.tagName === "TH") {
+            var column = e.target.getAttribute("data-column");
+            sortData(column);
+            renderTable();
+
+            // Обновляем стрелочку в заголовке колонки
+            updateSortIndicator(column);
+        }
+    });
+
+    // Функция для обновления стрелочки в заголовке колонки
+    function updateSortIndicator(column) {
+        var columns = table.querySelectorAll("th[data-column]");
+        columns.forEach(function (col) {
+            col.classList.remove("sorted-asc", "sorted-desc");
+            if (column === "N") {
+                    return;
+                }
+            if (col.getAttribute("data-column") === column) {
+                if (sortDirection[column] === "asc") {
+                    col.classList.add("sorted-asc");
+                } else if (sortDirection[column] === "desc") {
+                    col.classList.add("sorted-desc");
+                }
+            }
+        });
+    }
+
+    // Функция для отрисовки таблицы после сортировки
+    function renderTable() {
+        tbody.innerHTML = "";
+        // Проверяем, существует ли массив "N" в объекте JSON
+        if (!info[0].hasOwnProperty("N")) {
+          flag_N = true;
+        }
+        // Заполните таблицу данными из JavaScript объекта
+        for (var i = 0; i < info.length; i++) {
+            var row = document.createElement("tr");
+            if (flag_N){
+                // Добавление цифры i в массив "N"
+                info[i]["N"] = i+1;
+            };
+
+            row.innerHTML = `
+                <td class="doc_table">${info[i]["N"]}</td>
+                <td class="doc_table">${info[i]["counterparty"]}</td>
+                <td class="doc_table">${info[i]["number_doc"]}</td>
+                <td class="doc_table">${info[i]["date"]}</td>
+                <td class="doc_table">${info[i]["short_name"]}</td>
+                <td class="doc_table">${info[i]["work_name"]}</td>
+                <td class="doc_table">${info[i]["sum_stage"]}</td>
+            `;
+            tbody.appendChild(row);
+        }
+        flag_N = false;
+        filterTable()
+    }
+
+    // Инициализируйте направление сортировки для каждого столбца
+    var columns = table.querySelectorAll("th[data-column]");
+    columns.forEach(function (column) {
+        sortDirection[column.getAttribute("data-column")] = 'asc';
+    });
+
+    renderTable();
+});
+</script>
+{% endblock %}

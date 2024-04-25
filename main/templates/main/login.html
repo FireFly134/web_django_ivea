@@ -2,10 +2,12 @@
 
 {% block title %}Авторизация{% endblock %}
 {% block body %}
-    <br/>
+<br/>
+<div style="text-align:center">
     <form method=POST>
          {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit"><span style="font-family:Times New Roman,Times,serif"><span style="font-size:16px">Авторизация</span></span></button>
+        <button type="submit" class="btn btn-dark" style="font-size:16px;font-family:Times New Roman,Times,serif" name="login_next" value="{{ next_page }}">Авторизация</button>
     </form>
+</div>
 {% endblock %}

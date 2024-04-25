@@ -1,0 +1,63 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Редактирование документа{% endblock %}
+{% block style %}
+<script>
+  var value = 0;
+  //Берем список doc_date_data и создаем в таблице колонки которые были ранее записаны в базу данных.
+  // Это должно быть именно тут чтобы страница отображалась с готовыми колонками.
+  document.addEventListener('DOMContentLoaded', function() {
+    var docDateData = {{ doc_date_data|safe }};
+    var table = document.getElementById('DocTable');
+    value = docDateData.length;
+    docDateData.forEach(function(data) {
+      addRow(data);
+    });
+  });</script>
+<style>.doc_table {
+  font-size: 12pt;
+  font-family: Arial;
+  color: black;
+}</style>
+{% endblock %}
+{% block body %}
+<h1 style="text-align:center"><strong><span style="font-family:Times New Roman,Times,serif">Редактирование документа</span></strong></h1>
+<hr />
+    <form method="POST" id="form_for_ajax">
+         {% csrf_token %}
+         <h1 style="text-align:center"><span style="font-family:Times New Roman,Times,serif"><span style="font-size:16px">
+         № договора или ТС:&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; <input name="in_number_doc" required="required" type="text" placeholder='ТС№ ...' {% if in_number_doc %} value='{{ in_number_doc }}' {% endif %}/><br />
+         Предмет договора:&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;<input name="in_subject_contract" required="required" type="text" {% if in_subject_contract %} value='{{ in_subject_contract }}' {% endif %}/><br />
+         Контрагент:&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <input name="in_counterparty" required="required" type="text" placeholder='OOO "ИВЕА"' {% if in_counterparty %} value='{{ in_counterparty }}' {% endif %}/><br />
+         Условное название:&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <input name="in_name" required="required" type="text" {% if in_name %} value='{{ in_name }}' {% endif %}/><br />
+         Краткое название:&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;<input name="in_short_name" required="required" type="text" {% if in_short_name %} value='{{ in_short_name }}' {% endif %}/><br />
+         Название для озвучки:&nbsp; &nbsp;<input name="text_for_call" required="required" type="text" {% if text_for_call %} value='{{ text_for_call }}' {% endif %}/><br />
+         Ссылка на договор: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<input name="in_link" required="required" type="url" placeholder='http://www.ivea-water.ru/' {% if in_link %} value='{{ in_link }}' {% endif %}/><br />
+         Виды работ:&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<input name="in_type_works" required="required" type="text" {% if in_type_works %} value='{{ in_type_works }}' {% endif %}/><br />
+         Дата:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<input name="in_date" required="required" type="date" {% if in_date %} value='{{ in_date }}' {% endif %}/><br />
+         Теги:&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp;<input name="in_tags" type="text" placeholder='#New_doc#Документ#...' {% if in_tags %} value='{{ in_tags }}' {% endif %}/></span></span></h1>
+         <table class="table_center_by_css" border="0" cellpadding="1" cellspacing="1" style="width:800px" id="DocTable">
+            <tbody>
+                <tr>
+                    <td class="doc_table" style="background:#ebebeb; text-align:center; width:10px">№ п/п</td>
+                    <td class="doc_table" style="background:#ebebeb; text-align:center; width:200px">Наименование работ</td>
+                    <td class="doc_table" style="background:#ebebeb; text-align:center; width:200px">Дата</td>
+                    <td class="doc_table" style="background:#ebebeb; text-align:center; width:200px">Сумма этапа</td>
+                    <td class="doc_table" style="background:#ebebeb; text-align:center; width:10px"></td>
+                </tr>
+            </tbody>
+		 </table>
+        <div style="text-align:center"><button type="button" class="btn btn-light" onclick="addRow()">Добавить строку</button></div>
+        <center><input {{ checked }} type="checkbox" name="flag_upd">УПД на всю сумму</input></center>
+        <input name="old_short_name" required="required" type="hidden" value='{{ old_short_name }}'/>
+        <input name="doc_date_id_list" required="required" type="hidden" value='{{ doc_date_id_list }}'/>
+    </form>
+    <div style="text-align:center"><button type="button" class="btn btn-light send_save" name="save" value='true'><span style="font-family:Times New Roman,Times,serif; font-size:16px">Сохранить изменения</span></button></div>
+    <div style="text-align:center"><button type="button" class="btn btn-light" onclick="redirectTo('/documents/list_doc/{{ doc_id }}/')"><span style="font-family:Times New Roman,Times,serif; font-size:16px">Вернуться к списку документов</span></button></div>
+
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/edit_doc.js' %}"></script>
+<script src="{% static 'js/redirectToUrl.js' %}"></script>
+{% endblock %}

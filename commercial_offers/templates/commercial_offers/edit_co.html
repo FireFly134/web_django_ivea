@@ -1,0 +1,77 @@
+{% extends 'main/base.html' %}
+{% block title %}Редактирование контактной информации о заказчике{% endblock %}
+{% block style %}<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">{% endblock %}
+{% block body %}
+<div class="container mt-4">
+        <h2 class="mb-4">Редактирование контактной информации о заказчике</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-group">
+                {{ form.fio.label_tag }}
+                {{ form.fio }}
+            </div>
+
+            <div class="form-group">
+                {{ form.tel.label_tag }}
+                {{ form.tel }}
+            </div>
+
+            <div class="form-group mt-2">
+                {{ form.organization.label_tag }}
+                {{ form.organization }}
+            </div>
+
+            <div class="form-group mt-2">
+                {{ form.mail.label_tag }}
+                {{ form.mail }}
+            </div>
+
+            <div class="row">
+                <div class="col-1">
+                    <button type="submit" class="btn btn-primary mt-3" value="Create">Сохранить</button>
+                </div>
+                <div class="col-1">
+                    <a href="{% url 'list_co' %}" class="btn btn-secondary mt-3">Назад</a>
+                </div>
+                <div class="col-1">
+                    <button type="button" class="btn btn-danger mt-3" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                        Удалить
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Удаление</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Вы уверены, что хотите удалить контактные данные "<strong>{{ info.fio }}</strong>"?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                            <a href="{% url 'delete_co' info.id %}" class="btn btn-danger">Удалить</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+{% endblock %}
+{% block script %}
+<script>
+    $(document).ready(function () {
+        // Используем Select2 для стилизации и добавления функциональности поиска
+        $(".select2").select2();
+    });
+    document.addEventListener('DOMContentLoaded', function () {
+        var selectElement = document.getElementById('id_purchased_equipment_id');
+        var firstOption = selectElement.options[0];
+        firstOption.disabled = true;
+    });
+</script>
+{% endblock %}

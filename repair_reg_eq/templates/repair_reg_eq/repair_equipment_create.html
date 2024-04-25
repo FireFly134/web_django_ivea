@@ -1,0 +1,82 @@
+{% extends 'repair_reg_eq/base.html' %}
+
+{% block title2 %}
+    Создание записи
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h2>Создание записи</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    {{ form.counterparty.label_tag }}
+                    {{ form.counterparty }}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    {{ form.contract.label_tag }}
+                    {{ form.contract }}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-8">
+                    {{ form.equipment.label_tag }}
+                    {{ form.equipment }}
+                </div>
+                <div class="form-group col-md-4">
+                    {{ form.serial_number.label_tag }}
+                    {{ form.serial_number }}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-5">
+                    {{ form.employee.label_tag }}
+                    {{ form.employee }}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    {{ form.breakdown_description.label_tag }}
+                    {{ form.breakdown_description }}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    {{ form.conclusion_service_company.label_tag }}
+                    {{ form.conclusion_service_company }}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    {{ form.sending_date.label_tag }}
+                    {{ form.sending_date }}
+                </div>
+                <div class="form-group col-md-6">
+                    {{ form.acceptance_date.label_tag }}
+                    {{ form.acceptance_date }}
+                </div>
+            </div>
+
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary" value="Create">Сохранить</button>
+                <a href="{% url 'req_eq_list' %}" class="btn btn-secondary">Отмена</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $('.select2').select2(); // Инициализация Select2 для полей с классом select2
+        });
+    </script>
+{% endblock %}

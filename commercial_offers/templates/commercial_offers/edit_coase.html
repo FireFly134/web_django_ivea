@@ -1,0 +1,87 @@
+{% extends 'main/base.html' %}
+{% block title %}Редактирование коммерческого предложения{% endblock %}
+{% block style %}<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">{% endblock %}
+{% block body %}
+<div class="container mt-4 mb-5">
+        <h2 class="mb-4">Редактирование коммерческого предложения</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-group">
+                {{ form.contact_information.label_tag }}
+                {{ form.contact_information }}
+            </div>
+
+            <div style="width:90px;" class="form-group">
+                {{ form.npp.label_tag }}
+                {{ form.npp }}
+            </div>
+            <div class="form-group">
+                {{ form.work_name.label_tag }}
+                {{ form.work_name }}
+            </div>
+            <div class="form-group">
+                <label for="id_services_equipment">Наименование услуг и оборудования:</label>
+                <select size="10" name="services_equipment" class="form-control select2" id="id_services_equipment" multiple="">
+                      {% for service in list %}
+                        <option value="{{ service.id }}" {% if service.id in selected_value %}selected{% endif %}>{{ service.see_id }}) {{ service.name }}</option>
+                      {% endfor %}
+                </select>
+            </div>
+            <div style="width:90px;" class="form-group">
+                {{ form.unit_of_measurement.label_tag }}
+                {{ form.unit_of_measurement }}
+            </div>
+            <div class="form-group">
+                {{ form.cost_with_vat.label_tag }}
+                <div style="width:150px;">{{ form.cost_with_vat }}</div>
+            </div>
+
+            <div class="row mb-5">
+                <div class="col-1">
+                    <button type="submit" class="btn btn-primary mt-3" value="Create">Сохранить</button>
+                </div>
+                <div class="col-1">
+                    <a href="{% url 'list_coase' %}" class="btn btn-secondary mt-3">Назад</a>
+                </div>
+                <div class="col-1">
+                    <button type="button" class="btn btn-danger mt-3" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                        Удалить
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Удаление</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Вы уверены, что хотите удалить данное коммерческое предложение?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                            <a href="{% url 'delete_coase' info.id %}" class="btn btn-danger">Удалить</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+{% endblock %}
+{% block script %}
+<script>
+    $(document).ready(function () {
+        // Используем Select2 для стилизации и добавления функциональности поиска
+        $(".select2").select2();
+    });
+    document.addEventListener('DOMContentLoaded', function () {
+        var selectElement = document.getElementById('id_contact_information');
+        var firstOption = selectElement.options[0];
+        firstOption.disabled = true;
+    });
+</script>
+{% endblock %}

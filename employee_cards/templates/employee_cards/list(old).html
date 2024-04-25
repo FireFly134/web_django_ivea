@@ -1,0 +1,151 @@
+{% extends 'main/base.html' %}
+
+{% block style %}
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+          crossorigin="anonymous" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+            integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+            crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+            integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+            crossorigin="anonymous">
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+    <style>
+        .header {
+            position: sticky;
+            top:0;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-5">
+            <a href="{% url 'card_create' %}" class="btn btn-primary col-md-12 mb-3"><i class="fas fa-plus"></i> Добавить сотрудника</a>
+            <form class="mb-3">
+                <input type="text" class="form-control" id="searchInput" placeholder="Поиск по имени" oninput="searchEmployees()">
+            </form>
+            <ul class="list-group" id="employeeList">
+                {% for employee in employee_list %}
+                    {% if employee.photo %}
+                        <li class="list-group-item list-group-item-action" onclick="showEmployeeDetails('{{ employee.id }}', '{{ employee.family_name }}', '{{ employee.name }}', '{{ employee.access }}', '{{ employee.tel }}', '{{ employee.birthday|date:"d.m.Y" }}', '{{ employee.verified }}', '{{ employee.position_at_work }}','{{ employee.photo.url }}', '{{ employee.citizenship }}', '{{ employee.series_number }}', '{{ employee.organization }}', '{{ employee.second_organization }}', '{{ employee.work_type }}', '{{ employee.is_dismissed }}', '{{ employee.get_edit_url }}')">
+                    {% else %}
+                        <li class="list-group-item list-group-item-action" onclick="showEmployeeDetails('{{ employee.id }}', '{{ employee.family_name }}', '{{ employee.name }}', '{{ employee.access }}', '{{ employee.tel }}', '{{ employee.birthday|date:"d.m.Y" }}', '{{ employee.verified }}', '{{ employee.position_at_work }}','/media/photos/ivea_img.jpg', '{{ employee.citizenship }}', '{{ employee.series_number }}', '{{ employee.organization }}', '{{ employee.second_organization }}', '{{ employee.work_type }}', '{{ employee.is_dismissed }}', '{{ employee.get_edit_url }}')">
+                    {% endif %}
+                        {{ forloop.counter }}.   {{ employee.family_name }} {{ employee.name }}, {{ employee.position_at_work }}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-md-7" id="employeeDetails">
+            <!-- Employee details will be displayed here -->
+        </div>
+    </div>
+</div>
+
+<script>
+    let employeeData = [
+        {% for employee in employee_list %}
+            {
+                n : '{{ forloop.counter }}',
+                id: '{{ employee.id }}',
+                family_name: '{{ employee.family_name }}',
+                name: '{{ employee.name }}',
+                access: '{{ employee.access }}',
+                tel: '{{ employee.tel }}',
+                birthday: '{{ employee.birthday|date:"d.m.Y" }}',
+                verified: '{{ employee.verified }}',
+                position_at_work: '{{ employee.position_at_work }}',
+                citizenship: '{{ employee.citizenship }}',
+                series_number: '{{ employee.series_number }}',
+                organization: '{{ employee.organization }}',
+                second_organization: '{{ employee.second_organization }}',
+                {% if employee.photo %}
+                    photo_url: '{{ employee.photo.url }}',
+                {% else %}
+                    photo_url: '/media/photos/ivea_img.jpg',
+                {% endif %}
+                work_type: '{{ employee.work_type }}',
+                edit_url: '{{ employee.get_edit_url }}',
+                is_dismissed: '{{ employee.is_dismissed }}',
+            },
+        {% endfor %}
+    ];
+
+    function searchEmployees() {
+        let searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        let filteredEmployees = employeeData.filter(function(employee) {
+            let fullName = (employee.family_name + ' ' + employee.name + ' ' + employee.position_at_work).toLowerCase();
+            return fullName.includes(searchTerm);
+        });
+
+        let employeeList = document.getElementById('employeeList');
+        employeeList.innerHTML = '';
+        filteredEmployees.forEach(function(employee) {
+            let li = document.createElement('li');
+            li.className = 'list-group-item list-group-item-action';
+            li.textContent = employee.n + '. ' +  employee.family_name + ' ' + employee.name + ', ' + employee.position_at_work;
+            li.onclick = function() {
+                showEmployeeDetails(employee.id, employee.family_name, employee.name, employee.access, employee.tel, employee.birthday, employee.verified, employee.position_at_work, employee.photo_url, employee.citizenship, employee.series_number, employee.organization, employee.second_organization, employee.work_type, employee.is_dismissed, employee.edit_url);
+            };
+            employeeList.appendChild(li);
+        });
+    }
+
+    function showEmployeeDetails(employeeId, family_name, name, access, tel, birthday, verified, position_at_work, photo_url, citizenship, series_number, organization, second_organization, work_type, is_dismissed, edit_url) {
+        let employeeDetails = document.getElementById('employeeDetails');
+        employeeDetails.innerHTML = `
+            <div class="card">
+                <div class="card-header text-center">
+                    Карточка сотрудника - ${employeeId}
+                </div>
+                <div class="row no-gutters m-3">
+                    <div class="col-md-4 text-center">
+                        <img src="${photo_url}" class="card-img" alt="Фото сотрудника">
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body text-right">
+                            <h5 class="card-title text-center">${family_name} ${name}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted text-center">Уровень доступа: <strong>${access}</strong></h6>
+                            <p class="card-text text-center">Номер телефона: <strong>${tel}</strong></p>
+                            <p class="card-text text-center">Дата рождения: <strong>${birthday}</strong></p>
+                            ${verified === 'True' ? '<p class="card-text text-center">Пользователь подтверждён: &#9989;</p>' : '<p class="card-text text-center">Пользователь подтверждён: &#10060;</p>'}
+                            <p class="card-text text-center">Должность: <strong>${position_at_work}</strong></p>
+                            <p class="card-text text-center">Гражданство: <strong>${citizenship}</strong></p>
+                            <p class="card-text text-center">Серия и номер паспорта: <strong>${series_number}</strong></p>
+                            <p class="card-text text-center">Организация: <strong>${organization}</strong></p>
+                            <p class="card-text text-center">Организация: <strong>${second_organization}</strong></p>
+                            <p class="card-text text-center">Тип занятости: <strong>${work_type}</strong></p>
+                            ${is_dismissed === 'True' ? '<p class="card-text text-center">Уволен: &#9989;</p>' : '<p class="card-text text-center">Уволен: &#10060;</p>'}
+                            <div class="text-center mt-3">
+                                <a class="btn btn-secondary" href="${edit_url}">
+                                    <i class="fas fa-edit"></i> Изменить
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+</script>
+
+{% endblock %}

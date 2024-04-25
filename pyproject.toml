@@ -1,0 +1,16 @@
+[tool.black]
+line-length=79
+
+[tool.mypy]
+warn_unused_configs = true
+pretty = true
+strict = true
+plugins = ["mypy_django_plugin.main", "sqlmypy"]
+exclude = ["manage.py"]
+
+[[tool.mypy.overrides]]
+module = ["yadisk.*", "docx.*", "xlsxwriter.*"]
+ignore_missing_imports = true
+
+[tool.django-stubs]
+django_settings_module = "taskmanager.settings"

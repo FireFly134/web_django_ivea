@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -10,17 +12,18 @@
             margin: auto;
         }
     </style>
-    <link href="http://ivea-water.ru/templates/wt_plussone_jom/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon">
-    <link rel="stylesheet" href="http://ivea-water.ru/templates/wt_plussone_jom/css-compiled/menu-15e57d4007d38afd200e3d6bdb49e5cb.css" type="text/css"> <!-- Стиль с выдвижным списком в меню-->
-    <link rel="stylesheet" href="http://ivea-water.ru/libraries/gantry/css/grid-responsive.css" type="text/css"><!--    Стиль который центроет меню-->
-    <link rel="stylesheet" href="http://ivea-water.ru/templates/wt_plussone_jom/css-compiled/bootstrap.css" type="text/css"> <!--    Стиль который убирает отступы от краев-->
-    <link rel="stylesheet" href="http://ivea-water.ru/templates/wt_plussone_jom/css-compiled/master-ac58b0dbe5532d9e575562bad23fa5de.css" type="text/css"><!--    Стил который нужен, закоментируй глянь, убирает почти все...каша-->
-    <link rel="stylesheet" href="http://ivea-water.ru/templates/wt_plussone_jom/css/sp.css" type="text/css"> <!--    Стиль который убирает кнопки ссылки в мню шапки -->
+    <link href="{% static 'img/favicon.ico' %}" rel="shortcut icon" type="image/vnd.microsoft.icon">
+    <link rel="stylesheet" href="{% static 'css/menu.css' %}" type="text/css"> <!-- Стиль с выдвижным списком в меню-->
+    <link rel="stylesheet" href="{% static 'css/grid-responsive.css' %}" type="text/css"><!--    Стиль который центроет меню-->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}" type="text/css"> <!--    Стиль который убирает отступы от краев-->
+    <link rel="stylesheet" href="{% static 'css/master-ac58b0dbe5532d9e575562bad23fa5de.css' %}" type="text/css"><!--    Стил который нужен, закоментируй глянь, убирает почти все...каша-->
+    <link rel="stylesheet" href="{% static 'css/sp.css' %}" type="text/css"> <!--    Стиль который убирает кнопки ссылки в мню шапки -->
+    <link rel="stylesheet" href="{% static 'css/1200fixed.css' %}" type="text/css"><!--    Без этой строки меню из шапки пропадает (кнопки главная...) -->
     <style type="text/css">
-    #rt-logo {background: url(http://ivea-water.ru/images/frontpage/logo.png) 50% 0 no-repeat !important;}
+    #rt-logo {background: url({% static 'img/logo.png' %}) 50% 0 no-repeat !important;}
     #rt-logo {width: 265px;height: 40px;}
     </style>
-    <link rel="stylesheet" href="http://ivea-water.ru/css/css.css">
+    <link rel="stylesheet" href="{% static 'css/css.css' %}">
 </head>
 <body class="page-fixed-0 page-fixedheader-disable page-headerstyle-hstyleone page-type-none logo-type-custom font-size-is-default rttop-type-none rtheader-type-none rtshowcase-fixed-0 rtshowcase-type-none rtfeature-type-none rtutility-type-none rtbreadcrumbs-type-none rtmaintop-type-maintopimg rtmainbottom-type-none rtextension-type-none rtbottom-type-none rtfooter-type-none rtcopyright-type-none menu-type-dropdownmenu layout-mode-1200fixed breadfeature-1 col12">
     <header id="rt-top-surround">
@@ -51,7 +54,7 @@
                                     }
                                     </style>
 
-                                    <a data-config="commands=chat,call,videocall,add;size=14;status=on;theme=logo;bgcolor=#e8e8e8" id="skaip-buttons" href="http://www.skaip.su/" style="font-size: 15px; display: none;">Skype</a><script src="http://apps.skaip.su/buttons/widget/core.min.js" defer="defer"></script>
+                                    <a data-config="commands=chat,call,videocall,add;size=14;status=on;theme=logo;bgcolor=#e8e8e8" id="skaip-buttons" href="http://www.skaip.su/" style="font-size: 15px; display: none;">Skype</a><script src="{% static 'js/ivea_water_ru/core.min.js' %}" defer="defer"></script>
                                     <!--<a href="/component/xmap/html/1?view=html"> &nbsp; &nbsp; &nbsp; Карта сайта</a>-->
                                 </div>
 	                	    </div>
@@ -114,13 +117,16 @@
                                                 </li>
                                                 {% if request.user.is_staff %}
                                                 <li>
-                                                    <a class="item"  href="{% url 'aosae' %}">Добавление покупного оборудования</a>
+                                                    <a class="item"  href="{% url 'afpe' %}">Добавление покупного оборудования</a>
                                                 </li>
                                                 <li>
                                                     <a class="item"  href="{% url 'aosaed' %}">Добавление расшифровок услуг или оборудования</a>
                                                 </li>
                                                 <li>
-                                                    <a class="item"  href="{% url 'afpe' %}">Добавление услуг или оборудования</a>
+                                                    <a class="item"  href="{% url 'aosae' %}">Добавление услуг или оборудования</a>
+                                                </li>
+                                                <li>
+                                                    <a class="item"  href="{% url 'utn' %}">Добавить подузел</a>
                                                 </li>
                                                 {% endif %}
                                             </ul>
@@ -168,7 +174,6 @@
                     <div class="rt-block  module_rokajaxsearch textright">
                         <div class="module-surround">
                             <div class="module-content">
-                                <form name="rokajaxsearch" id="rokajaxsearch" class="light" action="http://ivea-water.ru/" method="get">
                                     <div class="rokajaxsearch  module_rokajaxsearch textright">
                                         <div class="roksearch-wrapper">
                                             {% if request.user.is_authenticated %}
@@ -186,7 +191,6 @@
 
                                     </div>
                                     <div id="rokajaxsearch_tmp" style="visibility:hidden;display:none;"></div>
-                                </form>
                             </div>
                         </div>
                     </div>
@@ -197,7 +201,6 @@
         </div>
     </header>
     {% if messages %}
-
         {% for message in messages %}
             {% if message.tags == 'error'%}
                 <div class="alert alert-danger" role="alert">

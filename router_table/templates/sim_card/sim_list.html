@@ -1,0 +1,242 @@
+{% extends 'sim_card/base.html' %}
+
+{% block title %}
+    Список СИМ
+{% endblock %}
+
+{% block content %}
+    <div id="manageArea" class="d-flex flex-column align-items-center mt-3">
+        <h2>Список СИМ</h2>
+        <div class="d-flex justify-content-center col-12">
+            <div class="col-2">
+                <div class="form-floating mb-3">
+                    <input class="form-control" type="date" id="startYearInput" onchange="onStartYearInput()"
+                           placeholder="Начало периода">
+                    <label for="startYearInput">Начало периода</label>
+                </div>
+            </div>
+            <div style="width: 1rem;"></div>
+            <div class="col-2">
+                <div class="form-floating mb-3">
+                    <input class="form-control" type="date" id="endYearInput" onchange="onEndYearInput()"
+                           placeholder="Конец периода">
+                    <label for="endYearInput">Конец периода</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex flex-column align-items-center">
+            <div class="d-flex">
+                <label class="mt-1" for="routerTypeSelect">Привязка роутеров к СИМ:</label>
+                <select onchange="rebuildTable(JSON.parse(JSON.stringify(simData)))" class="ms-2" id="routerTypeSelect">
+                    <option value="all">Все СИМ</option>
+                    <option value="withRouter">СИМ с роутером</option>
+                    <option value="withoutRouter">СИМ без роутера</option>
+                </select>
+            </div>
+
+            <div class="d-flex">
+                <label class="mt-1" for="dontShowBlockedSims">Не отображать заблокированные СИМ:</label>
+                <input class="ms-2" id="dontShowBlockedSims" type="checkbox" onchange="rebuildTable(JSON.parse(JSON.stringify(simData)))">
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4" id="showArea">
+
+    </div>
+
+    <script>
+        let sortBy = ''
+        let isDesc = true
+        let startYearFilter = "";
+        let endYearFilter = "";
+
+        const simData = [
+            {% for sim in sim_cards %}
+                {
+                    phoneNumber: "{{ sim.phone_number }}",
+                    fio: "{{ sim.fio }}",
+                    rate: "{{ sim.rate }}",
+                    serialNumber: "{{ sim.serial_number }}",
+                    status: "{{ sim.status }}",
+                    reports: [],
+                    total: 0,
+                    routers: [
+                        {% for router in sim.routers.all %}
+                            {
+                                {% if router.router_user_id %}
+                                    routerId: {{ router.router_user_id }},
+                                {% else %}
+                                    routerId: "Роутер без ID",
+                                {% endif %}
+                                routerLink: "{% url 'router_page' router.pk %}",
+                            },
+                        {% endfor %}
+                    ],
+                    simLink: "{% url 'sim_detail' sim.pk %}",
+                },
+            {% endfor %}
+        ];
+
+        const reports = [
+            {% for report in reports %}
+                {
+                    phoneNumber: '{{ report.phone_number }}',
+                    dateStart: '{{ report.date_of_start_period|date:"Y-m-d" }}',
+                    dateEnd: '{{ report.date_of_end_period|date:"Y-m-d" }}',
+                    total: {{ report.total|stringformat:".2f" }},
+                },
+            {% endfor %}
+        ];
+
+        simData.forEach(sim => {
+            sim.reports = reports.filter(report => {
+                return report.phoneNumber === sim.phoneNumber;
+            });
+            sim.total = sim.reports.reduce((accumulator, report) => {
+                return accumulator + report.total
+            }, 0);
+        });
+
+        rebuildTable(JSON.parse(JSON.stringify(simData)));
+
+        function onStartYearInput() {
+            startYearFilter = document.getElementById('startYearInput').value;
+            rebuildTable(JSON.parse(JSON.stringify(simData)));
+        }
+
+        function onEndYearInput() {
+            endYearFilter = document.getElementById('endYearInput').value;
+            rebuildTable(JSON.parse(JSON.stringify(simData)));
+        }
+
+        function rebuildTable(simData) {
+            let simTypeSelect = document.getElementById('routerTypeSelect').value;
+
+            if (simTypeSelect === "withRouter") {
+                simData = simData.filter(sim => {
+                    return sim.routers.length !== 0;
+                });
+            } else if (simTypeSelect === "withoutRouter") {
+                simData = simData.filter(sim => {
+                    return sim.routers.length === 0;
+                });
+            }
+
+            if (document.getElementById('dontShowBlockedSims').checked) {
+                simData = simData.filter(sim => {
+                    return sim.status === "Активный";
+                });
+            }
+
+            if (startYearFilter !== "" || endYearFilter !== "") {
+                let filterStartDate = new Date(startYearFilter);
+                let filterEndDate = new Date(endYearFilter);
+
+                simData.forEach(sim => {
+                    sim.reports = sim.reports.filter(report => {
+                        const reportStartDate = new Date(report.dateStart);
+                        const reportEndDate = new Date(report.dateEnd);
+                        if (startYearFilter !== "" && endYearFilter === "") {
+                            return reportStartDate >= filterStartDate;
+                        } else if (startYearFilter === "" && endYearFilter !== "") {
+                            return reportEndDate <= filterEndDate;
+                        } else if (startYearFilter !== "" && endYearFilter !== "") {
+                            if (filterEndDate < filterStartDate) return true
+                            return reportStartDate >= filterStartDate && reportEndDate <= filterEndDate;
+                        }
+                    });
+                    sim.total = sim.reports.reduce((accumulator, report) => {
+                        return accumulator + report.total
+                    }, 0);
+                });
+            }
+
+            let html = "";
+            let total = 0;
+
+            simData.forEach((sim, i) => {
+                total += sim.total;
+                let fio = sim.fio;
+                if (fio === "nan") {
+                    fio = "-";
+                }
+
+                let routerColumn = "-";
+                if (sim.routers.length !== 0) {
+                    let routerId = sim.routers[0].routerId;
+                    let routerLink = sim.routers[0].routerLink;
+
+                    routerColumn = `<a href="${routerLink}">${routerId}</a>`;
+                }
+
+                html += `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td><a href="${sim.simLink}">${formatPhoneNumber(sim.phoneNumber)}</a></td>
+                    <td>${fio}</td>
+                    <td>${sim.rate}</td>
+                    <td>${numberWithSpace(sim.total.toFixed(2))}</td>
+                    <td>${sim.status}</td>
+                    <td>${sim.serialNumber}</td>
+                    <td>${routerColumn}</td>
+                </tr>
+                `;
+            });
+
+            document.getElementById('showArea').innerHTML = `
+                <div class="d-flex justify-content-center m-1">
+                    <span>Общая сумма по выборке <strong>${numberWithSpace(total.toFixed(2))}</strong> руб.</span>
+                </div>
+
+                <table class="table">
+                    <thead>
+                        <th>№</th>
+                        <th>Номер телефона</th>
+                        <th style="cursor: pointer;" data-sortable="fio">ФИО</th>
+                        <th style="cursor: pointer;" data-sortable="rate">Тариф</th>
+                        <th style="cursor: pointer;" data-sortable="total">Сумма</th>
+                        <th style="cursor: pointer;" data-sortable="status">Статус</th>
+                        <th>Серийный номер</th>
+                        <th>Роутер</th>
+                    </thead>
+                    <tbody>
+                        ${html}
+                    </tbody>
+                </table>
+            `;
+
+            addSortHandlers(simData);
+        }
+
+        function addSortHandlers(simData) {
+            const tableColumns = document.querySelectorAll('[data-sortable]');
+
+            tableColumns.forEach(column => {
+                column.addEventListener('click', (event) => {
+                    const {sortable} = event.target.dataset;
+                    sortBy = sortable;
+                    let newSimData;
+                    if (sortBy === "rate" || sortBy === "fio" || sortBy === "status") {
+                        newSimData = [...simData.sort((a, b) => isDesc ? a[sortBy].localeCompare(b[sortBy]) : b[sortBy].localeCompare(a[sortBy]))];
+                    }
+                    if (sortBy === "total") {
+                        newSimData = [...simData.sort((a, b) => isDesc ? a.total - b.total : b.total - a.total)];
+                    }
+                    rebuildTable(newSimData);
+                    isDesc = !isDesc;
+                    sortBy = sortable;
+                });
+            });
+        }
+
+        function formatPhoneNumber(phoneNumber) {
+            return `+7 (${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 8)}-${phoneNumber.slice(8, phoneNumber.length)}`;
+        }
+
+        function numberWithSpace(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u00A0").replace(".", ",");
+        }
+    </script>
+{% endblock %}

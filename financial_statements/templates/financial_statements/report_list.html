@@ -1,0 +1,208 @@
+{% extends 'financial_statements/base.html' %}
+
+{% block title2 %}
+    Финансовые отчёты
+{% endblock %}
+
+{% block content %}
+    <h2 class="mt-2">Финансовые отчёты</h2>
+    <div class="d-flex justify-content-center align-items-center mb-3 mt-5">
+        <a href="{% url 'report_create' %}" class="btn btn-primary col-md-3"><i class="fas fa-plus"></i> Создать отчёт</a>
+    </div>
+
+    {% if not reports %}
+        <h1 class="d-flex justify-content-center align-items-center mt-5">Отчётов нет</h1>
+    {% else %}
+        <div class="row">
+            <div class="col-2">
+                <div class="form-floating mb-3">
+                    <input class="form-control" type="date" id="startYearInput" oninput="onStartYearInput()" placeholder="Начало периода">
+                    <label for="startYearInput">Начало периода</label>
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="form-floating mb-3">
+                    <input class="form-control" type="date" id="endYearInput" oninput="onEndYearInput()" placeholder="Конец периода">
+                    <label for="endYearInput">Конец периода</label>
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="form-floating mb-3">
+                    <input class="form-control" type="text" id="employeeInput" oninput="onEmployeeInput()" placeholder="Сотрудник">
+                    <label for="employeeInput">Сотрудник</label>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="form-floating mb-3">
+                    <input class="form-control" type="text" id="searchInput" oninput="onSearchInput()" placeholder="Ключевые слова">
+                    <label for="searchInput">Ключевые слова</label>
+                </div>
+            </div>
+        </div>
+
+
+    <div id="showArea">
+
+    </div>
+
+    {% endif %}
+
+<script>
+
+let reports = [
+    {% for report in reports %}
+        {
+            id: {{ report.id }},
+            date: `{{ report.date|date:"d.m.Y" }}`,
+            title: '{{ report.title }}',
+            {% if report.checkbox %}
+            checkbox: true,
+            {% else %}
+            checkbox: false,
+            {% endif %}
+            {% if report.total %}
+            total: {{ report.total|stringformat:".2f"|safe }},
+            {% else %}
+            total: 0,
+            {% endif %}
+            {% if report.mileage %}
+                mileage: {{ report.mileage|stringformat:".2f" }},
+            {% else %}
+                mileage: 0,
+            {% endif %}
+            user: '{{ report.user.first_name }} {{ report.user.last_name }}',
+            note: `{{ report.note }}`,
+            created: '{{ report.created|date:"d.m.Y" }}',
+            updated: '{{ report.updated|date:"d.m.Y" }}',
+            edit_url: '{{ report.get_edit_url }}',
+            delete_url: '{{ report.get_delete_url }}',
+        },
+    {% endfor %}
+
+]
+
+const debounce = (cb, ms = 100) => {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => { cb.apply(this, args); }, ms);
+    };
+}
+
+let startYearFilter = "";
+let endYearFilter = "";
+let employeeFilter = "";
+let searchFilter = "";
+
+rebuildTable();
+
+function onStartYearInput() {
+    startYearFilter = document.getElementById('startYearInput').value;
+    debounce(() => rebuildTable())();
+}
+
+function onEndYearInput() {
+    endYearFilter = document.getElementById('endYearInput').value;
+    debounce(() => rebuildTable())();
+}
+
+function onEmployeeInput() {
+    employeeFilter = document.getElementById('employeeInput').value;
+    debounce(() => rebuildTable())();
+}
+
+function onSearchInput() {
+    searchFilter = document.getElementById("searchInput").value;
+    debounce(() => rebuildTable())();
+}
+
+function rebuildTable() {
+    let filteredReports = reports.filter(function (report) {
+        let reportDate = new Date(report.created.slice(6, 10) + "-" + report.created.slice(3,5) + '-' + report.created.slice(0, 2));
+        if (startYearFilter === "" && endYearFilter === "") return true;
+        if (startYearFilter !== "" && endYearFilter === "") {
+            return reportDate >= new Date(startYearFilter);
+        } else if (startYearFilter === "" && endYearFilter !== "") {
+            return reportDate <= new Date(endYearFilter);
+        } else if (startYearFilter !== "" && endYearFilter !== "") {
+            return reportDate >= new Date(startYearFilter) && reportDate <= new Date(endYearFilter);
+        }
+        return true;
+    });
+
+    filteredReports = filteredReports.filter(function (report) {
+        if (employeeFilter === "") return true;
+        return report.user.toLowerCase().includes(employeeFilter.toLowerCase());
+    });
+
+    filteredReports = filteredReports.filter(function (report) {
+        if (searchFilter === "") return true;
+        let searchString = `${report.title} ${report.total} ${report.note}`;
+        return searchString.includes(searchFilter);
+    });
+
+    let total = 0
+    filteredReports.forEach(report => {
+        total += report.total;
+    })
+
+    let tableHtmlText = "";
+
+    for (let i = 0; i < filteredReports.length; i++) {
+        tableHtmlText += `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${filteredReports[i].date}</td>
+                        <td>${filteredReports[i].created}</td>
+                        <td>${filteredReports[i].updated}</td>
+                        <td>${filteredReports[i].title}</td>
+                        <td>${filteredReports[i].checkbox ? "&#9989;" : ""}</td>
+                        <td>${numberWithSpace(filteredReports[i].total.toFixed(2))} руб.</td>
+                        <td>${numberWithSpace(filteredReports[i].mileage)} км.</td>
+                        <td>${filteredReports[i].user}</td>
+                        <td class="text-break">${filteredReports[i].note}</td>
+                        <td nowrap>
+                            <a href="${filteredReports[i].edit_url}" class="btn btn-link" title="Редактировать">
+                                <i class="fas fa-pencil-alt"></i>
+                            </a>
+                            <a href="${filteredReports[i].delete_url}" class="btn btn-link text-danger" title="Удалить">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </td>
+                    </tr>
+        `
+    }
+
+    let showArea = document.getElementById('showArea');
+    showArea.innerHTML = `
+            <p>Общая сумма: <strong>${numberWithSpace(total.toFixed(2))} руб</strong></p>
+            <table id="sortingTable" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>№</th>
+                    <th>Дата</th>
+                    <th>Создано</th>
+                    <th>Изменено</th>
+                    <th>Название</th>
+                    <th>Чек</th>
+                    <th>Сумма</th>
+                    <th>Пробег</th>
+                    <th>Пользователь</th>
+                    <th>Примечания</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${tableHtmlText}
+            </tbody>
+        </table>
+    `
+}
+
+function numberWithSpace(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u00A0").replace('.', ',');
+}
+
+</script>
+
+{% endblock %}

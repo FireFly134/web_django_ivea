@@ -1,0 +1,48 @@
+{% extends 'main/base.html' %}
+{% block title %}Создание контактной информации о заказчике{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+        <h2 class="mb-4">Создание контактной информации о заказчике</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-group">
+                {{ form.fio.label_tag }}
+                {{ form.fio }}
+            </div>
+
+            <div class="form-group">
+                {{ form.tel.label_tag }}
+                {{ form.tel }}
+            </div>
+
+            <div class="form-group mt-2">
+                {{ form.organization.label_tag }}
+                {{ form.organization }}
+            </div>
+
+            <div class="form-group mt-2">
+                {{ form.mail.label_tag }}
+                {{ form.mail }}
+            </div>
+
+            <div class="row">
+                <div class="col-1">
+                    <button type="submit" class="btn btn-primary mt-3" value="Create">Создать</button>
+                </div>
+                <div class="col-1">
+                    <a href="{% url 'list_co' %}" class="btn btn-secondary mt-3">Назад</a>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+{% block script %}
+<script>
+    $(document).ready(function () {
+        // Используем Select2 для стилизации и добавления функциональности поиска
+        $(".select2").select2();
+    });
+</script>
+{% endblock %}

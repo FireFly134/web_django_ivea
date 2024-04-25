@@ -1,0 +1,108 @@
+{% extends 'router_table/base.html' %}
+
+{% load static %}
+
+{% block title %}
+    Роутеры
+{% endblock %}
+
+{% block content %}
+    <div class="text-right" style="margin-right: 25px; margin-top: 10px;">
+        <a href="{% url 'map' %}">
+            <img src="{% static 'img/globe-2-svgrepo-com.svg' %}" alt="Расположение станций на карте"
+                 title="Расположение станций на карте" style="width: 40px; height: 40px;">
+        </a>
+    </div>
+    <div class="d-flex justify-content-center align-items-center mb-3 mt-5">
+        <a href="{% url 'router_create' %}" class="btn btn-primary col-md-3"><i class="fas fa-plus"></i> Создать роутер</a>
+        <div style="width: 5px"></div>
+        <a href="{% url 'upload_accrual' %}" title="Загрузка файла" class="btn btn-success">
+            <i class="fas fa-arrow-up"></i>
+        </a>
+    </div>
+    <div class="d-flex justify-content-center">
+        <a href="{% url 'sim_list' %}">Список СИМ</a>
+    </div>
+
+    {% if not routers %}
+        <h1 class="d-flex justify-content-center align-items-center mt-5">Роутеров нет</h1>
+    {% else %}
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Роутер</th>
+                <th>Связь</th>
+                <th>Договор</th>
+                <th>СИМ</th>
+                <th>Сумма</th>
+                <th>Примечание</th>
+                <th>Действия</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for router in routers %}
+                <tr>
+                    {% if router.router_user_id %}
+                        <td>{{ router.router_user_id }}</td>
+                    {% else %}
+                        <td>-</td>
+                    {% endif %}
+                    {% if router.antenna %}
+                        {% if router.router %}
+                        <td class="text-break"
+                            style="max-width: 300px; word-wrap: break-word;">{{ router.router }}, {{ router.antenna }}</td>
+                        {% else %}
+                                            <td class="text-break"
+                            style="max-width: 300px; word-wrap: break-word;">{{ router.antenna }}</td>
+                        {% endif %}
+                    {% else %}
+                        {% if router.router %}
+                            <td class="text-break" style="max-width: 300px; word-wrap: break-word;">{{ router.router }}</td>
+                        {% else %}
+                            <td class="text-break" style="max-width: 300px; word-wrap: break-word;">-</td>
+                        {% endif %}
+                    {% endif %}
+                    {% if router.station %}
+                        {% if router.station.is_monitoring %}
+                            <td>
+                                {% if router.station.connect >= 90 %}
+                                    🟩
+                                {% elif router.station.connect >= 55 %}
+                                    🟨
+                                {% else %}
+                                    🟥
+                                {% endif %}
+                                {{ router.station.connect }}%
+                            </td>
+                        {% else %}
+                            <td>
+                                ⬜ 0%
+                            </td>
+                        {% endif %}
+                    {% else %}
+                        <td>Станция не указана</td>
+                    {% endif %}
+                    <td class="text-break" style="max-width: 250px; word-wrap: break-word;">{{ router.contract }}</td>
+                    <td class="text-break" style="max-width: 200px; word-wrap: break-word;">Билайн <a
+                            href="{% url 'sim_detail' router.sim.pk %}">{{ router.sim }}</a></td>
+                    <td>{{ router.total }}</td>
+                    {% if router.note %}
+                        <td class="text-truncate" style="max-width: 100px;">{{ router.note }}</td>
+                    {% else %}
+                        <td class="text-truncate" style="max-width: 100px;">-</td>
+                    {% endif %}
+                    <td>
+                        <a title="Перейти" href="{% url 'router_page' router.pk %}" class="btn btn-sm btn-success"><i
+                                class="fas fa-arrow-right"></i></a>
+                        <a title="Редактировать" href="{% url 'router_update' router.pk %}"
+                           class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
+                        <a title="Удалить" href="{% url 'router_delete' router.pk %}" class="btn btn-sm btn-danger"><i
+                                class="fas fa-trash-alt"></i></a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}

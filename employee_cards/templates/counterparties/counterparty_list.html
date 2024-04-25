@@ -1,0 +1,331 @@
+{% extends 'counterparties/base.html' %}
+
+{% block title2 %}
+    Список контрагентов
+{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-center align-items-center mb-3">
+        <h2 class="mt-2">Список контрагентов</h2>
+    </div>
+    <div class="d-flex justify-content-center align-items-center mb-3">
+        <a href="{% url 'counterparty_create' %}" class="btn btn-primary col-md-3"><i class="fas fa-plus"></i> Добавить
+            контрагента</a>
+    </div>
+    {% if not counterparties %}
+        <div class="d-flex justify-content-center">
+            <h1>Нет данных</h1>
+        </div>
+    {% else %}
+        <div class="d-flex flex-column">
+            <div class="d-flex justify-content-center mb-3">
+                <a class="btn btn-primary" title="Выгрузить список контрагентов" href="{% url 'counterparty_report' %}"><i
+                        class="fas fa-file-word-o fa-2x"></i></a>
+            </div>
+            <div class="row d-flex justify-content-center">
+                <div class="col-4">
+                    <div class="form-floating mb-1">
+                        <input type="text" class="form-control" id="searchInput" oninput="onSearchInput()"
+                               placeholder="Поиск">
+                        <label for="searchInput">Поиск</label>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-center align-items-center mb-3" id="inputArea">
+
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-floating mb-3">
+                            <input class="form-control" type="date" id="startYearInput" oninput="onStartDateInput()"
+                                   placeholder="Начало периода">
+                            <label for="startYearInput">Начало периода</label>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-floating mb-3">
+                            <input class="form-control" type="date" id="endYearInput" oninput="onEndDateInput()"
+                                   placeholder="Конец периода">
+                            <label for="endYearInput">Конец периода</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="showCalcResultArea" class="d-flex justify-content-center align-items-center mb-3">
+
+        </div>
+
+        <div style="overflow-x: auto; max-width: 100%;" id="tableArea">
+
+        </div>
+    {% endif %}
+
+    <script>
+        let sortBy = ''
+        let isDesc = true
+
+        document.addEventListener('DOMContentLoaded', () => {
+            filteredCounterparties = JSON.parse(JSON.stringify(
+                counterpartiesData));
+            rebuildTable(filteredCounterparties);
+        })
+
+
+        const debounce = (cb, ms = 600) => {
+            let timer;
+            return (...args) => {
+                clearTimeout(timer);
+                timer = setTimeout(() => {
+                    cb.apply(this, args);
+                }, ms);
+            };
+        }
+
+        let counterpartiesData = [
+            {% for counterparty in counterparties %}
+                {
+                    title: `{{ counterparty.title }}`,
+                    inn: `{{ counterparty.inn }}`,
+                    group_k: `{{ counterparty.group_k }}`,
+                    type_k: `{{ counterparty.type_k }}`,
+                    {% if counterparty.trade_name == "" or not counterparty.trade_name %}
+                        trade_name: `-`,
+                    {% else %}
+                        trade_name: `{{ counterparty.trade_name }}`,
+                    {% endif %}
+                    {% if counterparty.description == "" or not counterparty.description %}
+                        description: `-`,
+                    {% else %}
+                        description: `{{ counterparty.description }}`,
+                    {% endif %}
+                    {% if counterparty.url == "" or not counterparty.url %}
+                        url: `-`,
+                    {% else %}
+                        url: `<a href="{{ counterparty.url }}">{{ counterparty.url }}</a>`,
+                    {% endif %}
+                    {% if counterparty.tel == "" or not counterparty.tel %}
+                        tel: `-`,
+                    {% else %}
+                        tel: `{{ counterparty.tel }}`,
+                    {% endif %}
+                    date_time: `{{ counterparty.date_time|date:"d.m.Y" }}`,
+                    invoices: [
+                        {% for invoice in counterparty.invoices.all %}
+                            {
+                                date: '{{ invoice.date|date:"Y-m-d" }}',
+                                total: {{ invoice.total|stringformat:".2f" }},
+                            },
+                        {% endfor %}
+                    ],
+                    {% if counterparty.total %}
+                        total: {{ counterparty.total|stringformat:".2f" }},
+                    {% else %}
+                        total: 0,
+                    {% endif %}
+                    standard_deviation: {{ counterparty.standard_deviation|stringformat:".2f" }},
+                    load_by_month: {{ counterparty.load_by_month|stringformat:".2f" }},
+                    absolute_url: '{{ counterparty.get_absolute_url }}',
+                    update_url: '{{ counterparty.get_update_url }}',
+                    tableType: 'table-danger',
+                },
+            {% endfor %}
+        ]
+
+        counterpartiesData = counterpartiesData.sort((a, b) => {
+            return b.total - a.total;
+        });
+
+        let sum = counterpartiesData.reduce((accumulator, counterparty) => {
+            return accumulator + parseFloat(counterparty.total.toString().replace(',', '.').replace('\u00A0', ''));
+        }, 0);
+        let totalPercent = 0;
+        counterpartiesData.forEach((counterparty) => {
+            let currTotal = parseFloat(counterparty.total.toString().replace(',', '.').replace('\u00A0', ''));
+            let currPercent = (currTotal * 100) / sum;
+            totalPercent += currPercent;
+
+            if (totalPercent < 80) {
+                counterparty.tableType = 'table-success';
+            } else if (totalPercent < 95) {
+                counterparty.tableType = 'table-warning';
+            }
+        });
+
+        let filteredCounterparties = JSON.parse(JSON.stringify(counterpartiesData));
+
+        let startDateFilter = "";
+        let endDateFilter = "";
+        let searchFilter = "";
+
+        function onStartDateInput() {
+            startDateFilter = document.getElementById('startYearInput').value;
+            rebuildTable(filteredCounterparties);
+        }
+
+        function onEndDateInput() {
+            endDateFilter = document.getElementById('endYearInput').value;
+            rebuildTable(filteredCounterparties);
+        }
+
+        function onSearchInput() {
+            searchFilter = document.getElementById('searchInput').value;
+            rebuildTable(filteredCounterparties);
+        }
+
+
+        function rebuildTable(filteredCounterparties) {
+            if (startDateFilter !== "" || endDateFilter !== "") {
+                filteredCounterparties = JSON.parse(JSON.stringify(filteredCounterparties));
+                let startDate = new Date(startDateFilter);
+                let endDate = new Date(endDateFilter);
+                filteredCounterparties.forEach((counterparty) => {
+                    counterparty.invoices = counterparty.invoices.filter((invoice) => {
+                        let date = new Date(invoice.date);
+
+                        if (startDateFilter !== "" && endDateFilter === "") {
+                            return date >= startDate;
+                        } else if (startDateFilter === "" && endDateFilter !== "") {
+                            return date <= endDate;
+                        } else if (startDateFilter !== "" && endDateFilter !== "") {
+                            if (startDate > endDate) return false;
+                            return date >= startDate && date <= endDate;
+                        } else {
+                            return true;
+                        }
+                    });
+                });
+
+                filteredCounterparties = filteredCounterparties.filter((counterparty) => {
+                    return counterparty.invoices.length !== 0;
+                });
+            }
+
+            let searchFilter = document.getElementById('searchInput').value;
+
+            if (searchFilter !== "") {
+                filteredCounterparties = filteredCounterparties.filter(function (counterparty) {
+                    let searchString = `${counterparty.title}`.toLowerCase();
+                    if (counterparty.invoices.length !== 0 || (startDateFilter === "" && endDateFilter === "")) {
+
+                    }
+                    return searchString.includes(searchFilter.toLowerCase());
+                });
+            }
+
+            let tableHTML = "";
+            let total = 0;
+            filteredCounterparties.forEach((counterparty, i) => {
+                let currentTotal = 0;
+                counterparty.invoices.forEach((invoice) => {
+                    currentTotal += invoice.total;
+                });
+                total += currentTotal;
+
+                tableHTML += `
+                <tr class="${counterparty.tableType}">
+                    <td>${i + 1}</td>
+                    <td><a href="{% url "invoice_analysis" %}?counterparty_inn=${counterparty.inn}">${counterparty.title}</a></td>
+                    <td>${counterparty.inn}</td>
+                    <td>${counterparty.trade_name}</td>
+                    <td>${counterparty.description}</td>
+                    <td class="limited-width">${counterparty.url}</td>
+                    <td class="limited-width">${counterparty.tel}</td>
+                    <td>${counterparty.group_k}</td>
+                    <td>${counterparty.type_k}</td>
+                    <td>${numberWithSpace(currentTotal.toFixed(2))}</td>
+                    <td>${numberWithSpace(counterparty.standard_deviation.toFixed(2))}</td>
+                    <td>${numberWithSpace(counterparty.load_by_month.toFixed(2))}</td>
+                    <td>${counterparty.date_time}</td>
+                    <td nowrap>
+                        <a title="Перейти" href="${counterparty.absolute_url}" class="btn btn-sm btn-success"><i class="fas fa-arrow-right"></i></a>
+                        <a title="Изменить" href="${counterparty.update_url}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
+                    </td>
+                </tr>
+                `;
+            });
+
+            document.getElementById('showCalcResultArea').innerHTML = `
+        <p>Сумма по выбранным датам: <strong>${numberWithSpace(total.toFixed(2))} руб.</strong></p>
+    `;
+
+            let tableArea = document.getElementById('tableArea');
+            tableArea.innerHTML = `
+        <table style="width: 100%; font-size: 14px;" class="table">
+            <thead>
+                <th style="cursor: pointer; vertical-align: middle;" scope="col">№</th>
+                <th style="cursor: pointer; vertical-align: middle;" scope="col" data-sortable="title">Имя</th>
+                <th style="cursor: pointer; vertical-align: middle;" scope="col" data-sortable="inn">ИНН</th>
+                <th style="cursor: pointer; vertical-align: middle;" scope="col" data-sortable="trade_name">Торговое название</th>
+                <th style="cursor: pointer; vertical-align: middle;" scope="col" data-sortable="description">Описание</th>
+                <th style="cursor: pointer; vertical-align: middle;" scope="col" data-sortable="url">Сайт</th>
+                <th style="cursor: pointer; vertical-align: middle;" scope="col" data-sortable="tel">Контакты</th>
+                <th style="cursor: pointer; vertical-align: middle;" scope="col" data-sortable="group_k">Группа</th>
+                <th style="cursor: pointer; vertical-align: middle;" scope="col" data-sortable="type_k">Вид контракта</th>
+                <th style="cursor: pointer; vertical-align: middle;" scope="col" data-sortable="total">Сумма</th>
+                <th style="cursor: pointer; vertical-align: middle;" scope="col" data-sortable="standard_deviation">Отклонение</th>
+                <th style="cursor: pointer; vertical-align: middle;" scope="col" data-sortable="load_by_month">Загрузка по месяцам</th>
+                <th style="cursor: pointer; vertical-align: middle;" scope="col" data-sortable="date_time">Дата создания</th>
+                <th style="cursor: pointer; vertical-align: middle;" scope="col">Действия</th>
+            </thead>
+            <tbody>
+                ${tableHTML}
+            </tbody>
+        </table>
+    `;
+
+            addSortHandlers(filteredCounterparties)
+        }
+
+        function addSortHandlers(filteredCounterparties) {
+            const tableColumns = document.querySelectorAll('[data-sortable]');
+
+            tableColumns.forEach(column => {
+                column.addEventListener('click', (event) => {
+                    const {sortable} = event.target.dataset;
+                    sortBy = sortable;
+                    let newFilteredCounterparties;
+                    if (sortBy === "date_time") {
+                        newFilteredCounterparties = [...filteredCounterparties.sort((a, b) => {
+                            const a_date = new Date(a[sortBy].slice(6, 10) + "-" + a[sortBy].slice(3, 5) + "-" + a[sortBy].slice(0, 2));
+                            const b_date = new Date(b[sortBy].slice(6, 10) + "-" + b[sortBy].slice(3, 5) + "-" + b[sortBy].slice(0, 2));
+                            return isDesc ? a_date - b_date : b_date - a_date;
+                        })];
+                    } else if (sortBy === "load_by_month" || sortBy === "standard_deviation") {
+                        newFilteredCounterparties = [...filteredCounterparties.sort((a, b) => {
+                            const aValue = parseFloat(a[sortBy]);
+                            const bValue = parseFloat(b[sortBy]);
+                            return isDesc ? aValue - bValue : bValue - aValue;
+                        })];
+                    } else if (sortBy === "total") {
+                        newFilteredCounterparties = [...filteredCounterparties.sort((a, b) => {
+                            let aTotal = sumOfCounterparty(a);
+                            let bTotal = sumOfCounterparty(b);
+                            return isDesc ? aTotal - bTotal : bTotal - aTotal;
+                        })];
+                    } else {
+                        newFilteredCounterparties = [...filteredCounterparties.sort((a, b) => isDesc ? a[sortBy].localeCompare(b[sortBy]) : b[sortBy].localeCompare(a[sortBy]))];
+                    }
+                    rebuildTable(newFilteredCounterparties);
+                    isDesc = !isDesc;
+                    sortBy = sortable;
+                });
+            });
+        }
+
+        function normalizeDate(stringDate) {
+            return new Date(stringDate.slice(6, 10) + "-" + stringDate.slice(3, 5) + '-' + stringDate.slice(0, 2));
+        }
+
+        function numberWithSpace(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u00A0").replace('.', ',');
+        }
+
+        function sumOfCounterparty(counterparty) {
+            return counterparty.invoices.reduce((accumulator, invoice) => {
+                return accumulator + invoice.total;
+            }, 0);
+        }
+    </script>
+{% endblock %}

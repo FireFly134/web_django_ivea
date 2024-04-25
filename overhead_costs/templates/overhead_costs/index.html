@@ -1,0 +1,228 @@
+{% extends 'overhead_costs/base.html' %}
+
+{% block content %}
+    <div class="container">
+
+    <div class="d-flex mt-2">
+        <h2>Накладные расходы</h2>
+        <div style="width: 10px;"></div>
+        <a href="{% url 'upload_bank_statement' %}" title="Загрузка файла" class="btn btn-success">
+            <i class="fas fa-arrow-up"></i>
+        </a>
+    </div>
+
+    <div id="inputArea" class="row mt-4">
+        <div class="form-group col-md-1">
+            <label class="mb-1" for="yearInput">Год</label>
+            <select class="form-control" id="yearInput" onchange="onYearInput()">
+                    <option value="">---</option>
+                {% for year in years %}
+                    <option value="{{ year }}">{{ year }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group col-md-2">
+            <label class="mb-1" for="monthInput">Месяц</label>
+            <select class="form-control" id="monthInput" onchange="onMonthInput()">
+                <option value="">---</option>
+                <option value="01">Январь</option>
+                <option value="02">Февраль</option>
+                <option value="03">Март</option>
+                <option value="04">Апрель</option>
+                <option value="05">Май</option>
+                <option value="06">Июнь</option>
+                <option value="07">Июль</option>
+                <option value="08">Август</option>
+                <option value="09">Сентябрь</option>
+                <option value="10">Октябрь</option>
+                <option value="11">Ноябрь</option>
+                <option value="12">Декабрь</option>
+            </select>
+        </div>
+        <div class="form-group col-md-7">
+            <label class="mb-1" for="keywordInput">Поиск</label>
+            <input type="text" class="form-control" id="keywordInput" placeholder="Поиск" oninput="onKeywordInput()">
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-check col-md-5">
+            <label class="form-check-label mr-4" for="groupCounterparty">Группировать по контрагенту:</label>
+            <input class="form-check-input ml-1" type="checkbox" value="" id="groupCounterparty" onclick="rebuildTable()">
+        </div>
+    </div>
+
+    <div id="showArea">
+        {#        place for table        #}
+    </div>
+</div>
+<script>
+    const debounce = (cb, ms = 600) => {
+        let timer;
+        return (...args) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => { cb.apply(this, args); }, ms);
+        };
+    }
+    let invoices = [
+        {% for invoice in invoices %}
+            {
+                id: '{{ invoice.id }}',
+                date: toNormalDate('{{ invoice.Дата|date:"d.m.Y" }}'),
+                counterparty: '{{ invoice.Контрагент }}',
+                nomenclature: '{{ invoice.Номенклатура }}',
+                count: '{{ invoice.Количество }}',
+                unit: '{{ invoice.Номенклатура_Единица }}',
+                price: '{{ invoice.Цена }}',
+                amount: '{{ invoice.Сумма }}',
+                vat: '{{ invoice.НДС }}',
+                total: '{{ invoice.Всего }}',
+                docNum: '{{ invoice.Номер_входящего_документа }}',
+            },
+        {% endfor %}
+    ]
+
+    let yearFilter = "";
+    let monthFilter = "";
+    let keywordFilter = "";
+
+    function onYearInput() {
+        yearFilter = document.getElementById('yearInput').value.toString();
+        rebuildTable();
+    }
+
+    function onMonthInput() {
+        monthFilter = document.getElementById('monthInput').value.toString();
+        rebuildTable();
+    }
+
+    function onKeywordInput() {
+        keywordFilter = document.getElementById('keywordInput').value;
+        debounce(() => rebuildTable())();
+    }
+
+    function rebuildTable() {
+        if (yearFilter === "" && monthFilter === "" && keywordFilter === "") {
+            let showArea = document.getElementById('showArea');
+            showArea.innerHTML = ``;
+            return;
+        }
+
+        let filteredInvoices = invoices.filter(function (invoice) {
+            if (keywordFilter === "") return true;
+            let searchString = `${invoice.date} ${invoice.counterparty} ${invoice.nomenclature} ${invoice.unit}
+            ${invoice.price} ${invoice.amount} ${invoice.vat} ${invoice.total} ${invoice.docNum}`.toLowerCase()
+            return searchString.includes(keywordFilter.toLowerCase());
+        });
+
+        filteredInvoices = filteredInvoices.filter(function (invoice) {
+            if (monthFilter === "") return true;
+            let invoiceMonth = invoice.date.split('.')[1].slice(0,2);
+            return monthFilter === invoiceMonth;
+        });
+
+        filteredInvoices = filteredInvoices.filter(function (invoice) {
+            if (yearFilter === "") return true;
+            let invoiceYear = invoice.date.split('.')[2].slice(0,4);
+            return yearFilter === invoiceYear;
+        });
+
+        let groupCheckBox = document.getElementById('groupCounterparty');
+        if (groupCheckBox.checked === true)
+        {
+            let groupedInvoices = new Map();
+
+            filteredInvoices.forEach(invoice => {
+                if (!groupedInvoices.has(invoice.counterparty)) {
+                    let newInvoice = Object.assign({}, invoice);
+                    newInvoice.date = invoice.date.slice(0, 10);
+                    newInvoice.amount = "";
+                    newInvoice.nomenclature = "";
+                    newInvoice.price = "";
+                    newInvoice.count = "";
+                    newInvoice.unit = "";
+                    newInvoice.vat = "";
+                    newInvoice.total = parseFloat(invoice.total.toString().replaceAll('\u00A0', ''));
+                    groupedInvoices.set(invoice.counterparty, newInvoice);
+                } else {
+                    let currInvoice = groupedInvoices.get(invoice.counterparty);
+                    if (invoice.counterparty !== "") currInvoice.counterparty = invoice.counterparty;
+                    let currTotal = parseFloat(currInvoice.total.toString().replaceAll('\u00A0', ''));
+                    let nextTotal = parseFloat(invoice.total.toString().replaceAll('\u00A0', ''));
+                    currInvoice.total = (currTotal + nextTotal).toFixed(2);
+                }
+            });
+            filteredInvoices = Array.from(groupedInvoices.values());
+        }
+
+        filteredInvoices.sort(function (a, b) {
+            let total_a = parseFloat(a.total.toString().replaceAll(',', '.').replaceAll('\u00A0', ''));
+            let total_b = parseFloat(b.total.toString().replaceAll(',', '.').replaceAll('\u00A0', ''));
+              if (total_a > total_b) return 1;
+              if (total_a < total_b) return -1;
+              return 0;
+        }, );
+        filteredInvoices = filteredInvoices.reverse();
+
+        let sum = filteredInvoices.reduce((accumulator, invoice) => {
+            return accumulator + parseFloat(invoice.total.toString().replaceAll(',', '.').replaceAll('\u00A0', ''));
+        }, 0);
+
+        let totalPercent = 0;
+        let tableHtmlText = "";
+        for (let i = 0; i < filteredInvoices.length; i++) {
+            let currTotal = parseFloat(filteredInvoices[i].total.toString().replaceAll(',', '.').replaceAll('\u00A0', ''));
+            let currPercent = (currTotal * 100) / sum;
+            totalPercent += currPercent;
+
+            let tableType = "table-danger";
+            if (totalPercent < 80) {
+                tableType = 'table-success';
+            } else if (totalPercent < 95) {
+                tableType = 'table-warning';
+            }
+
+            tableHtmlText += `
+                <tr class="${tableType}">
+                    <td>${filteredInvoices[i].date}</td>
+                    <td>${filteredInvoices[i].counterparty}</td>
+                    <td>${filteredInvoices[i].nomenclature}</td>
+                    <td>${filteredInvoices[i].count}</td>
+                    <td>${filteredInvoices[i].unit}</td>
+                    <td>${numberWithSpace(filteredInvoices[i].price)}</td>
+                    <td>${numberWithSpace(filteredInvoices[i].amount)}</td>
+                    <td>${numberWithSpace(filteredInvoices[i].vat)}</td>
+                    <td>${numberWithSpace(filteredInvoices[i].total.toString())}</td>
+                </tr>
+            `
+        }
+
+        let showArea = document.getElementById('showArea');
+        showArea.innerHTML = `
+            <p>Общие затраты по выборке: <strong>${numberWithSpace(sum.toFixed(2))} руб.</strong></p>
+            <table class="table table-sm" style="margin-bottom: 80px">
+                <thead style="position: sticky;top: 0" class="thead-dark">
+                    <tr>
+                        {% for header in headers %}
+                            <th class="header" scope="col">{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tableHtmlText}
+                </tbody>
+            </table>
+        `;
+
+    }
+
+    function numberWithSpace(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u00A0").replace('.', ',');
+    }
+
+    function toNormalDate(date) {
+        date = date.replaceAll(" ", "")
+        return date.slice(0, 10) + " " + date.slice(10, date.length);
+    }
+</script>
+
+{% endblock %}

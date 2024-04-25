@@ -1,9 +1,42 @@
+    {# Load the tag library #}
+    {% load bootstrap5 %}
+
+    {# Load CSS and JavaScript #}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+
+    {# Display django.contrib.messages as Bootstrap alerts #}
+    {% bootstrap_messages %}
+
+    {% load static %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}{% endblock %}</title>
     {% block style %}{% endblock %}
+    <link href="{% static 'img/favicon.ico' %}" rel="shortcut icon" type="image/vnd.microsoft.icon">
+    <link rel="stylesheet" href="{% static 'css/menu.css' %}" type="text/css"> <!-- Стиль с выдвижным списком в меню-->
+    <link rel="stylesheet" href="{% static 'css/grid-responsive.css' %}" type="text/css"><!--    Стиль который центроет меню-->
+    {% if "/reports/" not in request.path %}
+    {% if "/employee/" not in request.path %}
+    {% if "/overhead_costs/" not in request.path %}
+    {% if "/invoice_analysis/" not in request.path %}
+    {% if "/commercial_offers/edit" not in request.path %}
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}" type="text/css"> <!--    Стиль который убирает отступы от краев-->
+    {% endif %}
+    {% endif %}
+    {% endif %}
+    {% endif %}
+    {% endif %}
+    <link rel="stylesheet" href="{% static 'css/master-ac58b0dbe5532d9e575562bad23fa5de.css' %}" type="text/css"> <!--  Стиль который нужен, закоментируй глянь, убирает почти все...каша -->
+    <link rel="stylesheet" href="{% static 'css/sp.css' %}" type="text/css"> <!--    Стиль который убирает кнопки ссылки в мню шапки -->
+    <link rel="stylesheet" href="{% static 'css/1200fixed.css' %}" type="text/css"><!--    Без этой строки меню из шапки пропадает (кнопки главная...) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"> <!-- Иконки font awesome -->
+    <style type="text/css">
+    #rt-logo {background: url({% static 'img/logo.png' %}) 50% 0 no-repeat !important;}
+    #rt-logo {width: 265px;height: 40px;}
+    </style>
     <style>
         .table_center_by_css {
             width: 300px;
@@ -11,29 +44,9 @@
             margin: auto;
         }
     </style>
-    <link href="http://ivea-water.ru/templates/wt_plussone_jom/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon">
-    <link rel="stylesheet" href="http://ivea-water.ru/templates/wt_plussone_jom/css-compiled/menu-15e57d4007d38afd200e3d6bdb49e5cb.css" type="text/css"> <!-- Стиль с выдвижным списком в меню-->
-    <link rel="stylesheet" href="http://ivea-water.ru/libraries/gantry/css/grid-responsive.css" type="text/css"><!--    Стиль который центроет меню-->
-    <link rel="stylesheet" href="http://ivea-water.ru/templates/wt_plussone_jom/css-compiled/bootstrap.css" type="text/css"> <!--    Стиль который убирает отступы от краев-->
-    <link rel="stylesheet" href="http://ivea-water.ru/templates/wt_plussone_jom/css-compiled/master-ac58b0dbe5532d9e575562bad23fa5de.css" type="text/css"><!--    Стил который нужен, закоментируй глянь, убирает почти все...каша-->
-    <link rel="stylesheet" href="http://ivea-water.ru/templates/wt_plussone_jom/css/sp.css" type="text/css"> <!--    Стиль который убирает кнопки ссылки в мню шапки -->
-    <link rel="stylesheet" href="http://ivea-water.ru/templates/wt_plussone_jom/css-compiled/1200fixed.css" type="text/css"><!--    Без этой строки меню из шапки пропадает (кнопки главная...) -->
-    <style type="text/css">
-    #rt-logo {background: url(http://ivea-water.ru/images/frontpage/logo.png) 50% 0 no-repeat !important;}
-    #rt-logo {width: 265px;height: 40px;}
-    </style>
-    <link rel="stylesheet" href="http://ivea-water.ru/css/css.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js" integrity="sha512-2ImtlRlf2VVmiGZsjm9bEyhjGW4dU7B6TNwh/hx/iSByxNENtj3WVE6o/9Lj4TJeVXPi4bnOIMXFIJJAeufa0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" integrity="sha512-nMNlpuaDPrqlEls3IX/Q56H36qvBASwb3ipuo3MxeWbsQB1881ox0cRv7UPTgBlriqoynt35KjEwgGUeUXIPnw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <script>
-        $(document).ready(function()
-        {
-            $('#id_choice_id').select2();
-            $('#id_purchased').select2();
-            $('#id_details').select2();
-        });
-    </script>
+    <link rel="stylesheet" href="{% static 'css/style_message_save.css' %}" type="text/css">
+    <link rel="stylesheet" href="{% static 'css/css.css' %}">
+
 </head>
 <body class="page-fixed-0 page-fixedheader-disable page-headerstyle-hstyleone page-type-none logo-type-custom font-size-is-default rttop-type-none rtheader-type-none rtshowcase-fixed-0 rtshowcase-type-none rtfeature-type-none rtutility-type-none rtbreadcrumbs-type-none rtmaintop-type-maintopimg rtmainbottom-type-none rtextension-type-none rtbottom-type-none rtfooter-type-none rtcopyright-type-none menu-type-dropdownmenu layout-mode-1200fixed breadfeature-1 col12">
     <header id="rt-top-surround">
@@ -63,8 +76,6 @@
                                         margin-bottom: 10px;
                                     }
                                     </style>
-
-                                    <a data-config="commands=chat,call,videocall,add;size=14;status=on;theme=logo;bgcolor=#e8e8e8" id="skaip-buttons" href="http://www.skaip.su/" style="font-size: 15px; display: none;">Skype</a><script src="http://apps.skaip.su/buttons/widget/core.min.js" defer="defer"></script>
                                     <!--<a href="/component/xmap/html/1?view=html"> &nbsp; &nbsp; &nbsp; Карта сайта</a>-->
                                 </div>
 	                	    </div>
@@ -116,57 +127,14 @@
                                     <div class="dropdown columns-1 " style="width:250px;">
                                         <div class="column col1" style="width:250px;">
                                             <ul class="l2">
-                                                <li>
-                                                    <a class="item" href="{% url 'new_doc' %}">Добавить новый документ</a>
-                                                </li>
-                                                <li>
-                                                    <a class="item" href="{% url 'list_doc' %}">Список документов</a>
-                                                </li>
-                                                <li>
-                                                    <a class="item"  href="{% url 'not_an_agreed_doc' %}">Список не согласованных документов</a>
-                                                </li>
-                                                {% if request.user.is_staff %}
-                                                <li>
-                                                    <a class="item"  href="{% url 'afpe' %}">Добавление покупного оборудования</a>
-                                                </li>
-<!--                                                 <li> -->
-<!--                                                     <a class="item"  href="{% url 'aosaed' %}">Добавление расшифровок услуг или оборудования</a> -->
-<!--                                                 </li> -->
-                                                <li>
-                                                    <a class="item"  href="{% url 'aosae' %}">Добавление услуг или оборудования</a>
-                                                </li>
-                                                <li>
-                                                    <a class="item"  href="javascript:void(0);">Объектные сборки<span class="border-fixer"></span></a>
-                                                    <div class="dropdown flyout columns-1 " style="width:220px;">
-                                                        <div class="column col1" style="width:220px;">
-                                                            <ul class="l3">
-                                                                <li>
-                                                                    <a class="item"  href="{% url 'details' %}">Детали</a>
-                                                                </li>
-                                                                <li>
-                                                                    <a class="item"  href="{% url 'utn' %}">Подузлы</a>
-                                                                </li>
-                                                                <li>
-                                                                    <a class="item"  href="{% url 'unit' %}">Узлы</a>
-                                                                </li>
-                                                                <li>
-                                                                    <a class="item"  href="{% url 'assembly_unit' %}">Сборочные единицы</a>
-                                                                </li>
-                                                                <li>
-                                                                    <a class="item"  href="{% url 'object_assembly' %}">Объектные сборки</a>
-                                                                </li>
-                                                            </ul>
-                                                        </div>
-                                                    </div>
-                                                </li>
-                                                {% endif %}
+                                                {{links_base|safe}}
                                             </ul>
                                         </div>
                                     </div>
                                 </li>
                             {% else %}
                                 <li class="item138 parent">
-                                    <a class="item" href="javascript:void(0);">О компании<span class="border-fixer"></span></a>
+                                    <a class="item" href="javascript:void(0);">О компании &rarr;<span class="border-fixer"></span></a>
                                     <div class="dropdown columns-1 " style="width:220px;">
                                         <div class="column col1" style="width:220px;">
                                             <ul class="l2">
@@ -205,7 +173,6 @@
                     <div class="rt-block  module_rokajaxsearch textright">
                         <div class="module-surround">
                             <div class="module-content">
-                                <form name="rokajaxsearch" id="rokajaxsearch" class="light" action="http://ivea-water.ru/" method="get">
                                     <div class="rokajaxsearch  module_rokajaxsearch textright">
                                         <div class="roksearch-wrapper">
                                             {% if request.user.is_authenticated %}
@@ -223,7 +190,6 @@
 
                                     </div>
                                     <div id="rokajaxsearch_tmp" style="visibility:hidden;display:none;"></div>
-                                </form>
                             </div>
                         </div>
                     </div>
@@ -248,11 +214,20 @@
 
     {% endif %}
     {% if request.user.is_authenticated %}
-         {% block body %}{% endblock %}
+        <div id="message" style="display: none;"></div>
+        {% block body %}{% endblock %}
+        <!-- Загрузка jQuery с CDN -->
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+        <!-- Загрузка Select2 с CDN -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+        {% block script %}{% endblock %}
     {% else %}
         <h4 style="text-align:center">
             Для того чтобы пользоваться функционалом, необходимо <a href="{% url 'login' %}">авторизоваться</a> !
         </h4>
     {% endif %}
+
 </body>
 </html>

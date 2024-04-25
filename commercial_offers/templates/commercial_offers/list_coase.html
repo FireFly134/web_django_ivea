@@ -1,0 +1,149 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% block title %}Cписок коммерческих предложений{% endblock %}
+{% block style %}
+<style>.doc_table {
+  font-size: 12pt;
+  font-family: Arial;
+  color: black;
+}
+
+td {
+    white-space: pre-line;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+
+<br>
+<div class="d-flex justify-content-between align-items-center" style="margin-left: 25px; margin-right: 25px;">
+	<div class="btn-group" role="group" aria-label="Первая группа">
+		<a href="{% url 'list_co' %}" class="btn btn-dark mt-3" id="btn-group-1">Перейти в список потенциальных заказчиков</a>
+		<a href="{% url 'create_coase' %}" class="btn btn-primary mt-3" id="btn-group-2">Создать новую запись</a>
+	</div>
+</div>
+<div style="margin-left: 25px; margin-right: 25px;">
+	<input type="text" id="filterInput" placeholder="Введите значение для фильтрации" oninput="handleInput(event)">
+	<input type="image" src="{% static 'img/icon-deletelink.svg' %}" alt="Очистить фильтр" title="Очистить фильтр" onclick="NullFilterTable()" style="width: 20px; height: 20px; margin-top: -10px;">
+</div>
+<table class="table_center_by_css table table-sm table-bordered" border="1" cellpadding="1" cellspacing="1" style="width:98%" id="DocTable">
+	<thead style="position: sticky;top: 0">
+		<tr>
+			<td class="doc_table" scope="col" id="N" data-column="N" style="background: #ebebeb;text-align:center; width:50px">№ п/п</td>
+			<td class="doc_table" scope="col" id="fio" data-column="fio" style="background: #ebebeb;text-align:center; width:300px;">ФИО</td>
+			<td class="doc_table" scope="col" id="organization" data-column="organization" style="background: #ebebeb;text-align:center; width:300px;">Название организации</td>
+			<td class="doc_table" scope="col" id="services_equipment" data-column="services_equipment" style="background: #ebebeb;text-align:center;">Услуги и оборудование</td>
+			<td class="doc_table" scope="col" id="services_equipment" data-column="services_equipment" style="background: #ebebeb;text-align:center;">Наименование работ</td>
+			<td class="doc_table" scope="col" id="services_equipment" data-column="services_equipment" style="background: #ebebeb;text-align:center;">Ед. изм.</td>
+			<td class="doc_table" scope="col" id="services_equipment" data-column="services_equipment" style="background: #ebebeb;text-align:center;">Стоимость, руб с НДС 20%</td>
+			<td class="doc_table" scope="col" id="move" style="background: #ebebeb;text-align:center; width:100px">Действия</td>
+		</tr>
+	</thead>
+	<tbody id="tbody"></tbody>
+</table>
+{% endblock %}
+{% block script %}
+<script>
+	let rowCounter = 1; // Счетчик номера п/п
+	//
+	function addTableRow(editUrl, deleteUrl, id, fio, organization, services_equipment, npp, work_name, unit_of_measurement, cost_with_vat) {
+		const newRow = tbody.insertRow();
+		const cell1 = newRow.insertCell(0);
+		const cell2 = newRow.insertCell(1);
+		const cell3 = newRow.insertCell(2);
+		const cell4 = newRow.insertCell(3);
+		const cell5 = newRow.insertCell(4);
+		const cell6 = newRow.insertCell(5);
+		const cell7 = newRow.insertCell(6);
+		const cell8 = newRow.insertCell(7);
+
+
+		cell1.textContent = convertNoneToEmpty(npp);
+		cell2.textContent = fio;
+		cell3.textContent = organization;
+		cell4.textContent = services_equipment;
+		cell5.textContent = convertNoneToEmpty(work_name);
+		cell6.textContent = convertNoneToEmpty(unit_of_measurement);
+		cell7.textContent = convertNoneToEmpty(cost_with_vat);
+
+		// Создаем ссылку для редактирования
+		const editLink = document.createElement("a");
+		editLink.href = editUrl;
+		editLink.className = "btn btn-link";
+		editLink.title = "Редактировать";
+
+		// Создаем иконку для редактирования
+		const editIcon = document.createElement("i");
+		editIcon.className = "fas fa-pencil-alt";
+
+		// Добавляем иконку в ссылку
+		editLink.appendChild(editIcon);
+
+		// Создаем ссылку для удаления
+		const deleteLink = document.createElement("a");
+		deleteLink.href = deleteUrl;
+		deleteLink.className = "btn btn-link text-danger";
+		deleteLink.title = "Удалить";
+
+		// Создаем иконку для удаления
+		const deleteIcon = document.createElement("i");
+		deleteIcon.className = "fas fa-trash-alt";
+
+		// Добавляем иконку в ссылку
+		deleteLink.appendChild(deleteIcon);
+
+		// Добавляем ссылки в ячейку
+		cell8.appendChild(editLink);
+		cell8.appendChild(deleteLink);
+	}
+
+	//Фильтр по значениям в таблице открыт договор и строительная готовность, работает через кнопки
+	function NullFilterTable() {
+	// Обновляем значение скрытого поля
+		document.getElementById('filterInput').value = '';
+		filterTable()
+		}
+	function filterTable(inputElement = document.getElementById("filterInput").value) {
+	  var filter, table, tr, td, i, j, txtValue;
+	  filter = inputElement.toUpperCase();
+	  table = document.getElementById("DocTable");
+	  tr = table.getElementsByTagName("tr");
+
+	  // Проходим по каждой строке таблицы, начиная с индекса 2 (пропускаем первые две строки)
+	  for (i = 1; i < tr.length; i++) {
+		td = tr[i].getElementsByTagName("td");
+		var rowVisible = false;
+		for (j = 0; j < td.length; j++) {
+		  if (td[j]) {
+			txtValue = td[j].textContent || td[j].innerText;
+
+			if (txtValue.toUpperCase().indexOf(filter) > -1) {
+			  rowVisible = true;
+			  break;
+			}
+		  }
+		}
+
+		// Показываем или скрываем строку в зависимости от значения флага
+		tr[i].style.display = rowVisible ? "" : "none";
+	  }
+	}
+	function handleInput(event) {
+		filterTable(event.target.value);
+	}
+
+	document.addEventListener("DOMContentLoaded", function () {
+		let tbody = document.getElementById('tbody');
+
+		{% for item in list %}
+			addTableRow('{% url 'edit_coase' item.id %}', '{% url 'delete_coase' item.id %}', `{{ item.id|safe }}`, `{{ item.contact_information.fio|safe }}`, `{{ item.contact_information.organization|safe }}`, `{% for service in item.services_equipment.all %}{{ service.see_id|safe }}) {{ service.name|safe }}{% if not forloop.last %}\n{% endif %}{% endfor %}`, `{{ item.npp }}`, '{{ item.work_name }}', '{{ item.unit_of_measurement }}', '{{ item.cost_with_vat }}');
+		{% endfor %}
+	});
+
+	function convertNoneToEmpty(value) {
+		if (value === "None") return "-";
+		return value;
+	}
+</script>
+{% endblock %}

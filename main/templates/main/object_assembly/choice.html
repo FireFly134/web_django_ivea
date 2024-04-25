@@ -1,4 +1,5 @@
 {% extends 'main/base.html' %}
+{% load static %}
 {% block title %}{{ title }}{% endblock %}
 {% block style %}
 <style>
@@ -52,10 +53,12 @@
                         {% csrf_token %}
                         {{ form }}
                         {% if title == 'Объектная сборка' %}
-                        <a class="related-widget-wrapper-link add-related" id="add_doc" href="{% url 'new_doc' %}" title='Добавить'><img src="/static/admin/img/icon-addlink.svg" alt="Добавить"></a>
+                            {% if 'Добавить новый договор' in user_groups %}
+                                <a class="related-widget-wrapper-link add-related" id="add_doc" href="{% url 'new_doc' %}" title='Добавить'><img src="{% static 'img/icon-addlink.svg' %}" alt="Добавить"></a>
+                            {% endif %}
                         {% else %}
-                        <a class="related-widget-wrapper-link add-related" id="edit_id_purchased" href="#openRenameModal" title='Переименовать'><img src="/static/admin/img/icon-changelink.svg" alt="Переименовать"></a>
-                        <a class="related-widget-wrapper-link add-related" id="add_id_purchased" href="#openModal" title='Добавить'><img src="/static/admin/img/icon-addlink.svg" alt="Добавить"></a>
+                            <a class="related-widget-wrapper-link add-related" id="edit_id_purchased" href="#openRenameModal" title='Переименовать'><img src="{% static 'img/icon-changelink.svg' %}" alt="Переименовать"></a>
+                            <a class="related-widget-wrapper-link add-related" id="add_id_purchased" href="#openModal" title='Добавить'><img src="{% static 'img/icon-addlink.svg' %}" alt="Добавить"></a>
                         {% endif %}
                     </form>
                 <form method=POST action="{{ url }}" id="edit" name="edit">
@@ -68,65 +71,52 @@
                         <input name="choice_id" type='hidden' value="{{ choice_id }}">
                         <button type="submit" onchange = "document.getElementById('edit').submit()">Изменить</button>
                 </form>
-                {% if title == 'Объектная сборка' %}{% if obj1 or obj2 %}
-                <form method=POST action="{% url 'report' %}" id="id_edit" >
+                {% if obj1 or purchased or obj3 or obj4 or details %}
+                <form method=POST action="{{ report_url }}" id="id_edit" >
                     {% csrf_token %}
                         <input name="choice_id" type='hidden' value="{{ choice_id }}">
                         <button type="submit" onchange = "document.getElementById('id_edit').submit()">Закупочная ведомость</button>
                 </form>
-                {% endif %}{% endif %}
+                {% endif %}
+
                 <div id="openModal" class="modalDialog">
                     <div>
                         <a href="" title="Закрыть" class="close">Закрыть</a>
-                        <form method=POST id="save" name="save">
+                        {% if title == 'Подузел' %}
+                            <form method="POST" id="save" name="save" action="{% url "utn_create" %}">
+                        {% else %}
+                            <form method="POST" id="save" name="save">
+                        {% endif %}
                             {% csrf_token %}
-                                <div>{% if messages %}
-                                    {% for message in messages %}
-                                        {% if message.tags == 'error'%}
-                                            <div class="alert alert-danger" role="alert">
-                                                {{ message }}
-                                            </div>
-                                        {% else %}
-                                            <div class="alert alert-{{ message.tags }}" role="alert">
-                                                {{ message }}
-                                            </div>
-                                        {% endif %}
-                                    {% endfor %}
-                                    {% endif %}</div>
-                                <p><label for="id_name">Введите наименование {% if title == 'Подузел' %}подузла{% elif title == 'Узел' %}узла{% else %}сборочной единицы{% endif %}:</label></p>
-                                <p><input type="text" name="name" class="form-control" required id="id_name"></p>
+                            <p><label for="id_name">Введите наименование {% if title == 'Подузел' %}подузла{% elif title == 'Узел' %}узла{% else %}сборочной единицы{% endif %}:</label></p>
+                            <p><input type="text" name="name" class="form-control" required id="id_name"></p>
                             <input name="choice_id" type='hidden' value="{{ choice_id }}">
                             <input name="save_all" type='hidden' value="save">
                         <button type="submit" onchange = "document.getElementById('save').submit()">Добавить</button>
                         </form>
                     </div>
                 </div>
+
                 <div id="openRenameModal" class="modalDialog">
                     <div>
                         <a href="" title="Закрыть" class="close">Закрыть</a>
-                        <form method=POST id="id_rename">
+                        {% if title == 'Подузел' %}
+                            <form method="POST" id="id_rename" action="{% url "utn_renanme" %}">
+                        {% elif title == 'Узел' %}
+                            <form method="POST" id="id_rename" action="{% url "unit_rename" %}">
+                        {% else %}
+                            <form method="POST" id="id_rename" action="{% url 'assembly_unit_rename' %}">
+                        {% endif %}
                             {% csrf_token %}
-                                <div>{% if messages %}
-                                    {% for message in messages %}
-                                        {% if message.tags == 'error'%}
-                                            <div class="alert alert-danger" role="alert">
-                                                {{ message }}
-                                            </div>
-                                        {% else %}
-                                            <div class="alert alert-{{ message.tags }}" role="alert">
-                                                {{ message }}
-                                            </div>
-                                        {% endif %}
-                                    {% endfor %}
-                                    {% endif %}</div>
                                 <p><label for="id_name">Введите новое наименование {% if title == 'Подузел' %}подузла{% elif title == 'Узел' %}узла{% else %}сборочной единицы{% endif %}:</label></p>
-                                <p><input type="text" name="rename" class="form-control" required ></p>
+                                <p><input type="text" name="rename" class="form-control" required value="{{ text }}"></p>
                             <input name="pk" type='hidden' value="{{ choice_id }}">
                             <input name="model" type='hidden' value="{{ title }}">
                         <button type="submit" onchange = "document.getElementById('id_rename').submit()">Переименовать</button>
                         </form>
                     </div>
                 </div>
+
             </span>
         </span>
     </div><br/>
@@ -136,7 +126,7 @@
                     {% if obj1 %}
                         <td style="text-align:center;width:25%"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">{% if title == 'Объектная сборка' %}Сборочные единицы{% else %}Детали{% endif %}</span></span></span></td>
                     {% endif %}
-                    {% if obj2 %}
+                    {% if purchased %}
                         <td style="text-align:center;width:25%"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">Покупное оборудование</span></span></span></td>
                     {% endif %}
                     {% if obj3 %}
@@ -144,6 +134,9 @@
                     {% endif %}
                     {% if obj4 %}
                         <td style="text-align:center;width:25%"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">Узел</span></span></span></td>
+                    {% endif %}
+                    {% if details %}
+                        <td style="text-align:center;width:25%"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">Детали</span></span></span></td>
                     {% endif %}
                 </tr>
                 <tr>
@@ -154,9 +147,9 @@
                                     <span style="font-family:Calibri,sans-serif">
                                         {% for items in obj1 %}
                                             {% if title == 'Объектная сборка' %}
-                                                {{ items.name }} - {{ items.quantity }}шт.<br/>
+                                                {{ items.name }} - {{ items.quantity }} {{ items.unit }}<br/>
                                             {% else %}
-                                                {{ items.name }} - {{ items.quantity }}шт.<br/>
+                                                {{ items.name }} - {{ items.quantity }} {{ items.unit }}<br/>
                                             {% endif %}
                                         {% endfor %}
                                     </span>
@@ -164,13 +157,13 @@
                             </span>
                         </td>
                     {% endif %}
-                    {% if obj2 %}
+                    {% if purchased %}
                         <td style="text-align:center;width:25%">
                             <span style="font-size:12pt">
                                 <span style="color:black">
                                     <span style="font-family:Calibri,sans-serif">
-                                        {% for items in obj2 %}
-                                            {{ items.name }} - {{ items.quantity }}шт.<br/>
+                                        {% for name, info in purchased.items %}
+                                            {{ name }} - {{ info.quantity }} {{ info.unit }}<br/>
                                         {% endfor %}
                                     </span>
                                 </span>
@@ -183,7 +176,7 @@
                                 <span style="color:black">
                                     <span style="font-family:Calibri,sans-serif">
                                         {% for items in obj3 %}
-                                            {{ items.name }} - {{ items.quantity }}шт.<br/>
+                                            {{ items.name }} - {{ items.quantity }} {{ items.unit }}<br/>
                                         {% endfor %}
                                     </span>
                                 </span>
@@ -196,7 +189,20 @@
                                 <span style="color:black">
                                     <span style="font-family:Calibri,sans-serif">
                                         {% for items in obj4 %}
-                                            {{ items.name }} - {{ items.quantity }}шт.<br/>
+                                            {{ items.name }} - {{ items.quantity }} {{ items.unit }}<br/>
+                                        {% endfor %}
+                                    </span>
+                                </span>
+                            </span>
+                        </td>
+                    {% endif%}
+                    {% if details %}
+                        <td style="text-align:center;width:25%">
+                            <span style="font-size:12pt">
+                                <span style="color:black">
+                                    <span style="font-family:Calibri,sans-serif">
+                                        {% for name, info in details.items %}
+                                            {{ name }} - {{ info.quantity }} {{ info.unit }}<br/>
                                         {% endfor %}
                                     </span>
                                 </span>
@@ -205,4 +211,12 @@
                     {% endif%}
             </tbody>
     </table>
+{% endblock %}
+{% block script %}
+<script>
+  $(document).ready(function () {
+    // Используем Select2 для стилизации и добавления функциональности поиска
+    $(".select2").select2();
+  });
+</script>
 {% endblock %}

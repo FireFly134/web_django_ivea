@@ -1,0 +1,174 @@
+{% extends "repair_reg_eq/base.html" %}
+
+{% block title2 %}
+    Реестр ремонта оборудования
+{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-center align-items-center mb-3">
+        <h2 class="mt-3">Реестр ремонта оборудования</h2>
+    </div>
+    <div class="d-flex justify-content-center align-items-center mb-3">
+        <a href="{% url 'req_eq_create' %}" class="btn btn-primary col-md-3"><i class="fas fa-plus"></i> Создать запись</a>
+    </div>
+    {% if not rep_equips %}
+        <div class="d-flex justify-content-center">
+            <h1>Нет данных</h1>
+        </div>
+    {% else %}
+        <div class="d-flex flex-column">
+            <div class="row d-flex justify-content-center">
+                <div class="col-2">
+                    <div class="form-floating mb-3">
+                        <input type="date" class="form-control" id="dateInput" oninput="onDateInput()"
+                               placeholder="Дата создания записи">
+                        <label for="dateInput">Дата создания записи</label>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="searchInput" oninput="onSearchInput()"
+                               placeholder="Поиск">
+                        <label for="searchInput">Поиск</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="showCalcResultArea" class="d-flex justify-content-center align-items-center mb-3">
+
+        </div>
+
+        <div id="tableArea">
+
+        </div>
+    {% endif %}
+
+    <script>
+
+        let sortBy = ''
+        let isDesc = false
+
+        document.addEventListener('DOMContentLoaded', () => {
+            filteredEquipments = JSON.parse(JSON.stringify(
+                repEquipsData));
+            rebuildTable(filteredEquipments);
+        })
+        let repEquipsData = [
+            {% for rep_equip in rep_equips %}
+                {
+                    counterparty: `{{ rep_equip.counterparty }}`,
+                    contract: '{{ rep_equip.contract }}',
+                    equipment: '{{ rep_equip.equipment }}',
+                    serial_number: '{{ rep_equip.serial_number }}',
+                    breakdown_description: `{{ rep_equip.breakdown_description }}`,
+                    employee: `{{ rep_equip.employee }}`,
+                    conclusion_service_company: `{{ rep_equip.conclusion_service_company }}`,
+                    created_date: `{{ rep_equip.created_date|date:"d.m.Y" }}`,
+                    sending_date: `{{ rep_equip.sending_date|date:"d.m.Y" }}`,
+                    acceptance_date: `{{ rep_equip.acceptance_date|date:"d.m.Y" }}`,
+                    update_url: `{{ rep_equip.get_update_url }}`,
+                },
+            {% endfor %}
+        ]
+
+        rebuildTable(repEquipsData)
+
+        function addSortHandlers() {
+            const tableColumns = document.querySelectorAll('[data-sortable]')
+
+            tableColumns.forEach(column => {
+                column.addEventListener('click', (event) => {
+                    const {sortable} = event.target.dataset
+                    sortBy = sortable
+                    let newFilteredEquipments = undefined;
+                    if (["created_date", "sending_date", "acceptance_date"].includes(sortBy)) {
+                        newFilteredEquipments = [...filteredEquipments.sort((a, b) => {
+                            let a_date = new Date(a[sortBy].slice(6, 10) + "-" + a[sortBy].slice(3, 5) + "-" + a[sortBy].slice(0, 2))
+                            let b_date = new Date(b[sortBy].slice(6, 10) + "-" + b[sortBy].slice(3, 5) + "-" + b[sortBy].slice(0, 2))
+                            return  isDesc ? a_date - b_date : b_date - a_date
+                        })]
+                    }   else {
+                        newFilteredEquipments = [...filteredEquipments.sort((a, b) => isDesc ? a[sortBy].localeCompare(b[sortBy]) : b[sortBy].localeCompare(a[sortBy]))]
+                    }
+                    rebuildTable(newFilteredEquipments)
+                    isDesc = !isDesc
+                    sortBy = sortable
+                })
+            })
+        }
+
+        function onSearchInput() {
+            rebuildTable(filteredEquipments)
+        }
+
+        function onDateInput() {
+            rebuildTable(filteredEquipments)
+        }
+
+        function rebuildTable(filteredRepEquipsData) {
+            let dateInputValue = document.getElementById('dateInput').value
+            if (dateInputValue !== "") {
+                let inputDate = new Date(dateInputValue);
+                filteredRepEquipsData = filteredRepEquipsData.filter(rep_eq => {
+                    let elDate = new Date(rep_eq.created_date.slice(6, 10) + "-" + rep_eq.created_date.slice(3, 5) + "-" + rep_eq.created_date.slice(0, 2))
+                    return inputDate.getTime() === elDate.getTime();
+                })
+            }
+
+            let searchInput = document.getElementById('searchInput').value
+            if (searchInput !== "") {
+                filteredRepEquipsData = filteredRepEquipsData.filter(rep_eq => {
+                    let searchString = `${rep_eq.contract} ${rep_eq.equipment} ${rep_eq.breakdown_description} ${rep_eq.employee} ${rep_eq.serial_number} ${rep_eq.conclusion_service_company}`.toLowerCase()
+                    return searchString.includes(searchInput.toLowerCase())
+                });
+            }
+
+            let tableHTML = "";
+            filteredRepEquipsData.forEach((rep_eq, i) => {
+                tableHTML += `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${rep_eq.contract}</td>
+                <td>${rep_eq.equipment} (${rep_eq.counterparty})</td>
+                <td>${rep_eq.serial_number}</td>
+                <td class="w-25 text-break">${rep_eq.breakdown_description}</td>
+                <td>${rep_eq.employee}</td>
+                <td class="w-25 text-break">${rep_eq.conclusion_service_company}</td>
+                <td>${rep_eq.created_date}</td>
+                <td>${rep_eq.sending_date}</td>
+                <td>${rep_eq.acceptance_date}</td>
+                <td nowrap>
+                    <a title="Изменить" href="${rep_eq.update_url}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
+                </td>
+            </tr>
+        `;
+            });
+
+            let tableArea = document.getElementById('tableArea');
+            tableArea.innerHTML = `
+        <table class="table">
+            <thead>
+                <th scope="col" data-sortable="n">№</th>
+                <th scope="col" data-sortable="contract">Договор</th>
+                <th scope="col" data-sortable="equipment">Оборудование</th>
+                <th scope="col" data-sortable="serial_number">Серийный номер</th>
+                <th scope="col" data-sortable="breakdown_description" class="w-25">Описание поломки</th>
+                <th scope="col" data-sortable="employee">Сотрудник</th>
+                <th scope="col" data-sortable="conclusion_service_company" class="w-25">Заключение</th>
+                <th scope="col" data-sortable="created_date">Дата создания записи</th>
+                <th scope="col" data-sortable="sending_date">Дата отправки оборудования</th>
+                <th scope="col" data-sortable="acceptance_date">Дата приёмки на склад</th>
+                <th scope="col">Действия</th>
+            </thead>
+            <tbody>
+                ${tableHTML}
+            </tbody>
+        </table>
+    `;
+
+    addSortHandlers()
+        }
+    </script>
+{% endblock %}
+

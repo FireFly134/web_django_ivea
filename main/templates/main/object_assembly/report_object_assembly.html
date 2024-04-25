@@ -1,89 +1,285 @@
 {% extends 'main/base.html' %}
+
+{% load static %}
+
 {% block title %}Закупочная ведомость по объекту "{{ name }}"{% endblock %}
 {% block style %}
-<style>
-    .modalDialog {
-	position: fixed;
-	font-family: Arial, Helvetica, sans-serif;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	background: rgba(0,0,0,0.8);
-	z-index: 99999;
-	-webkit-transition: opacity 400ms ease-in;
-	-moz-transition: opacity 400ms ease-in;
-	transition: opacity 400ms ease-in;
-	display: none;
-	pointer-events: none;
-}
-    .modalDialog:target {
-	display: block;
-	pointer-events: auto;
-}
+    <style>
+        .modalDialog {
+            position: fixed;
+            font-family: Arial, Helvetica, sans-serif;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 99999;
+            -webkit-transition: opacity 400ms ease-in;
+            -moz-transition: opacity 400ms ease-in;
+            transition: opacity 400ms ease-in;
+            display: none;
+            pointer-events: none;
+        }
 
-.modalDialog > div {
-	width: 1400px;
-	position: relative;
-	margin: 10% auto;
-	padding: 5px 20px 13px 20px;
-	border-radius: 10px;
-	background: #fff;
+        .modalDialog:target {
+            display: block;
+            pointer-events: auto;
+        }
 
-}
+        .modalDialog > div {
+            width: 1400px;
+            position: relative;
+            margin: 10% auto;
+            padding: 5px 20px 13px 20px;
+            border-radius: 10px;
+            background: #fff;
 
-    .close {
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
-	border-radius: 5px;
-	-moz-box-shadow: 1px 1px 1px #000;
-	-webkit-box-shadow: 1px 1px 3px #000;
-	box-shadow: 5px 5px 5px #000;
+        }
 
-</style>
+        .close {
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            border-radius: 5px;
+            -moz-box-shadow: 1px 1px 1px #000;
+            -webkit-box-shadow: 1px 1px 3px #000;
+            box-shadow: 5px 5px 5px #000;
+
+    </style>
 {% endblock %}
 {% block body %}
-<div style="text-align:center"><p><h3 style="font-family:Times New Roman,sans-serif">Закупочная ведомость по объекту "{{ name }}"</h3></p></div>
+    <div style="text-align:center">
+        <h3 style="font-family:Times New Roman,sans-serif">
+            Закупочная ведомость по объекту "{{ name }}"&nbsp;&nbsp;&nbsp;<a class="print-doc"
+                                                                             href="javascript:(print());"><img
+                src="{% static 'img/printButton.png' %}" alt="Печать"></a>
+            {% if doc_id %}
+                <a class="btn btn-success" title="Загрузка закупочной ведомости по объекту &#171;{{ name }}&#187;"
+                   href="{% url 'assembly_report_download' doc_id %}"><i
+                        class="fas fa-file-excel-o"></i></a>
+            {% endif %}
+        </h3>
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; color: black; font-size: 18px;">
+        {% if counterparty %}
+            <p>Контрагент - <strong>{{ counterparty }}</strong></p>
+        {% endif %}
+        {% if number_doc %}
+            <p>Договор - <strong>{{ number_doc }}</strong></p>
+        {% endif %}
+        {% if subject_contract %}
+            <p>Предмет договора - <strong>{{ subject_contract }}</strong></p>
+        {% endif %}
+    </div>
     <br/>
- <table class="table_center_by_css" border="1" cellpadding="1" cellspacing="1" style="width:60%">
-    <tbody>
-        <tr>
-            <td style="text-align:center;width:3%; background-color: #cccccc"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">№<br/>п/п</span></span></span></td>
-            <td style="text-align:center;width:94%; background-color: #cccccc"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">Детали</span></span></span></td>
-            <td style="text-align:center;width:3%; background-color: #cccccc"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">шт.</span></span></span></td>
-        </tr>
-        {% for key, dist in data.items %}
-            {% if key == 'details' %}
-                {% for key, value in dist.items %}
-                    <tr>
-                        <td style="text-align:center; background-color: #cccccc"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">{{ forloop.counter }}</span></span></span></td>
-                        <td><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">  {{ key }}</span></span></span></td>
-                        <td style="text-align:center"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">{{ value }}</span></span></span></td>
-                    </tr>
-                {% endfor %}
-            {% endif %}
-        {% endfor %}
-    </tbody>
-    </table>
-<br/>
-    <table class="table_center_by_css" border="1" cellpadding="1" cellspacing="1" style="width:60%" >
-    <tbody>
-        <tr>
-            <td style="text-align:center;width:3%; background-color: #cccccc"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">№<br/>п/п</span></span></span></td>
-            <td style="text-align:center;width:94%; background-color: #cccccc"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">Покупное оборудование</span></span></span></td>
-            <td style="text-align:center;width:3%; background-color: #cccccc"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">шт.</span></span></span></td>
-        </tr>
-        {% for key, dist in data.items %}
-            {% if key == 'purchased' %}
-                {% for key, value in dist.items %}
-                    <tr>
-                        <td style="text-align:center; background-color: #cccccc"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">{{ forloop.counter }}</span></span></span></td>
-                        <td><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">  {{ key }}</span></span></span></td>
-                        <td style="text-align:center"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">{{ value }}</span></span></span></td>
-                    </tr>
-                {% endfor %}
-            {% endif %}
-        {% endfor %}
-    </tbody>
-    </table>
+
+    {% if work_types_table %}
+        <table class="table_center_by_css" border="1" cellpadding="1" cellspacing="1" style="width:60%">
+            <tbody>
+            <tr>
+                <td style="text-align:center;width:3%; background-color: #cccccc"><span style="font-size:12pt"><span
+                        style="color:black"><span style="font-family:Calibri,sans-serif">№<br/>п/п</span></span></span>
+                </td>
+                <td style="text-align:center;width:94%; background-color: #cccccc"><span style="font-size:12pt"><span
+                        style="color:black"><span style="font-family:Calibri,sans-serif">Вид работы</span></span></span>
+                </td>
+                <td style="text-align:center;width:3%; background-color: #cccccc"><span style="font-size:12pt"><span
+                        style="color:black"><span style="font-family:Calibri,sans-serif">Дата</span></span></span></td>
+            </tr>
+            {% for work in work_types_table %}
+                <tr>
+                    <td style="text-align:center; background-color: #cccccc"><span style="font-size:12pt"><span
+                            style="color:black"><span
+                            style="font-family:Calibri,sans-serif">{{ forloop.counter }}</span></span></span></td>
+                    <td><span style="font-size:12pt"><span style="color:black"><span
+                            style="font-family:Calibri,sans-serif">  {{ work.work_name }}</span></span></span></td>
+                    <td style="text-align:center"><span style="font-size:12pt"><span style="color:black"><span
+                            style="font-family:Calibri,sans-serif">{{ work.date_end }}</span></span></span></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <br/>
+    {% endif %}
+
+    {% if data.details %}
+        <table class="table_center_by_css" border="1" cellpadding="1" cellspacing="1" style="width:60%">
+            <tbody>
+            <tr>
+                <td style="text-align:center;width:3%; background-color: #cccccc"><span style="font-size:12pt"><span
+                        style="color:black"><span style="font-family:Calibri,sans-serif">№<br/>п/п</span></span></span>
+                </td>
+                <td style="text-align:center;width:94%; background-color: #cccccc"><span style="font-size:12pt"><span
+                        style="color:black"><span style="font-family:Calibri,sans-serif">Детали</span></span></span>
+                </td>
+                <td style="text-align:center;width:3%; background-color: #cccccc"><span style="font-size:12pt"><span
+                        style="color:black"><span style="font-family:Calibri,sans-serif">Количество</span></span></span></td>
+                <td style="text-align:center;width:3%; background-color: #cccccc"><span style="font-size:12pt"><span
+                        style="color:black"><span style="font-family:Calibri,sans-serif">Ед. изм.</span></span></span></td>
+            </tr>
+            {% for key, dist in data.items %}
+                {% if key == 'details' %}
+                    {% for key, value in dist.items %}
+                        <tr>
+                            <td style="text-align:center; background-color: #cccccc"><span style="font-size:12pt"><span
+                                    style="color:black"><span
+                                    style="font-family:Calibri,sans-serif">{{ forloop.counter }}</span></span></span>
+                            </td>
+                            <td><span style="font-size:12pt"><span style="color:black"><span
+                                    style="font-family:Calibri,sans-serif">  {{ key }}</span></span></span></td>
+                            <td style="text-align:center"><span style="font-size:12pt"><span style="color:black"><span
+                                    style="font-family:Calibri,sans-serif">{{ value.quantity }}</span></span></span></td>
+                            <td style="text-align:center"><span style="font-size:12pt"><span style="color:black"><span
+                                style="font-family:Calibri,sans-serif">{{ value.unit }}</span></span></span></td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+        <br/>
+    {% endif %}
+
+    {% if data.purchased %}
+        <table class="table_center_by_css" border="1" cellpadding="1" cellspacing="1" style="width:60%">
+            <tbody>
+            <tr>
+                <td style="text-align:center;width:3%; background-color: #cccccc"><span style="font-size:12pt"><span
+                        style="color:black"><span style="font-family:Calibri,sans-serif">№<br/>п/п</span></span></span>
+                </td>
+                <td style="text-align:center;width:94%; background-color: #cccccc"><span style="font-size:12pt"><span
+                        style="color:black"><span
+                        style="font-family:Calibri,sans-serif">Покупное оборудование</span></span></span>
+                </td>
+                <td style="text-align:center;width:3%; background-color: #cccccc"><span style="font-size:12pt"><span
+                    style="color:black"><span style="font-family:Calibri,sans-serif">Количество</span></span></span></td>
+            <td style="text-align:center;width:3%; background-color: #cccccc"><span style="font-size:12pt"><span
+                    style="color:black"><span style="font-family:Calibri,sans-serif">Ед. изм.</span></span></span></td>
+            </tr>
+            {% for key, dist in data.items %}
+                {% if key == 'purchased' %}
+                    {% for key, value in dist.items %}
+                        <tr>
+                            <td style="text-align:center; background-color: #cccccc"><span style="font-size:12pt"><span
+                                    style="color:black"><span
+                                    style="font-family:Calibri,sans-serif">{{ forloop.counter }}</span></span></span>
+                            </td>
+                            <td><span style="font-size:12pt"><span style="color:black"><span
+                                    style="font-family:Calibri,sans-serif">  {{ key }}</span></span></span></td>
+                            <td style="text-align:center"><span style="font-size:12pt"><span style="color:black"><span
+                                    style="font-family:Calibri,sans-serif">{{ value.quantity }}</span></span></span></td>
+                            <td style="text-align:center"><span style="font-size:12pt"><span style="color:black"><span
+                                style="font-family:Calibri,sans-serif">{{ value.unit }}</span></span></span></td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+        <br/>
+    {% endif %}
+
+    {% if poduzels %}
+        <table class="table_center_by_css" border="1" cellpadding="1" cellspacing="1" style="width:60%">
+            <tbody>
+            <tr>
+                <td style="text-align:center;width:3%; background-color: #cccccc"><span style="font-size:12pt"><span
+                        style="color:black"><span style="font-family:Calibri,sans-serif">№<br/>п/п</span></span></span>
+                </td>
+                <td style="text-align:center;width:94%; background-color: #cccccc"><span style="font-size:12pt"><span
+                        style="color:black"><span style="font-family:Calibri,sans-serif">Подузел</span></span></span>
+                </td>
+                <td style="text-align:center;width:3%; background-color: #cccccc"><span style="font-size:12pt"><span
+                    style="color:black"><span style="font-family:Calibri,sans-serif">Количество</span></span></span></td>
+            <td style="text-align:center;width:3%; background-color: #cccccc"><span style="font-size:12pt"><span
+                    style="color:black"><span style="font-family:Calibri,sans-serif">Ед. изм.</span></span></span></td>
+            </tr>
+            {% for poduzel in poduzels %}
+                <tr>
+                    <td style="text-align:center; background-color: #cccccc"><span style="font-size:12pt"><span
+                            style="color:black"><span
+                            style="font-family:Calibri,sans-serif">{{ forloop.counter }}</span></span></span></td>
+                    <td><span style="font-size:12pt"><span style="color:black"><span
+                            style="font-family:Calibri,sans-serif">  {{ poduzel.name }}</span></span></span></td>
+                    <td style="text-align:center"><span style="font-size:12pt"><span style="color:black"><span
+                            style="font-family:Calibri,sans-serif">{{ poduzel.quantity }}</span></span></span></td>
+                    <td style="text-align:center"><span style="font-size:12pt"><span style="color:black"><span
+                        style="font-family:Calibri,sans-serif">{{ poduzel.unit }}</span></span></span></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <br/>
+    {% endif %}
+
+    {% if uzels %}
+        <table class="table_center_by_css" border="1" cellpadding="1" cellspacing="1" style="width:60%">
+            <tbody>
+            <tr>
+                <td style="text-align:center;width:3%; background-color: #cccccc"><span style="font-size:12pt"><span
+                        style="color:black"><span style="font-family:Calibri,sans-serif">№<br/>п/п</span></span></span>
+                </td>
+                <td style="text-align:center;width:94%; background-color: #cccccc"><span style="font-size:12pt"><span
+                        style="color:black"><span style="font-family:Calibri,sans-serif">Узел</span></span></span>
+                </td>
+                <td style="text-align:center;width:3%; background-color: #cccccc"><span style="font-size:12pt"><span
+                    style="color:black"><span style="font-family:Calibri,sans-serif">Количество</span></span></span></td>
+            <td style="text-align:center;width:3%; background-color: #cccccc"><span style="font-size:12pt"><span
+                    style="color:black"><span style="font-family:Calibri,sans-serif">Ед. изм.</span></span></span></td>
+            </tr>
+            {% for uzel in uzels %}
+                <tr>
+                    <td style="text-align:center; background-color: #cccccc"><span style="font-size:12pt"><span
+                            style="color:black"><span
+                            style="font-family:Calibri,sans-serif">{{ forloop.counter }}</span></span></span></td>
+                    <td><span style="font-size:12pt"><span style="color:black"><span
+                            style="font-family:Calibri,sans-serif">  {{ uzel.name }}</span></span></span></td>
+                    <td style="text-align:center"><span style="font-size:12pt"><span style="color:black"><span
+                            style="font-family:Calibri,sans-serif">{{ uzel.quantity }}</span></span></span></td>
+                    <td style="text-align:center"><span style="font-size:12pt"><span style="color:black"><span
+                        style="font-family:Calibri,sans-serif">{{ uzel.unit }}</span></span></span></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <br/>
+    {% endif %}
+
+    {% if project_equipments %}
+        <table class="table_center_by_css" border="1" cellpadding="1" cellspacing="1" style="width:60%">
+            <tbody>
+            <tr>
+                <td style="text-align:center;width:3%; background-color: #cccccc"><span style="font-size:12pt"><span
+                        style="color:black"><span style="font-family:Calibri,sans-serif">№<br/>п/п</span></span></span>
+                </td>
+                <td style="text-align:center;width:94%; background-color: #cccccc"><span style="font-size:12pt"><span
+                        style="color:black"><span
+                        style="font-family:Calibri,sans-serif">Проектное оборудование</span></span></span>
+                </td>
+                <td style="text-align:center;width:3%; background-color: #cccccc"><span style="font-size:12pt"><span
+                    style="color:black"><span style="font-family:Calibri,sans-serif">Количество</span></span></span></td>
+            <td style="text-align:center;width:3%; background-color: #cccccc"><span style="font-size:12pt"><span
+                    style="color:black"><span style="font-family:Calibri,sans-serif">Ед. изм.</span></span></span></td>
+            </tr>
+            {% for project_equipment in project_equipments %}
+                <tr>
+                    <td style="text-align:center; background-color: #cccccc"><span style="font-size:12pt"><span
+                            style="color:black"><span
+                            style="font-family:Calibri,sans-serif">{{ forloop.counter }}</span></span></span></td>
+                    <td><span style="font-size:12pt"><span style="color:black"><span
+                            style="font-family:Calibri,sans-serif">  {{ project_equipment.name }}</span></span></span>
+                    </td>
+                    <td style="text-align:center"><span style="font-size:12pt"><span style="color:black"><span
+                            style="font-family:Calibri,sans-serif">{{ project_equipment.quantity }}</span></span></span>
+                    <td style="text-align:center"><span style="font-size:12pt"><span style="color:black"><span
+                        style="font-family:Calibri,sans-serif">{{ project_equipment.unit }}</span></span></span></td>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <br/>
+    {% endif %}
+
+    <div style="height: 30px"></div>
 {% endblock %}

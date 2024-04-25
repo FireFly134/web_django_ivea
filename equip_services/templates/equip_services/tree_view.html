@@ -1,0 +1,19 @@
+<tr>
+    <td style="text-align:center; width:10px;">{{ node.get_see_id }}</td>
+    {% with ''|center:node.sub_level as range %}
+    <td>{% for i in range %}&nbsp;&nbsp;&nbsp;{% endfor %}- {{node.name}}</td>
+    {% endwith %}
+    <td nowrap style="text-align:center; width:10px;">
+        <a title="Удалить" onclick="deleteRow('{{ node.name }}', '{{ node.get_delete_url }}')" class="fas fa-minus" style="color: #6b2424;"></i></a>
+        <a title="Добавить" href="{{ node.get_subcreate_url }}"><i class="fas fa-plus" style="color: #4cc25a;"></i></a>
+    </td>
+
+    {%if node.children %}
+        
+         {%for ch in node.children.all %}
+              {%with node=ch template_name="equip_services/tree_view.html" %}
+              {%include template_name%}
+              {%endwith%}
+         {%endfor%}
+    {%endif%}
+</tr>

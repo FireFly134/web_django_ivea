@@ -1,0 +1,643 @@
+{% extends 'main/base.html' %}
+{% block title %}RSS Dmitrov{% endblock %}
+
+{% block style %}
+<style>
+    .accordion-content {
+  display: none;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+        <h2 class="text-center mt-3">РСС Самолет Дмитров СМР (ПроектСтрой)</h2>
+
+        <div class="container" id="controlArea">
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="searchInput" placeholder="Поиск" oninput="onFilterValuesChange()">
+                <label for="searchInput">Поиск</label>
+            </div>
+            <div class="d-flex flex-column">
+                <div class="d-flex">
+                    <div class="d-flex mb-1 me-2">
+                        <label class="mt-1" for="groupCheckbox">Группировать:</label>
+                        <input class="ms-1 mb-3" id="groupCheckbox" type="checkbox" onchange="onFilterValuesChange()">
+                    </div>
+                    <div class="d-flex mb-1">
+                        <label class="mt-1" for="codeSelect">Код:</label>
+                        <select style="width: 50px;" id="codeSelect" class="ms-1" onchange="onFilterValuesChange()">
+                            <option value="all" selected>---</option>
+                        </select>
+                    </div>
+                </div>
+                <table class="table table-bordered">
+                    <tr>
+                        <th class="text-center align-middle">Работы (СМР) (Власко)</th>
+                        <td colspan="3">
+                            <div class="d-flex">
+                                <div class="d-flex ps-2 align-middle">
+                                    <label class="mt-1" for="onlySubmittedForApproval">Подано на согласование с технадзором:</label>
+                                    <input class="ms-1 mb-1" id="onlySubmittedForApproval" type="checkbox" onchange="onFilterValuesChange()">
+                                </div>
+                                <div class="d-flex ps-2">
+                                    <label class="mt-1" for="approved_by_supervision">Согласовано:</label>
+                                    <input class="ms-1 mb-1" id="approved_by_supervision" type="checkbox" onchange="onFilterValuesChange()">
+                                </div>
+                                <div class="d-flex ps-2">
+                                    <label class="mt-1" for="originals_is_signed">Подписаны оригиналы:</label>
+                                    <input class="ms-1 mb-1" id="originals_is_signed" type="checkbox" onchange="onFilterValuesChange()">
+                                </div>
+                                <div class="d-flex ps-2">
+                                    <label class="mt-1" for="ks_pto_flag">КС ПТО:</label>
+                                    <input class="ms-1 mb-1" id="ks_pto_flag" type="checkbox" onchange="onFilterValuesChange()">
+                                </div>
+                                <div class="d-flex ps-2">
+                                    <label class="mt-1" for="ks_ivea_flag">КС ИВЕА:</label>
+                                    <input class="ms-1 mb-1" id="ks_ivea_flag" type="checkbox" onchange="onFilterValuesChange()">
+                                </div>
+                                <div class="d-flex ps-2">
+                                    <label class="mt-1" for="ks_ps_flag">КС ПС:</label>
+                                    <input class="ms-1 mb-1" id="ks_ps_flag" type="checkbox" onchange="onFilterValuesChange()">
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="text-center align-middle">Материалы (Кузнецов)</th>
+                        <td class="align-middle" colspan="3">
+                            <div class="d-flex mt-2">
+                                <div class="d-flex ps-2">
+                                    <label class="mt-1" for="application_submitted">Подана заявка:</label>
+                                    <input class="ms-1 mb-1" id="application_submitted" type="checkbox" onchange="onFilterValuesChange()">
+                                </div>
+                                <div class="d-flex ps-2">
+                                    <label class="mt-1" for="counterparty_offer">Получено предложение контрагента:</label>
+                                    <input class="ms-1 mb-1" id="counterparty_offer" type="checkbox" onchange="onFilterValuesChange()">
+                                </div>
+                                <div class="d-flex ps-2">
+                                    <label class="mt-1" for="has_distribution_letter">Есть распределительное письмо:</label>
+                                    <input class="ms-1 mb-1" id="has_distribution_letter" type="checkbox" onchange="onFilterValuesChange()">
+                                </div>
+                                <div class="d-flex ps-2">
+                                    <label class="mt-1" for="product_on_object">Товар на объекте:</label>
+                                    <input class="ms-1 mb-1" id="product_on_object" type="checkbox" onchange="onFilterValuesChange()">
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="text-center align-middle"></th>
+                        <td class="align-middle" colspan="3">
+                            <div class="d-flex mt-2">
+                                <div class="d-flex ps-2">
+                                    <label class="mt-1" for="additional_is_required">Требуется допник на материалы:</label>
+                                    <input class="ms-1 mb-1" id="additional_is_required" type="checkbox" onchange="onFilterValuesChange()">
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div id="rssTableWrapper" class="p-3">
+
+        </div>
+{% endblock %}
+
+
+{% block script %}
+<script>
+    const rssList = [
+        {% for rss in rss_list %}
+            {
+                url: '{{ rss.get_absolute_url }}',
+                id: {{ rss.id }},
+                npp: '{{ rss.npp }}',
+                code: '{{ rss.code }}',
+                parent_work_name: '{{ rss.parent_work_name }}',
+                work_name: '{{ rss.work_name }}',
+                unit: '{{ rss.unit }}',
+                {% if rss.accounting_method %}
+                    accounting_method: '{{ rss.accounting_method }}',
+                {% else %}
+                    accounting_method: '',
+                {% endif %}
+                {% if rss.material_consumption_rate %}
+                    material_consumption_rate: {{ rss.material_consumption_rate|stringformat:".2f" }},
+                {% else %}
+                    material_consumption_rate: '',
+                {% endif %}
+                volume: {{ rss.volume|stringformat:".2f" }},
+                {% if rss.new_volume %}
+                    new_volume: {{ rss.new_volume|stringformat:".2f" }},
+                {% else %}
+                    new_volume: null,
+                {% endif %}
+                {% if rss.basic_materials_unit_cost %}
+                    basic_materials_unit_cost: {{ rss.basic_materials_unit_cost|stringformat:".2f" }},
+                {% else %}
+                    basic_materials_unit_cost: '',
+                {% endif %}
+                {% if rss.smr_unit_cost %}
+                    smr_unit_cost: {{ rss.smr_unit_cost|stringformat:".2f" }},
+                {% else %}
+                    smr_unit_cost: '',
+                {% endif %}
+                {% if rss.total_unit_cost %}
+                    total_unit_cost: {{ rss.total_unit_cost|stringformat:".2f" }},
+                {% else %}
+                    total_unit_cost: '',
+                {% endif %}
+                {% if rss.basic_materials_total_cost %}
+                    basic_materials_total_cost: {{ rss.basic_materials_total_cost|stringformat:".2f" }},
+                {% else %}
+                    basic_materials_total_cost: '',
+                {% endif %}
+                {% if rss.smr_total_cost %}
+                    smr_total_cost: {{ rss.smr_total_cost|stringformat:".2f" }},
+                {% else %}
+                    smr_total_cost: '',
+                {% endif %}
+                {% if rss.total_total_cost %}
+                    total_total_cost: {{ rss.total_total_cost|stringformat:".2f" }},
+                {% else %}
+                    total_total_cost: '',
+                {% endif %}
+                {% if rss.note %}
+                    note: '{{ rss.note|safe }}',
+                {% else %}
+                    note: '',
+                {% endif %}
+                {% if rss.submitted_for_approval %}
+                    submitted_for_approval: true,
+                {% else %}
+                    submitted_for_approval: false,
+                {% endif %}
+                {% if rss.approved_by_supervision %}
+                    approved_by_supervision: true,
+                {% else %}
+                    approved_by_supervision: false,
+                {% endif %}
+                {% if rss.originals_is_signed %}
+                    originals_is_signed: true,
+                {% else %}
+                    originals_is_signed: false,
+                {% endif %}
+                {% if rss.ks_pto_flag %}
+                    ks_pto_flag: true,
+                {% else %}
+                    ks_pto_flag: false,
+                {% endif %}
+                {% if rss.ks_ivea_flag %}
+                    ks_ivea_flag: true,
+                {% else %}
+                    ks_ivea_flag: false,
+                {% endif %}
+                {% if rss.ks_ps_flag %}
+                ks_ps_flag: true,
+                {% else %}
+                ks_ps_flag: false,
+                {% endif %}
+                {% if rss.additional_is_required %}
+                    additional_is_required: true,
+                {% else %}
+                    additional_is_required: false,
+                {% endif %}
+                stages: [
+                    {% for stage in rss.stages.all %}
+                        {
+                            id: {{ stage.id }},
+                            volume: {{ stage.volume|stringformat:".2f" }},
+                            {% if stage.work_name %}
+                                work_name: '{{ stage.work_name }}',
+                            {% else %}
+                                work_name: null,
+                            {% endif %}
+                            {% if stage.basic_materials_total_cost %}
+                                basic_materials_total_cost: {{ stage.basic_materials_total_cost|stringformat:".2f" }},
+                            {% else %}
+                                basic_materials_total_cost: 0,
+                            {% endif %}
+                            {% if stage.smr_total_cost %}
+                                smr_total_cost: {{ stage.smr_total_cost|stringformat:".2f" }},
+                            {% else %}
+                                smr_total_cost: 0,
+                            {% endif %}
+                            {% if stage.total_total_cost %}
+                                total_total_cost: {{ stage.total_total_cost|stringformat:".2f" }},
+                            {% else %}
+                                total_total_cost: 0,
+                            {% endif %}
+                            {% if stage.application_submitted %}
+                                application_submitted: true,
+                            {% else %}
+                                application_submitted: false,
+                            {% endif %}
+                            {% if stage.counterparty_offer %}
+                                counterparty_offer: true,
+                            {% else %}
+                                counterparty_offer: false,
+                            {% endif %}
+                            {% if stage.has_distribution_letter %}
+                                has_distribution_letter: true,
+                            {% else %}
+                                has_distribution_letter: false,
+                            {% endif %}
+                            {% if stage.product_on_object %}
+                                product_on_object: true,
+                            {% else %}
+                                product_on_object: false,
+                            {% endif %}
+                        },
+                    {% endfor %}
+                ],
+            },
+        {% endfor %}
+    ];
+
+    const wrapper = document.getElementById('rssTableWrapper');
+
+    let selectOptions = new Map();
+    rssList.forEach(rss => {
+        if (!selectOptions.has(rss.code)) {
+            selectOptions.set(rss.code, rss.code);
+        }
+    });
+    selectOptions.forEach(option => {
+        let newOption = document.createElement("option");
+        newOption.value = option;
+        newOption.text = option;
+        document.getElementById('codeSelect').appendChild(newOption);
+    });
+
+    onFilterValuesChange();
+
+    function getFilteredRows() {
+        const searchValue = document.getElementById('searchInput').value;
+        const onlySubmittedForApproval = document.getElementById('onlySubmittedForApproval').checked;
+        const application_submitted = document.getElementById('application_submitted').checked;
+        const counterparty_offer = document.getElementById('counterparty_offer').checked;
+        const has_distribution_letter = document.getElementById('has_distribution_letter').checked;
+        const product_on_object = document.getElementById('product_on_object').checked;
+        const approved_by_supervision = document.getElementById('approved_by_supervision').checked;
+        const originals_is_signed = document.getElementById('originals_is_signed').checked;
+        const additional_is_required = document.getElementById('additional_is_required').checked;
+        const ks_pto_flag = document.getElementById('ks_pto_flag').checked;
+        const ks_ivea_flag = document.getElementById('ks_ivea_flag').checked;
+        const ks_ps_flag = document.getElementById('ks_ps_flag').checked;
+        const codeSelect = document.getElementById('codeSelect').value;
+
+        let filteredRows = rssList.filter(rss => {
+            let stagesSearchString = "";
+
+            rss.stages.forEach(stage => {
+                if (stage.work_name && !stagesSearchString.includes(stage.work_name)) {
+                    stagesSearchString += `${stage.work_name} `;
+                }
+            });
+
+            const searchString = `${stagesSearchString} ${rss.npp} ${rss.code} ${rss.parent_work_name} ${rss.work_name} ${rss.unit} ${rss.note}`.toLowerCase();
+
+            return searchString.includes(searchValue.toLowerCase());
+        });
+
+        if (codeSelect !== "all") {
+            filteredRows = filteredRows.filter(row => {
+                return row.code.toLowerCase().includes(codeSelect.toLowerCase());
+            });
+        }
+
+        if (ks_pto_flag) {
+            filteredRows = filterArrayByBooleanAttr(filteredRows, 'ks_pto_flag');
+        }
+        if (ks_ivea_flag) {
+            filteredRows = filterArrayByBooleanAttr(filteredRows, 'ks_ivea_flag');
+        }
+        if (ks_ps_flag) {
+            filteredRows = filterArrayByBooleanAttr(filteredRows, 'ks_ps_flag');
+        }
+        if (onlySubmittedForApproval) {
+            filteredRows = filterArrayByBooleanAttr(filteredRows, 'submitted_for_approval');
+        }
+        if (approved_by_supervision) {
+            filteredRows = filterArrayByBooleanAttr(filteredRows, 'approved_by_supervision');
+        }
+        if (originals_is_signed) {
+            filteredRows = filterArrayByBooleanAttr(filteredRows, 'originals_is_signed');
+        }
+        if (additional_is_required) {
+            filteredRows = filterArrayByBooleanAttr(filteredRows, 'additional_is_required');
+        }
+        if (application_submitted) {
+            filteredRows = filterArrayByStageBooleanAttr(filteredRows, 'application_submitted');
+        }
+        if (counterparty_offer) {
+            filteredRows = filterArrayByStageBooleanAttr(filteredRows, 'counterparty_offer');
+        }
+        if (has_distribution_letter) {
+            filteredRows = filterArrayByStageBooleanAttr(filteredRows, 'has_distribution_letter');
+        }
+        if (product_on_object) {
+            filteredRows = filterArrayByStageBooleanAttr(filteredRows, 'product_on_object');
+        }
+
+        return filteredRows;
+    }
+
+    function onFilterValuesChange() {
+        const isChecked = document.getElementById('groupCheckbox').checked;
+        let filteredRows = getFilteredRows();
+        
+        if (isChecked) {
+            renderGrouppedTable(filteredRows);
+        } else {
+            filteredRows = filteredRows.sort(compareNpp);
+            renderMainTable(filteredRows);
+        }
+    }
+
+    function renderGrouppedTable(rows) {
+        let tableHtml = '';
+
+        let basicMaterialsUnitCostSum = 0;
+        let smrUnitCostSum = 0;
+        let totalUnitCostSum = 0;
+        let basicMaterialsTotalCostSum = 0;
+        let smrTotalCostSum = 0;
+        let totalTotalCostSum = 0;
+
+        let finalVolume = 0;
+
+        let grouppedRows = new Map();
+
+        rows.forEach(row => {
+            let key = row.npp.split('.')[0];
+            if (grouppedRows.has(key)) {
+                grouppedRows.get(key).push(row);
+            } else {
+                grouppedRows.set(key, [row]);
+            }
+        });
+
+        rows = Array.from(grouppedRows.values());
+
+        rows = rows.sort((a, b) => {
+            return Number(a[0].npp.split('.')[0]) - Number(b[0].npp.split('.')[0])
+        });
+
+        rows.forEach(row => {
+            const basicMaterialsUnitCostSumStage = getArrayAttrSum(row, 'basic_materials_unit_cost');
+            const smrUnitCostSumStage = getArrayAttrSum(row, 'smr_unit_cost');
+            const totalUnitCostSumStage = getArrayAttrSum(row, 'total_unit_cost');
+            const basicMaterialsTotalCostSumStage = getArrayAttrSum(row, 'basic_materials_total_cost');
+            const smrTotalCostSumStage = getArrayAttrSum(row, 'smr_total_cost');
+            const totalTotalCostSumStage = getArrayAttrSum(row, 'total_total_cost');
+            const volumeStage = getArrayAttrSum(row, 'volume');
+            
+            basicMaterialsUnitCostSum += basicMaterialsUnitCostSumStage;
+            smrUnitCostSum += smrUnitCostSumStage;
+            totalUnitCostSum += totalUnitCostSumStage;
+            basicMaterialsTotalCostSum += basicMaterialsTotalCostSumStage;
+            smrTotalCostSum += smrTotalCostSumStage;
+            totalTotalCostSum += totalTotalCostSumStage;
+            finalVolume += volumeStage;
+
+            const workName = row[0].parent_work_name;
+
+            tableHtml += `
+            <tr>
+                <td style="width: 1vw;">${row[0].npp.split('.')[0]}</td>
+                <td style="width: 600px; min-width: 600px; max-width: 600px;">${workName}</td>
+                <td style="width: 100px; min-width: 100px; max-width: 100px;">${numberWithSpace(volumeStage.toFixed(2))}</td>
+                <td style="width: 150px; min-width: 150px; max-width: 150px;">${numberWithSpace(basicMaterialsUnitCostSumStage.toFixed(2))}</td>
+                <td style="width: 150px; min-width: 150px; max-width: 150px;">${numberWithSpace(smrUnitCostSumStage.toFixed(2))}</td>
+                <td style="width: 150px; min-width: 150px; max-width: 150px;">${numberWithSpace(totalUnitCostSumStage.toFixed(2))}</td>
+                <td style="width: 150px; min-width: 150px; max-width: 150px;">${numberWithSpace(basicMaterialsTotalCostSumStage.toFixed(2))}</td>
+                <td style="width: 150px; min-width: 150px; max-width: 150px;">${numberWithSpace(smrTotalCostSumStage.toFixed(2))}</td>
+                <td style="width: 150px; min-width: 150px; max-width: 150px;">${numberWithSpace(totalTotalCostSumStage.toFixed(2))}</td>
+            </tr>
+            `;
+        });
+
+        wrapper.innerHTML = `
+        <div class="d-flex flex-row">
+            <div class="p-2">
+                Объём: <strong>${numberWithSpace(finalVolume.toFixed(2))}</strong><br>
+                Основные материалы: <strong>${numberWithSpace(basicMaterialsTotalCostSum.toFixed(2))}</strong> руб.<br>
+                СМР: <strong>${numberWithSpace(smrTotalCostSum.toFixed(2))}</strong> руб.<br>
+                Всего: <strong>${numberWithSpace(totalTotalCostSum.toFixed(2))}</strong> руб.<br>
+            </div>
+        </div>
+        <table class="table table-bordered table-hover">
+            <thead style="position: sticky;top: 0">
+                <tr>
+                    <th style="width: 1vw;" class="text-center" rowspan="2">№<br></th>
+                    <th style="width: 600px; min-width: 600px; max-width: 600px;" class="text-center" rowspan="2">Наименование работ<br></th>
+                    <th style="width: 100px; min-width: 100px; max-width: 100px;" class="text-center" rowspan="2">Объём<br></th>
+                    <th style="width: 300px; min-width: 300px; max-width: 300px;" class="text-center" colspan="3">Стоимость единицы, руб., в т.ч. НДС 20%</th>
+                    <th style="width: 300px; min-width: 300px; max-width: 300px;" class="text-center" colspan="3">Стоимость всего, руб., в т.ч. НДС 20%</th>
+                </tr>
+                <tr>
+                    <th style="width: 150px; min-width: 150px; max-width: 150px;" class="text-center"><div>Основные<br><div>материалы</th>
+                    <th style="width: 150px; min-width: 150px; max-width: 150px;" class="text-center">СМР</th>
+                    <th style="width: 150px; min-width: 150px; max-width: 150px;" class="text-center">Всего</td>
+                    <th style="width: 150px; min-width: 150px; max-width: 150px;" class="text-center"><div>Основные<br><div>материалы</th>
+                    <th style="width: 150px; min-width: 150px; max-width: 150px;" class="text-center">СМР</th>
+                    <th style="width: 150px; min-width: 150px; max-width: 150px;" class="text-center">Всего</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${tableHtml}
+            </tbody>
+        </table>
+        `;
+    }
+
+    function renderMainTable(rows) {
+        let tableHtml = '';
+
+        let basicMaterialsUnitCostSum = 0;
+        let smrUnitCostSum = 0;
+        let totalUnitCostSum = 0;
+        let basicMaterialsTotalCostSum = 0;
+        let smrTotalCostSum = 0;
+        let totalTotalCostSum = 0;
+
+        let finalVolume = 0;
+
+        rows.forEach(row => {
+            let workNameTdHTML = `<td>${row.work_name}</td>`;
+            if (row.stages.length !== 0) {
+                const workNamesList = new Array();
+                
+                row.stages.forEach(stage => {
+                    if (stage.work_name && !workNamesList.includes(stage.work_name)) {
+                        workNamesList.push(stage.work_name);
+                    }
+                });
+
+                if (workNamesList.length !== 0) {
+                    let workNamesText = "";
+                    for (let i = 0; i < workNamesList.length; i++) {
+                        workNamesText += `${workNamesList[i]}`;
+                        if (i === workNamesList.length - 1) {
+                            workNamesText += ` | <b>(${row.work_name})</b>`;
+                        } else {
+                            workNamesText += " | ";
+                        }
+                    }
+                    workNameTdHTML = `<td class="text-danger">${workNamesText}</td>`;
+                }
+            }
+
+            let totalTdHTML = "";
+            const stagesSum = getArrayAttrSum(row.stages, "total_total_cost");
+            if (stagesSum > row.total_total_cost) {
+                const totalDiff = numberWithSpace((stagesSum - row.total_total_cost).toFixed(2))
+                totalTdHTML = `<td class="text-danger" style="width: 130px; min-width: 130px; max-width: 130px;">${numberWithSpace(stagesSum.toFixed(2))} / ${numberWithSpace(row.total_total_cost)} (${totalDiff})</td>`;
+            } else {
+                totalTdHTML = `<td style="width: 130px; min-width: 130px; max-width: 130px;">${numberWithSpace(stagesSum.toFixed(2))} / ${numberWithSpace(row.total_total_cost)}</td>`;
+            }
+
+            let volumeTdHTML = "";
+            if (row.new_volume) {
+                volumeTdHTML = `
+                <td class="text-danger">${numberWithSpace(row.new_volume.toFixed(2))} / ${numberWithSpace(row.volume)}</td>
+                `;
+            } else {
+                volumeTdHTML = `<td>${numberWithSpace(row.volume)}</td>`;
+            }
+
+            tableHtml += `
+            <tr style="cursor: pointer;" onclick="navigateTo('${row.url}')">
+                <td style="width: 40px; max-width: 40px; min-width: 40px;">${row.npp}</td>
+                <td style="width: 30px; max-width: 30px; min-width: 30px;">${row.code}</td>
+                <td style="width: 150px; max-width: 150px; min-width: 150px;">${row.parent_work_name}</td>
+                ${workNameTdHTML}
+                <td style="width: 30px; max-width: 30px; min-width: 30px;">${row.unit}</td>
+                <td style="width: 60px; max-width: 60px; min-width: 60px;">${row.accounting_method}</td>
+                <td style="width: 80px; max-width: 80px; min-width: 80px;">${numberWithSpace(row.material_consumption_rate)}</td>
+                ${volumeTdHTML}
+                <td style="width: 130px; min-width: 130px; max-width: 130px;">${numberWithSpace(row.basic_materials_unit_cost)}</td>
+                <td style="width: 130px; min-width: 130px; max-width: 130px;">${numberWithSpace(row.smr_unit_cost)}</td>
+                <td style="width: 130px; min-width: 130px; max-width: 130px;">${numberWithSpace(row.total_unit_cost)}</td>
+                <td style="width: 130px; min-width: 130px; max-width: 130px;">${numberWithSpace(row.basic_materials_total_cost)}</td>
+                <td style="width: 130px; min-width: 130px; max-width: 130px;">${numberWithSpace(row.smr_total_cost)}</td>
+                ${totalTdHTML}
+                <td style="width: 16%; max-width: 16%; min-width: 16%;">${row.note}</td>
+            </tr>
+            `;
+
+            if (typeof row.basic_materials_unit_cost === "number") {
+                basicMaterialsUnitCostSum += row.basic_materials_unit_cost;
+            }
+            if (typeof row.smr_unit_cost === "number") {
+                smrUnitCostSum += row.smr_unit_cost;
+            }
+            if (typeof row.total_unit_cost === "number") {
+                totalUnitCostSum += row.total_unit_cost;
+            }
+            if (typeof row.basic_materials_total_cost === "number") {
+                basicMaterialsTotalCostSum += row.basic_materials_total_cost;
+            }
+            if (typeof row.smr_total_cost === "number") {
+                smrTotalCostSum += row.smr_total_cost;
+            }
+            if (typeof row.total_total_cost === "number") {
+                totalTotalCostSum += row.total_total_cost;
+            }
+
+            finalVolume += row.volume;
+        });
+
+        wrapper.innerHTML = `
+            <div class="p-2">
+                Объём: <strong>${numberWithSpace(finalVolume.toFixed(2))}</strong><br>
+                Основные материалы: <strong>${numberWithSpace(basicMaterialsTotalCostSum.toFixed(2))}</strong> руб.<br>
+                СМР: <strong>${numberWithSpace(smrTotalCostSum.toFixed(2))}</strong> руб.<br>
+                Всего: <strong>${numberWithSpace(totalTotalCostSum.toFixed(2))}</strong> руб.<br>
+            </div>
+
+        <table class="table table-bordered table-hover">
+            <thead style="position: sticky;top: 0">
+                <tr>
+                    <th style="width: 40px; max-width: 40px; min-width: 40px;" class="text-center" rowspan="2">№<br></th>
+                    <th style="width: 30px; max-width: 30px; min-width: 30px;" class="text-center" rowspan="2">Код</th>
+                    <th style="width: 150px; max-width: 150px; min-width: 150px;" class="text-center" rowspan="2">Наименование работ<br></th>
+                    <th style="width: 150px; max-width: 150px; min-width: 150px;" class="text-center" rowspan="2">Наименование работ<br></th>
+                    <th style="width: 30px; max-width: 30px; min-width: 30px;" class="text-center" rowspan="2">Ед. изм.<br></th>
+                    <th style="width: 60px; max-width: 60px; min-width: 60px;" class="text-center" rowspan="2">Способ учёта<br></th>
+                    <th style="width: 80px; max-width: 80px; min-width: 80px;" class="text-center" rowspan="2">Норма расхода материала<br></th>
+                    <th style="width: 70px; max-width: 70px; min-width: 70px;" class="text-center" rowspan="2">Объём</th>
+                    <th style="width: 390px; max-width: 390px; min-width: 390px;" class="text-center" colspan="3">Стоимость единицы, руб., в т.ч. НДС 20%<br></th>
+                    <th style="width: 390px; max-width: 390px; min-width: 390px;" class="text-center" colspan="3">Стоимость всего, руб., в т.ч. НДС 20%<br></th>
+                    <th style="width: 16%; max-width: 16%; min-width: 16%;" class="text-center" rowspan="2">Примечания</th>
+                </tr>
+                <tr>
+                    <th style="width: 130px; min-width: 130px; max-width: 130px;" class="text-center"><div>Основные<div>материалы<br></th>
+                    <th style="width: 130px; min-width: 130px; max-width: 130px;" class="text-center">СМР</th>
+                    <th style="width: 130px; min-width: 130px; max-width: 130px;" class="text-center">Всего</th>
+                    <th style="width: 130px; min-width: 130px; max-width: 130px;" class="text-center"><div>Основные<div>материалы<br></th>
+                    <th style="width: 130px; min-width: 130px; max-width: 130px;" class="text-center">СМР</th>
+                    <th style="width: 130px; min-width: 130px; max-width: 130px;" class="text-center">Всего</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${tableHtml}
+            </tbody>
+        </table>
+        `;
+    }
+
+    function getArrayAttrSum(array, key) {
+        return array.reduce((accumulator, object) => {
+                if (typeof object[key] === "number") {
+                    return accumulator + object[key];
+                } else {
+                    return accumulator;
+                }
+            }, 0);
+    }
+
+    function filterArrayByBooleanAttr(array, key) {
+        return array.filter(element => {
+            return element[key];
+        });
+    }
+
+    function filterArrayByStageBooleanAttr(array, key) {
+        return array.filter(element => {
+            let find = false;
+            element.stages.forEach(stage => {
+                if (stage[key]) {
+                    find = stage[key];
+                    return
+                }
+            });
+            return find;
+        });
+    }
+
+    function numberWithSpace(x) {
+		return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u00A0").replace('.', ',');
+	}
+
+    function navigateTo(url) {
+        window.location.href = url;
+    }
+
+    function compareNpp(a, b) {
+        let aParts = a.npp.split('.').map(Number);
+        let bParts = b.npp.split('.').map(Number);
+
+        for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+            if (aParts[i] !== bParts[i]) {
+                return aParts[i] - bParts[i];
+            }
+        }
+
+        return 0;
+    }
+</script>
+{% endblock %}

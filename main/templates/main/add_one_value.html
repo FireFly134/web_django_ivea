@@ -1,53 +1,95 @@
 {% extends 'main/base.html' %}
+
+{% load static %}
+
 {% block title %}Добавление {{ table_name }}{% endblock %}
+{% block style %}
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+		<link href="{% static 'css/modal_window.css' %}" rel="stylesheet" type="text/css">
+<style>.doc_table {
+  font-size: 12pt;
+  font-family: Arial;
+  color: black;
+}</style>
+<script>
+  //////////////////////////////////////////////////////////////////////
+ //Фильтр по значениям в таблицах , работает через окошко ввода input//
+//////////////////////////////////////////////////////////////////////
+function NullFilterTable() {
+// Обновляем значение поля
+    document.getElementById('filterInput').value = '';
+    filterTable()
+    }
+function filterTable(inputElement = document.getElementById("filterInput").value) {
+  var filter, table, tr, td, i, j, txtValue;
+  filter = inputElement.toUpperCase();
+  table = document.getElementById("DocTable");
+  tr = table.getElementsByTagName("tr");
+
+  // Проходим по каждой строке таблицы, начиная с индекса 1
+  for (i = 1; i < tr.length; i++) {
+    td = tr[i].getElementsByTagName("td");
+    var rowVisible = false;
+	for (j = 0; j < td.length; j++) {
+	  if (td[j]) {
+		txtValue = td[j].textContent || td[j].innerText;
+
+		if (txtValue.toUpperCase().indexOf(filter) > -1) {
+		  rowVisible = true;
+		  break;
+		}
+	  }
+	}
+    // Показываем или скрываем строку в зависимости от значения флага
+    tr[i].style.display = rowVisible ? "" : "none";
+  }
+}
+function handleInput(event) {
+    filterTable(event.target.value);
+}
+</script>
+{% endblock %}
 {% block body %}
     <form method='POST'>
         {% csrf_token %}
         </br>
-        <div style="text-align:center">
+        <div style="text-align:center;margin:0 auto; width: 500px;">
             {{ form.as_p }}
-            <span style="font-family:Times New Roman,Times,serif"><span style="font-size:16px"><button type="submit">Отправить данные</button></span></span>
+            <span style="font-family:Times New Roman,Times,serif; font-size:16px"><button type="submit" class="btn btn-dark">Сохранить</button></span>
         </div>
     </form>
-    <table class="table_center_by_css" border="1" cellpadding="1" cellspacing="1" style="width:80%">
+<div style="margin:0 auto; width: 1500px;">
+    <input type="text" id="filterInput" placeholder="Введите значение для фильтрации" oninput="handleInput(event)">
+    <input type="image" src="{% static 'img/icon-deletelink.svg' %}" alt="Очистить фильтр" title="Очистить фильтр" onclick="NullFilterTable()" style="width: 20px; height: 20px; margin-top: -10px;">
+    <table class="table_center_by_css table table-sm table-bordered" border="1" cellpadding="1" cellspacing="1" style="width:100%" id="DocTable">
+        <thead style="position: sticky;top: 0">
+            <tr>
+                <td class="doc_table" scope="col" style="background: #ebebeb;text-align:center; width:70px">ID</td>
+                <td class="doc_table" scope="col" style="background: #ebebeb;text-align:center;">Наименование {{ table_name }}</td>
+                {% comment %}
+                    {% if table[0].link %}
+                        <td class="doc_table" scope="col" style="background: #ebebeb;text-align:center;">Ссылка на чертеж</td>
+                    {% endif%}
+                {% endcomment %}
+            </tr>
+        </thead>
             <tbody>
-                <tr>
-                    {% if table_name != "детали" %}
-                    <td style="text-align:center; width:5%"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">ID</span></span></span></td>
-                    {% endif%}
-                    <td style="text-align:center"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">Наименование {{ table_name }}</span></span></span></td>
-                    {% if table_name == "детали" %}
-                    <td style="text-align:center; width:50%"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">Ссылка на чертеж</span></span></span></td>
-                    {% endif%}
-                    <td style="text-align:center; width:2%"></td>
-
-                </tr>
-                {% for item in table %}
-                <tr>
-                    {% if table_name != "детали" %}
-                    <td style="text-align:center"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">{{ item.id }}</span></span></span></td>
-                    {% endif%}
-                    {% if item.name %}
-                    <td><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">&nbsp;&nbsp;{{ item.name }}</span></span></span></td>
-                    {% endif%}
-                    {% if item.link %}
-                    <td><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">&nbsp;&nbsp;{{ item.link }}</span></span></span></td>
-                    {% endif%}
-                    {% if item.description %}
-                    <td><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">&nbsp;&nbsp;{{item.description}}</span></span></span></td>
-                    <td><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">{% for qwe in item.services.all %} &nbsp;&nbsp;{{ qwe.name }}</br>{% endfor %}</span></span></span></td>
-                    {% endif%}
-                    <td style="text-align:center">
-                        <form method="POST">
-                            {% csrf_token %}
-                            <input name="save" type='hidden' value="save">
-                            <button type="submit" title='Изменить выбранный объект "{{ item.name }}"'><img src="/static/admin/img/icon-changelink.svg" alt="Изменить"></button>
-                        </form>
-                    </td>
-<!--                        <a class="related-widget-wrapper-link change-related" id="change_id_name" data-href-template="/admin/" title='Изменить выбранный объект "{{ item.name }}"' href="/admin/"><img src="/static/admin/img/icon-changelink.svg" alt="Изменить"></a>-->
-                </tr>
-                {% endfor %}
-            </tbody>
-            <tbody>
+            {% for item in table %}
+            <tr>
+                <td class="doc_table" style="text-align:center">{{item.id}}</td>
+                {% if item.name %}
+                <td class="doc_table" style="padding-left: 25px;">{{item.name}}</td>
+                {% endif%}
+                {% if item.link %}
+                <td class="doc_table" style="padding-left: 25px;">{{item.link}}</td>
+                {% endif%}
+                {% if item.description %}
+                <td class="doc_table" style="padding-left: 25px;">{{item.description}}</td>
+                <td class="doc_table" style="padding-left: 25px;">{% for qwe in item.services.all %} &nbsp;&nbsp;{{ qwe.name }}</br>{% endfor %}</td>
+                {% endif%}
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
+</div>
 {% endblock %}

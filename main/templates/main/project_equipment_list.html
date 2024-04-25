@@ -1,0 +1,83 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Проектное оборудование{% endblock %}
+
+{% block body %}
+    <div id="manageArea" class="mt-4">
+        <div class="d-flex justify-content-center flex-column align-items-center">
+            <h2>Проектное оборудование</h2>
+
+            <div>
+                <a class="btn btn-primary mb-3" href="{% url 'project_equipment_create' %}">
+                    <i class="fas fa-plus"></i> Добавить проектное оборудование
+                </a>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input oninput="rebuildTable(equipments)" style="width: 35rem;" type="text" class="form-control"
+                       id="searchInput" placeholder="name@example.com">
+                <label for="searchInput">Поиск</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="container d-flex justify-content-center" id="showArea"></div>
+
+    <script>
+        let equipments = [
+            {% for equipment in equipments %}
+                {
+                    name: '{{ equipment }}',
+                },
+            {% endfor %}
+        ];
+
+        const showArea = document.getElementById('showArea');
+        const searchInput = document.getElementById('searchInput');
+
+        rebuildTable(equipments);
+
+        function rebuildTable(equipments) {
+            if (equipments.length === 0) {
+                showArea.innerHTML = "<h2>Проектное оборудование отсутствует</h2>";
+                return;
+            }
+
+            let filteredEquipments = equipments;
+
+            if (searchInput.value !== "") {
+                const searchInputValue = searchInput.value.toLowerCase();
+                filteredEquipments = filteredEquipments.filter(equipment => {
+                    return equipment.name.toLowerCase().includes(searchInputValue);
+                });
+            }
+
+            if (filteredEquipments.length === 0) {
+                showArea.innerHTML = "<h2>Совпадений не найдено</h2>";
+                return;
+            }
+
+            let tableHTML = "";
+            filteredEquipments.forEach(equipment => {
+                tableHTML += `
+                    <tr>
+                        <td>${equipment.name}</td>
+                    </tr>
+                `;
+            });
+
+            showArea.innerHTML = `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Наименование</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableHTML}
+                    </tbody>
+                </table>
+            `;
+        }
+    </script>
+{% endblock %}

@@ -1,134 +1,294 @@
 {% extends 'main/base.html' %}
-{% block title %}{{ title }}{% endblock %}
-{% block style %}
-<style>
-    .modalDialog {
-	position: fixed;
-	font-family: Arial, Helvetica, sans-serif;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	background: rgba(0,0,0,0.8);
-	z-index: 99999;
-	-webkit-transition: opacity 400ms ease-in;
-	-moz-transition: opacity 400ms ease-in;
-	transition: opacity 400ms ease-in;
-	display: none;
-	pointer-events: none;
-}
-    .modalDialog:target {
-	display: block;
-	pointer-events: auto;
-}
 
-.modalDialog > div {
-	width: 1400px;
-	position: relative;
-	margin: 10% auto;
-	padding: 5px 20px 13px 20px;
-	border-radius: 10px;
-	background: #fff;
+{% block title %}Детали{% endblock %}
 
-}
-
-    .close {
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
-	border-radius: 5px;
-	-moz-box-shadow: 1px 1px 1px #000;
-	-webkit-box-shadow: 1px 1px 3px #000;
-	box-shadow: 5px 5px 5px #000;
-
-</style>
-{% endblock %}
 {% block body %}
-    <br/>
-    <br/>
-    <div style="text-align:center">
-        <span style="font-family:Times New Roman,Times,serif">
-            <span style="font-size:24px">
-                <form method=POST id="update" name="update">
-                    {% csrf_token %}
-                    {{ form }}
-                    <a class="related-widget-wrapper-link add-related" id="edit_id_purchased" href="#openRenameModal" title='Переименовать'><img src="/static/admin/img/icon-changelink.svg" alt="Переименовать"></a>
-                    <a class="related-widget-wrapper-link add-related" id="add_id_purchased" href="#openModal" title='Добавить'><img src="/static/admin/img/icon-addlink.svg" alt="Добавить"></a><br/>
-                </form>
-                <form method=POST id="edit" name="edit">
-                    {% csrf_token %}
-                    <label for="id_link">Ссылка на чертёж:</label>
-                    <input type="text" name="link" style="width:50%" maxlength="200" id="id_link"><br/>
-                    <input name="name" type='hidden' value="{{ choice_id }}">
-                    <input name="save" type='hidden' value="save">
-                    <button type="submit" onchange = "document.getElementById('edit').submit()"><span style="font-family:Times New Roman,Times,serif"><span style="font-size:16px">Отправить данные</span></span></button>
-                </form>
-                <div id="openModal" class="modalDialog">
-                    <div>
-                        <a href="" title="Закрыть" class="close">Закрыть</a>
-                        <form method=POST id="id_save_new_purchased" name="save">
-                            {% csrf_token %}
-                                <div>{% if messages %}
-                                    {% for message in messages %}
-                                        {% if message.tags == 'error'%}
-                                            <div class="alert alert-danger" role="alert">
-                                                {{ message }}
-                                            </div>
-                                        {% else %}
-                                            <div class="alert alert-{{ message.tags }}" role="alert">
-                                                {{ message }}
-                                            </div>
-                                        {% endif %}
-                                    {% endfor %}
-                                    {% endif %}</div>
-                                <p><label for="id_name">Наименование покупного оборудования:</label></p>
-                                <p><input type="text" name="name" class="form-control" required id="id_name"></p>
-                            <input name="choice_id" type='hidden' value="{{ choice_id }}">
-                            <input name="save_new_purchased" type='hidden' value="save">
-                        <button type="submit" onchange = "document.getElementById('id_save_new_purchased').submit()">Добавить</button>
-                        </form>
-                    </div>
+    <div class="d-flex justify-content-center align-items-center flex-column mt-2" id="manageArea">
+        <h2>Детали</h2>
+
+        <div>
+            <a class="btn btn-primary" href="{% url 'detail_create' %}"><i class="fas fa-plus"></i> Создать новую деталь</a>
+        </div>
+
+        <div class="form-floating mb-2 mt-2 w-25">
+            <input type="text" class="form-control" id="searchField" placeholder="Поиск"
+                   oninput="rebuildTable([...detailsData])">
+            <label for="searchField">Поиск</label>
+        </div>
+    </div>
+
+    <div class="ms-5 me-5" id="showArea"></div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        let detailsData = [
+            {% for detail in details %}
+                {
+                    name: '{{ detail.name }}',
+                    document_paths: [
+                        {% for path in detail.yandex_file_paths %}
+                            '{{ path }}',
+                        {% endfor %}
+                    ],
+                },
+            {% endfor %}
+        ];
+
+        const manageArea = document.getElementById('manageArea');
+        const showArea = document.getElementById('showArea');
+        let savedSearchInput = "";
+        let lastManageArea = "";
+        let lastShowArea = "";
+
+        let notificationCounter = 0;
+
+        rebuildTable([...detailsData]);
+
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.level == 50 %}
+                    showWarning('{{ message }}', 'danger');
+                {% else %}
+                    showWarning('{{ message }}', 'success');
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        let empty_alert = document.getElementsByClassName('alert alert-danger alert-dismissible fade show');
+        let top_alert = document.getElementsByClassName('alert alert-');
+
+        empty_alert[0].remove();
+        top_alert[0].remove();
+
+        function rebuildTable(detailsData) {
+            notificationCounter = 0;
+
+            let searchString = document.getElementById('searchField').value.toLowerCase();
+            if (searchString !== "") {
+                detailsData = detailsData.filter(detail => {
+                    return detail.name.toLowerCase().includes(searchString);
+                });
+            }
+            let htmlText = "";
+            detailsData.forEach(detail => {
+                htmlText += `
+                    <tr>
+                        <td>${detail.name}</td>
+                        <td class="text-center"><i title="Открыть папку с документами детали" style="cursor: pointer;" onclick="openDetailFolder('${JSON.stringify(detail).split('"').join("&quot;")}')" class="fas fa-folder-open fa-2x"></i></td>
+                    </tr>
+                `;
+            });
+
+            if (detailsData.length !== 0) {
+                showArea.innerHTML = `
+                <table class="table">
+                    <thead>
+                        <th>Наименование детали</th>
+                        <th class="text-center">Документы</th>
+                    </thead>
+                    <tbody>
+                        ${htmlText}
+                    </tbody>
+                <table>
+            `;
+            } else {
+                showArea.innerHTML = "<div class='d-flex justify-content-center'><h3>Совпадений не найдено</h3></div>"
+            }
+        }
+
+        function openDetailFolder(detail) {
+            detail = JSON.parse(detail);
+            lastManageArea = manageArea.innerHTML;
+            lastShowArea = showArea.innerHTML;
+            savedSearchInput = document.getElementById('searchField').value;
+            manageArea.innerHTML = "";
+
+            let filesHtml = "";
+
+            detail.document_paths.forEach(path => {
+                let name = path.split("/")
+                name = name[name.length - 1]
+
+                filesHtml += `
+                    <tr id="row-${path}">
+                       <td>${name}</td>
+                       <td id="deleteRow${path}"><i style="cursor: pointer;" onclick="deleteDoc('${JSON.stringify(detail).split('"').join("&quot;")}', '${path}')" title="Удалить" class="fas fa-trash fa-2x"></i></td>
+                       <td id="downloadRow${path}"><i style="cursor: pointer;" onclick="downloadDoc('${path}')" title="Скачать" class="fas fa-download fa-2x"></i></td>
+                    </tr>
+                `;
+            });
+
+            let tableHTML = `
+                <table class="table mb-5">
+                    <thead>
+                        <th>Наименование документа</th>
+                        <th>Удаление</th>
+                        <th>Загрузка</th>
+                    </thead>
+                    <tbody>
+                        ${filesHtml}
+                    </tbody>
+                </table>
+            `;
+
+            if (detail.document_paths.length === 0) {
+                tableHTML = "<h2 class='mb-5 mt-5'>Прикреплённых файлов не найдено</h2>";
+            }
+
+            showArea.innerHTML = `
+                <div class="d-flex justify-content-center align-items-center flex-column mt-5">
+                    <span>Прикреплённые документы детали</span>
+                    <h3>${detail.name}</h3>
+
+                    ${tableHTML}
+
+                    <div style="height: 100px;"></div>
+
+                    <form method="post" enctype="multipart/form-data" action="{% url 'detail_update' %}">
+                        {% csrf_token %}
+                        <h5>Загрузить документ для детали:</h5>
+                        <label for="updateFileInput">(множественный выбор осуществляется с помощью Ctrl)</label>
+                        <input id="updateFileInput" type="file" name="document" multiple>
+                        <input type="hidden" name="detail_name" value="${detail.name}">
+
+                        <div class="mt-3">
+                            <input class="btn btn-primary" type="submit" value="Сохранить">
+                            <a onclick="closeModal()" class="btn btn-secondary">Назад</a>
+                        </div>
+                    </form>
                 </div>
-                <div id="openRenameModal" class="modalDialog">
-                    <div>
-                        <a href="" title="Закрыть" class="close">Закрыть</a>
-                        <form method=POST id="id_rename" >
-                            {% csrf_token %}
-                                <div>{% if messages %}
-                                    {% for message in messages %}
-                                        {% if message.tags == 'error'%}
-                                            <div class="alert alert-danger" role="alert">
-                                                {{ message }}
-                                            </div>
-                                        {% else %}
-                                            <div class="alert alert-{{ message.tags }}" role="alert">
-                                                {{ message }}
-                                            </div>
-                                        {% endif %}
-                                    {% endfor %}
-                                    {% endif %}</div>
-                                <p><label for="id_name">Введите новое наименование покупного оборудования:</label></p>
-                                <p><input type="text" name="rename" class="form-control" required ></p>
-                            <input name="pk" type='hidden' value="{{ choice_id }}">
-                        <button type="submit" onchange = "document.getElementById('id_rename').submit()">Переименовать</button>
-                        </form>
-                    </div>
+            `;
+        }
+
+        function closeModal() {
+            manageArea.innerHTML = lastManageArea;
+            document.getElementById('searchField').value = savedSearchInput;
+            rebuildTable(detailsData);
+        }
+
+        function downloadDoc(path) {
+            let downloadIcon = document.getElementById(`downloadRow${path}`);
+            downloadIcon.innerHTML = `
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
                 </div>
-            </span>
-        </span>
-    </div><br/>
-    <table class="table_center_by_css" border="1" cellpadding="1" cellspacing="1" style="width:80%">
-            <tbody>
-                <tr>
-                    <td style="text-align:center"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">Наименование {{ table_name }}</span></span></span></td>
-                    <td style="text-align:center; width:50%"><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">Ссылка на чертеж</span></span></span></td>
-                </tr>
-                {% for item in table %}
-                <tr>
-                    <td><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">&nbsp;&nbsp;{{ item.name }}</span></span></span></td>
-                    <td><span style="font-size:12pt"><span style="color:black"><span style="font-family:Calibri,sans-serif">&nbsp;&nbsp;{{ item.link }}</span></span></span></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-            <tbody>
-    </table>
+            `;
+
+            let xhr = new XMLHttpRequest();
+            let url = '{% url 'document_path_generator' %}';
+
+            xhr.open('POST', url,);
+
+            xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            xhr.onload = function () {
+                let response = JSON.parse(xhr.response)
+                if (response.status) {
+                    if (response.path.replaceAll(" ", "") === "") {
+                        showWarning("Документ не привязан", "info");
+                    } else {
+                        window.open(response.path);
+                    }
+                } else {
+                    showWarning(response.msg);
+                }
+                downloadIcon.innerHTML = `<i style="cursor: pointer;" onclick="downloadDoc('${path}')" title="Скачать" class="fas fa-download fa-2x"></i>`;
+            };
+
+            xhr.onerror = function () {
+                showWarning(xhr.response);
+            };
+
+            xhr.send(`{"path": "${path}"}`);
+        }
+
+        function deleteDoc(detail, path) {
+            let deleteIcon = document.getElementById(`deleteRow${path}`);
+            deleteIcon.innerHTML = `
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            `;
+
+            detail = JSON.parse(detail);
+
+            let xhr = new XMLHttpRequest();
+            let url = '{% url 'delete_detail_document' %}';
+
+            xhr.open('POST', url,);
+
+            xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            xhr.onload = function () {
+                let response = JSON.parse(xhr.response)
+                console.log(response);
+
+                if (response.status) {
+                    showWarning("Документ удалён", "info");
+                    let response_detail = response.detail;
+
+                    const currentDetailIndex = detailsData.findIndex(detail => detail.name === response_detail.name);
+                    detailsData[currentDetailIndex] = response_detail;
+
+                    document.getElementById(`row-${path}`).remove();
+                } else {
+                    showWarning(response.msg);
+                }
+            };
+
+            xhr.onerror = function () {
+                showWarning(xhr.response);
+            };
+
+            xhr.send(`{"path": "${path}", "detail_name": "${detail.name}"}`);
+        }
+
+        function showWarning(text, type = "danger") {
+            showArea.innerHTML += `
+                        <div style="position: fixed; right: 30px; bottom: ${50 * ++notificationCounter}px;" class="alert alert-${type} d-flex align-items-center warn" role="alert">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:">
+                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                          </svg>
+                          <div>
+                            ${text}
+                          </div>
+                        </div>
+                    `;
+
+            if (notificationCounter === 1) {
+                showArea.innerHTML += `
+                            <a onclick="removeAllWarnings()" style="position: fixed; right: 30px; bottom: 10px; width: 200px;" class="btn btn-info warn">Очистить</a>
+                        `;
+            }
+        }
+
+        function removeAllWarnings() {
+            let warns = document.getElementsByClassName('warn');
+
+            for (let i = warns.length - 1; i >= 0; i--) {
+                warns[i].remove();
+            }
+            notificationCounter = 0;
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                let cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    let cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
 {% endblock %}

@@ -1,0 +1,132 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% block title %}Cписок потенциальных заказчиков{% endblock %}
+{% block style %}
+<style>.doc_table {
+  font-size: 12pt;
+  font-family: Arial;
+  color: black;
+}</style>
+{% endblock %}
+
+{% block body %}
+
+<br>
+<div class="d-flex justify-content-between align-items-center" style="margin-left: 25px; margin-right: 25px;">
+	<div class="btn-group" role="group" aria-label="Первая группа">
+		<a href="{% url 'list_coase' %}" class="btn btn-dark mt-3" id="btn-group-1">Перейти в список коммерческих предложений</a>
+		<a href="{% url 'create_co' %}" class="btn btn-primary mt-3" id="btn-group-2">Создать новую запись</a>
+	</div>
+</div>
+<div style="margin-left: 25px; margin-right: 25px;">
+	<input type="text" id="filterInput" placeholder="Введите значение для фильтрации" oninput="handleInput(event)">
+	<input type="image" src="{% static 'img/icon-deletelink.svg' %}" alt="Очистить фильтр" title="Очистить фильтр" onclick="NullFilterTable()" style="width: 20px; height: 20px; margin-top: -10px;">
+</div>
+<table class="table_center_by_css table table-sm table-bordered" border="1" cellpadding="1" cellspacing="1" style="width:98%" id="DocTable">
+	<thead style="position: sticky;top: 0">
+		<tr>
+			<td class="doc_table" scope="col" id="N" data-column="N" style="background: #ebebeb;text-align:center; width:50px">№ п/п</td>
+			<td class="doc_table" scope="col" id="fio" data-column="fio" style="background: #ebebeb;text-align:center; width:300px;">ФИО</td>
+			<td class="doc_table" scope="col" id="tel" data-column="tel" style="background: #ebebeb;text-align:center;">Номер телефон</td>
+			<td class="doc_table" scope="col" id="organization" data-column="organization" style="background: #ebebeb;text-align:center; width:300px;">Название организации</td>
+			<td class="doc_table" scope="col" id="mail" data-column="mail" style="background: #ebebeb;text-align:center;">Почта</td>
+			<td class="doc_table" scope="col" id="move" style="background: #ebebeb;text-align:center; width:100px">Действия</td>
+		</tr>
+	</thead>
+	<tbody id="tbody"></tbody>
+</table>
+{% endblock %}
+{% block script %}
+<script>
+	let rowCounter = 1; // Счетчик номера п/п
+	//
+	function addTableRow(id, fio, tel, organization, mail, editUrl, deleteUrl) {
+		const newRow = tbody.insertRow();
+		const cell1 = newRow.insertCell(0);
+		const cell2 = newRow.insertCell(1);
+		const cell3 = newRow.insertCell(2);
+		const cell4 = newRow.insertCell(3);
+		const cell5 = newRow.insertCell(4);
+		const cell6 = newRow.insertCell(5);
+
+		cell1.textContent = rowCounter++;
+		cell2.textContent = fio;
+		cell3.textContent = tel;
+		cell4.textContent = organization;
+		cell5.textContent = mail;
+
+		// Создаем ссылку для редактирования
+		const editLink = document.createElement("a");
+		editLink.href = editUrl;
+		editLink.className = "btn btn-link";
+		editLink.title = "Редактировать";
+
+		// Создаем иконку для редактирования
+		const editIcon = document.createElement("i");
+		editIcon.className = "fas fa-pencil-alt";
+
+		// Добавляем иконку в ссылку
+		editLink.appendChild(editIcon);
+
+		// Создаем ссылку для удаления
+		const deleteLink = document.createElement("a");
+		deleteLink.href = deleteUrl;
+		deleteLink.className = "btn btn-link text-danger";
+		deleteLink.title = "Удалить";
+
+		// Создаем иконку для удаления
+		const deleteIcon = document.createElement("i");
+		deleteIcon.className = "fas fa-trash-alt";
+
+		// Добавляем иконку в ссылку
+		deleteLink.appendChild(deleteIcon);
+
+		// Добавляем ссылки в ячейку
+		cell6.appendChild(editLink);
+		cell6.appendChild(deleteLink);
+	}
+
+	//Фильтр по значениям в таблице открыт договор и строительная готовность, работает через кнопки
+	function NullFilterTable() {
+	// Обновляем значение скрытого поля
+		document.getElementById('filterInput').value = '';
+		filterTable()
+		}
+	function filterTable(inputElement = document.getElementById("filterInput").value) {
+	  var filter, table, tr, td, i, j, txtValue;
+	  filter = inputElement.toUpperCase();
+	  table = document.getElementById("DocTable");
+	  tr = table.getElementsByTagName("tr");
+
+	  // Проходим по каждой строке таблицы, начиная с индекса 2 (пропускаем первые две строки)
+	  for (i = 1; i < tr.length; i++) {
+		td = tr[i].getElementsByTagName("td");
+		var rowVisible = false;
+		for (j = 0; j < td.length; j++) {
+		  if (td[j]) {
+			txtValue = td[j].textContent || td[j].innerText;
+
+			if (txtValue.toUpperCase().indexOf(filter) > -1) {
+			  rowVisible = true;
+			  break;
+			}
+		  }
+		}
+
+		// Показываем или скрываем строку в зависимости от значения флага
+		tr[i].style.display = rowVisible ? "" : "none";
+	  }
+	}
+	function handleInput(event) {
+		filterTable(event.target.value);
+	}
+
+	document.addEventListener("DOMContentLoaded", function () {
+		let tbody = document.getElementById('tbody');
+
+		{% for item in list %}
+			addTableRow(`{{ item.id|safe }}`, `{{ item.fio|safe }}`, `{{ item.tel|safe }}`, `{{ item.organization|safe }}`, `{{ item.mail|safe }}`, '{% url 'edit_co' item.id %}', '{% url 'delete_co' item.id %}');
+		{% endfor %}
+	});
+</script>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends 'main/base.html' %}
+{% block title %}Счета с неопределенным контрагентом{% endblock %}
+
+{% block style %}
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+          crossorigin="anonymous"/>
+    <style>
+        .header {
+            position: sticky;
+            top: 0;
+        }
+        
+        tbody tr:hover {
+            background-color: #87ece7;
+            cursor: pointer;
+        }
+
+        
+    </style>
+{% endblock %}
+
+{% block body %}
+
+<div class="container">
+    <h2 class="mt-2">Счета с неопределенным контрагентом</h2>
+    <br/>
+    <table class="table">
+        <thead style="position: sticky;top: 0" class="thead-dark">
+            <tr>
+                <th>Дата</th>
+                <th>Номенклатура</th>
+                <th>Алиас</th>
+                <th>Сумма</th>
+                <th>Создать алиас</th>
+            </tr>
+        </thead>
+        <tbody id="invoicesTableBody">
+            
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const invoices = [
+        {% for invoice in invoices %}
+            {
+                date: '{{ invoice.date|date:"d.m.Y" }}',
+                nomenclature: '{{ invoice.nomenclature }}',
+                total: {{ invoice.total|stringformat:".2f" }},
+                counterparty_alias: '{{ invoice.alias|safe }}'
+            },
+        {% endfor %}
+    ];
+    const invoicesTableBody = document.getElementById('invoicesTableBody');
+    rebuildTable();
+
+    function rebuildTable() {
+    invoices.forEach(invoice => {
+        const row = document.createElement('tr');
+        const href = encodeURIComponent(invoice.counterparty_alias);
+        row.innerHTML = `
+            <td>${invoice.date}</td>
+            <td>${invoice.nomenclature}</td>
+            <td>${invoice.counterparty_alias}</td>
+            <td>${numberWithSpace(invoice.total)}</td>
+            <td><a href="{% url 'alias_create' %}?alias=${href}"><i class="fas fa-arrow-right"></i></a></td>
+        `;
+        invoicesTableBody.appendChild(row);
+    });
+}
+
+
+    function numberWithSpace(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u00A0").replace('.', ',');
+    }
+</script>
+
+{% endblock %}

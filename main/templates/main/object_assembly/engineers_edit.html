@@ -1,0 +1,110 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% block title %}Редактирование {% if edit == 'details' %}деталей{% elif edit == 'purchased' %}покупного оборудования{% elif edit == 'poduzel' %}подузла{% endif %} в {% if model == 1 %}выбранном подузле{% elif model == 2 %}выбранном узле{% elif model == 3 %}выбранной сборочной единице{% elif model == 4 %}выбранной объектной сборке{% endif %} "{{ name_poduzel }}"{% endblock %}
+{% block style %}
+<style>
+  .select-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px; /* Расстояние между элементами */
+  }
+
+  .select-box {
+    flex: 1; /* Равномерное распределение пространства между селектами */
+    max-width: 40%; /* Максимальная ширина селекта */
+  }
+
+  .btn-container {
+    text-align: center;
+    margin-top: 20px;
+  }
+</style>
+{% endblock %}
+{% block body %}
+<div class="d-flex justify-content-between align-items-center" style="margin-left: 25px; margin-right: 25px;">
+	<div class="btn-group" role="group" aria-label="Первая группа">
+		<button type="button" class="btn btn-primary" onclick="ColorsButton('1')" id="btn-group-1">Сборочные единицы</button>
+		<button type="button" class="btn btn-dark" onclick="ColorsButton('2')" id="btn-group-2">Покупное оборудование</button>
+		<button type="button" class="btn btn-dark" onclick="ColorsButton('3')" id="btn-group-3">Подузелы</button>
+		<button type="button" class="btn btn-dark" onclick="ColorsButton('4')" id="btn-group-4">Узелы</button>
+		<button type="button" class="btn btn-dark" onclick="ColorsButton('5')" id="btn-group-5">Детали</button>
+	</div>
+</div>
+<br>
+<div class="select-container">
+	<input type="text" id="search1" placeholder="Поиск..." size="10">
+</div>
+<div class="select-container">
+  <select class="form-select select-box" size="10" aria-label="size 5 select example" id="select1">
+  </select>
+</div>
+<!--<comment><div style="margin-left: 250px; margin-right: 25px;">-->
+<!--	<input type="text" id="filterInput" placeholder="Введите значение для фильтрации" oninput="handleInput(event)">-->
+<!--	<input type="image" src="/static/admin/img/icon-deletelink.svg" alt="Очистить фильтр" title="Очистить фильтр" onclick="NullFilterTable()" style="width: 20px; height: 20px; margin-top: -10px;">-->
+<!--</div></comment>-->
+<table class="table_center_by_css table table-sm table-bordered" border="1" cellpadding="1" cellspacing="1" style="width:70%" id="DocTable">
+	<thead style="position: sticky;top: 0">
+		<tr>
+			<td class="doc_table" scope="col" id="N" data-column="N" style="background: #ebebeb;text-align:center; width:50px">№ п/п</td>
+			<td class="doc_table" scope="col" id="counterparty" data-column="counterparty" style="background: #ebebeb;text-align:center">Наименование</td>
+			<td class="doc_table" scope="col" id="number_doc" data-column="number_doc" style="background: #ebebeb;text-align:center; width:100px">Количество</td>
+			<td class="doc_table" scope="col" style="text-align:center; display: none">Скрытый столбец</td>
+		</tr>
+	</thead>
+	<tbody id="tbody1" style="display: none">
+		<tr>
+			<td class="doc_table" style="background: #ebebeb;text-align:center;"></td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center;">Сборочнык единицы</td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center;"></td>
+		</tr>
+	</tbody>
+	<tbody id="tbody2" style="display: none">
+		<tr>
+			<td class="doc_table" style="background: #ebebeb;text-align:center;"></td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center;">Покупное оборудование</td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center;"></td>
+		</tr>
+	</tbody>
+	<tbody id="tbody3" style="display: none">
+		<tr>
+			<td class="doc_table" style="background: #ebebeb;text-align:center;"></td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center;">Подузелы</td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center;"></td>
+		</tr>
+	</tbody>
+	<tbody id="tbody4" style="display: none">
+		<tr>
+			<td class="doc_table" style="background: #ebebeb;text-align:center;"></td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center;">Узелы</td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center;"></td>
+		</tr>
+	</tbody>
+	<tbody id="tbody5" style="display: none">
+		<tr>
+			<td class="doc_table" style="background: #ebebeb;text-align:center;"></td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center;">Детали</td>
+			<td class="doc_table" style="background: #ebebeb;text-align:center;"></td>
+		</tr>
+	</tbody>
+</table>
+{% endblock %}
+{% block script %}
+<script>
+	function write_selects(num='1'){
+	var objects = JSON.parse('{{ objects | safe | escapejs }}');
+	// Обнулить селекты перед добавлением новых данных
+    clearSelect('select1');
+    // Заполняем селекты на основе данных
+	var select1 = document.getElementById('select1');
+
+	objects[num]['obj'].forEach(item => {
+		var option1 = document.createElement('option');
+		option1.value = item.id;
+		option1.text = item.name;
+		select1.appendChild(option1);
+	});
+};
+</script>>
+<script src="{% static 'js/engineers_edit.js' %}"></script>
+{% endblock %}

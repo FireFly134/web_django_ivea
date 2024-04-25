@@ -1,0 +1,75 @@
+{% extends 'main/base.html' %}
+{% block title %}Создание коммерческого предложения{% endblock %}
+{% block body %}
+<div class="mt-4 text-center">
+        <h2 class="mb-4">Создание коммерческого предложения</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="container mb-5">
+                <div class="form-group">
+                    {{ form.contact_information.label_tag }}
+                    {{ form.contact_information }}
+                </div>
+            </div>
+
+            <div class="d-flex flex-column justify-content-center align-items-center">
+                <table style="width: 80%;" class="table">
+                    <thead>
+                        <tr>
+                            <th class="text-center align-middle" scope="col">{{ form.npp.label_tag }}</th>
+                            <th class="text-center align-middle" scope="col">{{ form.work_name.label_tag }}</th>
+                            <th class="text-center align-middle" scope="col"><label for="id_services_equipment">Наименование услуг и оборудования:</label></th>
+                            <th class="text-center align-middle" scope="col">{{ form.unit_of_measurement.label_tag }}</th>
+                            <th class="text-center align-middle" scope="col">{{ form.cost_with_vat.label_tag }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="width:70px;">
+                                {{ form.npp }}
+                            </td>
+                            <td style="width: 500px;">
+                                {{ form.work_name }}
+                            </td>
+                            <td style="width: 500px;">
+                                <select name="services_equipment" class="form-control select2" id="id_services_equipment" size="6" multiple="">
+                                    {% for service in list %}
+                                    <option value="{{ service.id }}" {% if service.id == selected_value %}selected{% endif %}>{{ service.see_id }}) {{ service.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td style="width: 80px;">
+                                {{ form.unit_of_measurement }}
+                            </td>
+                            <td style="width: 150px;">
+                                {{ form.cost_with_vat }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="d-flex flex-column">
+                    <div>
+                        <button type="submit" class="btn btn-primary mt-3" value="Create">Создать</button>
+                    </div>
+                    <div>
+                        <a href="{% url 'list_coase' %}" class="btn btn-secondary mt-3">Назад</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+{% block script %}
+<script>
+    $(document).ready(function () {
+        // Используем Select2 для стилизации и добавления функциональности поиска
+        $(".select2").select2();
+    });
+    document.addEventListener('DOMContentLoaded', function () {
+        var selectElement = document.getElementById('id_contact_information');
+        var firstOption = selectElement.options[0];
+        firstOption.disabled = true;
+    });
+</script>
+{% endblock %}

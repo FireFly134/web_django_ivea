@@ -1,0 +1,167 @@
+{% extends "file_storage/base.html" %}
+
+{% block title %}Файловое хранилище{% endblock  %}
+
+{% block content %}
+<div class="container">
+    <div id="showArea" class="mt-3"></div>
+</div>
+
+<script>
+    let showArea = document.getElementById('showArea');
+    let currentPath = "/";
+    let pathHistory = [];
+
+    ls('/');
+
+    function ls(path) {
+        let xhr  = new XMLHttpRequest();
+        let url = '{% url 'file_storage_ls' %}';
+        if (path != '') {
+            url += `?path=${path}`;
+        } else {
+            url += '?path=%2'
+        }
+        xhr.open('GET', url);
+        showArea.innerHTML = `
+            <div class="vh-100 d-flex justify-content-center align-items-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+          `;
+        xhr.onload = function() {
+            if (xhr.status == '200') {
+                let json = xhr.response;
+                const obj = JSON.parse(json);
+                showArea.innerHTML = '<div class="d-flex">';
+                let cardsHTML = "";
+                obj._embedded.items.forEach((obj) => {
+                    let icon = "";
+
+                    let format = obj.name.split('.');
+
+                    if (format.length == 1) {
+                        icon = '<i class="card-title fas fa-folder fa-5x" style="color: #563181;"></i>';
+                    } else {
+                        format = format.slice(-1)[0];
+                        format = format.toLowerCase();
+
+                        if (format == 'xls' || format == 'xlsx') {
+                            icon = '<i class="fas fa-file-excel fa-5x" style="color: #563181;"></i>';
+                        } else if (format == 'txt') {
+                            icon = '<i class="fas fa-text-height fa-5x" style="color: #563181;"></i>';
+                        } else if (format == 'pdf') {
+                            icon = '<i class="fas fa-file-pdf fa-5x" style="color: #563181;"></i>';
+                        } else if (format == 'csv') {
+                            icon = '<i class="fas fa-file-csv fa-5x" style="color: #563181;"></i>';
+                        } else if (format == 'png' || format == 'bmp' || format == 'jpg') {
+                            icon = '<i class="fas fa-file-image fa-5x" style="color: #563181;"></i>';
+                        } else {
+                            icon = '<i class="fas fa-file fa-5x" style="color: #563181;"></i>';
+                        }
+                    }
+
+                    cardsHTML += `
+                        <div class="card m-2 customCard" style="width: 10rem;" onclick="clickOnElement('${obj.type}', '${obj.path}', '${obj.file}')">
+                            <div class="d-flex justify-content-center align-items-center flex-column p-3">
+                                <div class="mb-1">
+                                    ${icon}
+                                </div>
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <p class="card-text text-wrap text-break">${obj.name}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                showArea.innerHTML += `
+                    <span class="mb-2">${path}</span>
+                    <div class="d-flex flex-wrap">
+                        <div class="card m-2 customCard" style="width: 10rem;" onclick="clickOnBackElement()">
+                            <div class="d-flex justify-content-center align-items-center flex-column p-3">
+                                <div class="mb-1">
+                                    <i class="fas fa-arrow-left fa-5x" style="color: #563181;"></i>
+                                </div>
+                                <p class="card-text text-wrap">Назад</p>
+                            </div>
+                        </div>
+                        ${cardsHTML}
+                    </div>
+
+                    <div class="card mt-5 mb-5 p-4" style="width: 33rem;">
+                        <h5>Загрузка файла в текущую директорию:</h5>
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+            
+                            <input type="hidden" name="diskPath" value="${currentPath}">
+    
+                            <div class="form-group">
+                                {{ form.file }}
+                            </div>
+            
+                            <div class="form-group mt-2">
+                                <button type="submit" class="btn btn-success" value="Create">Загрузить</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    {% if msg %}
+                        <div class="d-flex justify-content-end fixed-bottom mb-4 me-5">
+                            {% if msg.status == 'success' %}
+                            <span class="alert alert-success" role="alert">
+                        {% else %}
+                            <span class="alert alert-danger" role="alert">
+                        {% endif %}
+                                {{ msg.msg }}
+                            </span>
+                    {% endif %}
+                        </div>
+
+                        
+
+                `;
+            }
+        };
+            
+        xhr.onerror = function() { // происходит, только когда запрос совсем не получилось выполнить
+            showArea.innerHTML = "<h2>Ошибка соединения</h2>";
+        };
+            
+        xhr.onprogress = function(event) { // запускается периодически
+            // event.loaded - количество загруженных байт
+            // event.lengthComputable = равно true, если сервер присылает заголовок Content-Length
+            // event.total - количество байт всего (только если lengthComputable равно true)
+            showArea.innertHTML = "<h2>Загрузка...</h2>";
+        };
+        xhr.send()
+    }
+
+    function download_file(url) {
+        document.location.replace(url);
+    }
+
+    function upload_file(e) {
+
+    }
+
+    function clickOnElement(type, path, downloadLink) {
+        if (type == 'dir') {
+            pathHistory.push(currentPath);
+            currentPath = path;
+            ls(`${path}`);
+        } else {
+            download_file(downloadLink);
+        }
+    }
+
+    function clickOnBackElement() {
+        if (pathHistory.length != 0) {
+            let backPath = pathHistory.pop();
+            currentPath = backPath;
+            ls(backPath, '');
+        }
+    }
+</script>
+{% endblock  %}

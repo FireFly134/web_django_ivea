@@ -1,0 +1,18 @@
+{% extends 'router_table/base.html' %}
+
+{% block title2 %}
+    Список оборудования
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2>Список оборудования</h2>
+        <ul class="list-group">
+            {% for equipment in equipments %}
+                <li class="list-group-item">
+                    {{ equipment.name }}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}

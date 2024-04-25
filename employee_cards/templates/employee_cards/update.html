@@ -1,0 +1,149 @@
+{% extends 'main/base.html' %}
+
+{% block style %}
+<meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+          crossorigin="anonymous" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+            integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+            crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+            integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+            crossorigin="anonymous">
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+    <style>
+        .header {
+            position: sticky;
+            top:0;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Редактировать сотрудника</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-row">
+            <div class="form-group col-md-4">
+                {{ form.family_name.label_tag }}
+                {{ form.family_name }}
+            </div>
+            <div class="form-group col-md-4">
+                {{ form.name.label_tag }}
+                {{ form.name }}
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-2">
+                {{ form.birthday.label_tag }}
+                {{ form.birthday }}
+            </div>
+            <div class="form-group col-md-2">
+                {{ form.gender.label_tag }}
+                {{ form.gender }}
+            </div>
+            <div class="form-group col-md-4">
+                {{ form.citizenship.label_tag }}
+                {{ form.citizenship }}
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-4">
+                {{ form.tel.label_tag }}
+                {{ form.tel }}
+            </div>
+            <div class="form-group col-md-4">
+                {{ form.mail.label_tag }}
+                {{ form.mail }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form.photo.label_tag }}
+            {{ form.photo }}
+        </div>
+
+
+        <div class="form-group">
+            {{ form.position_at_work.label_tag }}
+            {{ form.position_at_work }}
+        </div>
+
+
+        <div class="form-row">
+            <div class="form-group col-md-3">
+                {{ form.series_number.label_tag }}
+                {{ form.series_number }}
+            </div>
+            <div class="form-group col-md-3">
+                {{ form.date_of_issue.label_tag }}
+                {{ form.date_of_issue }}
+            </div>
+            <div class="form-group col-md-6">
+                {{ form.issuing_authority.label_tag }}
+                {{ form.issuing_authority }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form.address.label_tag }}
+            {{ form.address }}
+        </div>
+
+        <div class="form-group">
+            {{ form.is_dismissed.label_tag }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            {{ form.is_dismissed }}
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-4">
+                {{ form.organization.label_tag }}
+                {{ form.organization }}
+            </div>
+            <div class="form-group col-md-4">
+                {{ form.second_organization.label_tag }}
+                {{ form.second_organization }}
+            </div>
+            <div class="form-group col-md-4">
+                {{ form.work_type.label_tag }}
+                {{ form.work_type }}
+            </div>
+        </div>
+
+        <div class="row">
+            <button type="submit" class="btn btn-primary mr-1 col-md-2" name="submit" value="Update">Сохранить изменения</button>
+            <a href="{% url 'employee_list' %}" class="btn btn-secondary col-md-1">Отмена</a>
+            <div class="col d-flex justify-content-end">
+                <a href="{% url 'card_delete' employee.id %}" class="btn btn-danger">Удалить</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('.select2').select2(); // Инициализация Select2 для полей с классом select2
+    });
+</script>
+
+{% endblock %}

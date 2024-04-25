@@ -1,0 +1,83 @@
+{% extends 'main/base.html' %}
+{% block title %}Добавление людей в telegram группу{% endblock %}
+{% block style %}
+<style>
+  .select-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px; /* Расстояние между элементами */
+  }
+
+  .select-box {
+    flex: 1; /* Равномерное распределение пространства между селектами */
+    max-width: 40%; /* Максимальная ширина селекта */
+  }
+
+  .btn-container {
+    text-align: center;
+    margin-top: 20px;
+  }
+</style>
+{% endblock %}
+{% block body %}
+<div style="text-align:center">
+  <h3 style="font-family:Times New Roman,sans-serif">Добавление людей в telegram группу</h3>
+</div>
+
+<div class="select-container">
+  <select class="form-select select-box" size="10" aria-label="size 5 select example" id="select1">
+    {% for key, value in list_choice.items %}
+      <option value="{{ key }}">{{ value }}</option>
+    {% endfor %}
+  </select>
+
+  <select class="form-select select-box" size="10" aria-label="size 5 select example" name="name_del" id="select2">
+  </select>
+</div>
+
+<div class="btn-container">
+  <form method="POST" id="myForm">
+    {% csrf_token %}
+    <input name="send_telegram" type='hidden' value="send_telegram">
+    <input name="in_1" type='hidden' value='{{ in_1 }}'>
+    <input name="in_3" type='hidden' value='{{ in_3 }}'>
+    <button type="submit" class="btn">Отправить</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+  const select1 = document.getElementById('select1');
+  const select2 = document.getElementById('select2');
+
+  select1.addEventListener('dblclick', () => {
+    const selectedOption = select1.options[select1.selectedIndex];
+    if (selectedOption) {
+      select2.appendChild(selectedOption);
+    }
+  });
+
+  select2.addEventListener('dblclick', () => {
+    const selectedOption = select2.options[select2.selectedIndex];
+    if (selectedOption) {
+      select1.appendChild(selectedOption);
+    }
+  });
+
+const form = document.getElementById('myForm');
+
+  form.addEventListener('submit', (event) => {
+    // Отправьте данные из select2
+    const select2Options = Array.from(select2.options);
+    select2Options.forEach((option) => {
+      const hiddenInput = document.createElement('input');
+      hiddenInput.type = 'hidden';
+      hiddenInput.name = 'add_people'; // Имя для передачи на сервер
+      hiddenInput.value = option.text; // Значение для передачи на сервер
+      form.appendChild(hiddenInput);
+    });
+  });
+</script>
+{% endblock %}

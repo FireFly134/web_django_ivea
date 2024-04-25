@@ -1,0 +1,1080 @@
+{% extends 'main/base.html' %}
+{% block title %}RSS Dmitrov{% endblock %}
+
+
+{% block body %}
+
+<div id="showArea">
+    <div id="MainStageInfo">
+        
+    </div>
+    
+    <div id="resultBlock" class="ps-5 pb-3">
+        
+    </div>
+    
+    <div id="SubStagesBlock">
+        
+    </div>
+
+    <div id="invoicesDiv" class="container">
+        
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block script %}
+<script>
+    const showArea = document.getElementById("showArea");
+    let savedShowArea = "";
+
+    const rss = 
+            {
+                url: '{{ rss.get_absolute_url }}',
+                uploadUrl: '{{ rss.get_upload_files_url }}',
+                id: {{ rss.id }},
+                npp: '{{ rss.npp }}',
+                code: '{{ rss.code }}',
+                parent_work_name: '{{ rss.parent_work_name }}',
+                work_name: '{{ rss.work_name }}',
+                unit: '{{ rss.unit }}',
+                {% if rss.accounting_method %}
+                    accounting_method: '{{ rss.accounting_method }}',
+                {% else %}
+                    accounting_method: '',
+                {% endif %}
+                {% if rss.material_consumption_rate %}
+                    material_consumption_rate: {{ rss.material_consumption_rate|stringformat:".2f" }},
+                {% else %}
+                    material_consumption_rate: '',
+                {% endif %}
+                volume: {{ rss.volume|stringformat:".2f" }},
+                {% if rss.new_volume %}
+                    new_volume: {{ rss.new_volume|stringformat:".2f" }},
+                {% else %}
+                    new_volume: null,
+                {% endif %}
+                {% if rss.basic_materials_unit_cost %}
+                    basic_materials_unit_cost: {{ rss.basic_materials_unit_cost|stringformat:".2f" }},
+                {% else %}
+                    basic_materials_unit_cost: 0,
+                {% endif %}
+                {% if rss.smr_unit_cost %}
+                    smr_unit_cost: {{ rss.smr_unit_cost|stringformat:".2f" }},
+                {% else %}
+                    smr_unit_cost: 0,
+                {% endif %}
+                {% if rss.total_unit_cost %}
+                    total_unit_cost: {{ rss.total_unit_cost|stringformat:".2f" }},
+                {% else %}
+                    total_unit_cost: 0,
+                {% endif %}
+                {% if rss.basic_materials_total_cost %}
+                    basic_materials_total_cost: {{ rss.basic_materials_total_cost|stringformat:".2f" }},
+                {% else %}
+                    basic_materials_total_cost: 0,
+                {% endif %}
+                {% if rss.smr_total_cost %}
+                    smr_total_cost: {{ rss.smr_total_cost|stringformat:".2f" }},
+                {% else %}
+                    smr_total_cost: 0,
+                {% endif %}
+                {% if rss.total_total_cost %}
+                    total_total_cost: {{ rss.total_total_cost|stringformat:".2f" }},
+                {% else %}
+                    total_total_cost: 0,
+                {% endif %}
+                {% if rss.note %}
+                    note: '{{ rss.note|safe }}',
+                {% else %}
+                    note: '',
+                {% endif %}
+                {% if rss.submitted_for_approval %}
+                    submitted_for_approval: true,
+                {% else %}
+                    submitted_for_approval: false,
+                {% endif %}
+                {% if rss.approved_by_supervision %}
+                    approved_by_supervision: true,
+                {% else %}
+                    approved_by_supervision: false,
+                {% endif %}
+                {% if rss.originals_is_signed %}
+                    originals_is_signed: true,
+                {% else %}
+                    originals_is_signed: false,
+                {% endif %}
+                {% if rss.ks_pto_flag %}
+                    ks_pto_flag: true,
+                {% else %}
+                    ks_pto_flag: false,
+                {% endif %}
+                {% if rss.ks_ivea_flag %}
+                    ks_ivea_flag: true,
+                {% else %}
+                    ks_ivea_flag: false,
+                {% endif %}
+                {% if rss.ks_ps_flag %}
+                ks_ps_flag: true,
+                {% else %}
+                ks_ps_flag: false,
+                {% endif %}
+                {% if rss.additional_is_required %}
+                    additional_is_required: true,
+                {% else %}
+                    additional_is_required: false,
+                {% endif %}
+                submitted_for_approval_file_paths: [
+                    {% for path in rss.submitted_for_approval_file_paths %}
+                        "{{ path }}",
+                    {% endfor %}
+                ],
+                originals_is_signed_file_paths: [
+                    {% for path in rss.originals_is_signed_file_paths %}
+                        "{{ path }}",
+                    {% endfor %}
+                ],
+                distribution_letter_file_paths : [
+                    {% for path in rss.distribution_letter_file_paths %}
+                        "{{ path }}",
+                    {% endfor %}
+                ],
+                product_on_object_file_paths : [
+                    {% for path in rss.product_on_object_file_paths %}
+                        "{{ path }}",
+                    {% endfor %}
+                ],
+                pto_ivea_file_paths : [
+                    {% for path in rss.pto_ivea_file_paths %}
+                        "{{ path }}",
+                    {% endfor %}
+                ],
+                related_rss: [
+                    {% for related_rss in rss.related_rss.all %}
+                        {
+                            id: {{ related_rss.id }},
+                            url: '{{ related_rss.get_absolute_url }}',
+                            npp: '{{ related_rss.npp }}',
+                            work_name: '{{ related_rss.work_name }}',
+                        },
+                    {% endfor %}
+                ],
+                connected_invoices_id_array: [
+                    {% for invoice_id in rss.connected_invoices_id_array %}
+                        {{ invoice_id }},
+                    {% endfor %}
+                ],
+                stages: [
+                    {% for stage in rss.stages.all %}
+                        {
+                            deleteUrl: '{{ stage.get_delete_url }}',
+                            id: {{ stage.id }},
+                            volume: {{ stage.volume|stringformat:".2f" }},
+                            {% if stage.work_name %}
+                                work_name: '{{ stage.work_name }}',
+                            {% else %}
+                                work_name: null,
+                            {% endif %}
+                            {% if stage.basic_materials_total_cost %}
+                                basic_materials_total_cost: {{ stage.basic_materials_total_cost|stringformat:".2f" }},
+                            {% else %}
+                                basic_materials_total_cost: 0,
+                            {% endif %}
+                            {% if stage.smr_total_cost %}
+                                smr_total_cost: {{ stage.smr_total_cost|stringformat:".2f" }},
+                            {% else %}
+                                smr_total_cost: 0,
+                            {% endif %}
+                            {% if stage.total_total_cost %}
+                                total_total_cost: {{ stage.total_total_cost|stringformat:".2f" }},
+                            {% else %}
+                                total_total_cost: 0,
+                            {% endif %}
+                            {% if stage.application_submitted %}
+                                application_submitted: true,
+                            {% else %}
+                                application_submitted: false,
+                            {% endif %}
+                            {% if stage.counterparty_offer %}
+                                counterparty_offer: true,
+                            {% else %}
+                                counterparty_offer: false,
+                            {% endif %}
+                            {% if stage.has_distribution_letter %}
+                                has_distribution_letter: true,
+                            {% else %}
+                                has_distribution_letter: false,
+                            {% endif %}
+                            {% if stage.product_on_object %}
+                                product_on_object: true,
+                            {% else %}
+                                product_on_object: false,
+                            {% endif %}
+                            {% if stage.unit_material_cost %}
+                                unit_material_cost: {{ stage.unit_material_cost|stringformat:".2f" }},
+                            {% else %}
+                                unit_material_cost: 0,
+                            {% endif %}
+                            {% if stage.unit_smr_cost %}
+                                unit_smr_cost: {{ stage.unit_smr_cost|stringformat:".2f" }},
+                            {% else %}
+                                unit_smr_cost: 0,
+                            {% endif %}
+                        },
+                    {% endfor %}
+                ],
+            };
+
+        const allRSS = [
+            {% for rss in all_rss %}
+                {
+                    id: {{ rss.id }},
+                    url: '{{ rss.get_absolute_url }}',
+                    npp: '{{ rss.npp }}',
+                    work_name: '{{ rss.work_name }}',
+                },
+            {% endfor %}
+        ].sort(compareNpp);
+
+        const invoices = [
+            {% for invoice in invoices %}
+                {
+                    id: {{ invoice.id }},
+                    date: '{{ invoice.invoice.date|date:"d.m.Y" }}',
+                    counterparty: '{{ invoice.invoice.counterparty }}',
+                    nomenclature: '{{ invoice.invoice.nomenclature }}',
+                    amount: {{ invoice.amount|stringformat:".2f" }},
+                    unit: '{{ invoice.invoice.unit }}',
+                    price: {{ invoice.invoice.price|stringformat:".2f" }},
+                    second_sum: {{ invoice.second_sum|stringformat:".2f" }},
+                    vat: {{ invoice.vat|stringformat:".2f" }},
+                    total: {{ invoice.total|stringformat:".2f" }},
+                },
+            {% endfor %}
+        ];
+        const relatedIDList = rss.related_rss.map(obj => obj.id);
+        const rssForAdd = allRSS.filter(currentRSS => {
+            return (currentRSS.id !== rss.id) && (!relatedIDList.includes(currentRSS.id))
+        });
+
+
+        renderMainSector();
+        renderResultBlock();
+        renderSubStagesBlock(rss.stages);
+        renderInvoicesTable(invoices);
+
+    function renderResultBlock() {
+        const totalVolume = getArrayAttrSum(rss.stages, "volume") + rss.new_volume;
+        const totalBasicMaterialsTotalCost =  getArrayAttrSum(rss.stages, "basic_materials_total_cost");
+        const totalSmrTotalCost = (rss.new_volume ?? 0) * rss.smr_unit_cost;
+        const totalTotalTotalCost = totalBasicMaterialsTotalCost + totalSmrTotalCost;
+
+        let totalResultHTML = "";
+        if (totalTotalTotalCost.toFixed(2) > rss.total_total_cost.toFixed(2)) {
+            totalResultHTML = `
+            <span class="text-danger">
+                Всего: <strong>
+                    ${numberWithSpace(totalTotalTotalCost.toFixed(2))} / ${numberWithSpace(rss.total_total_cost.toFixed(2))} (${numberWithSpace((totalTotalTotalCost - rss.total_total_cost).toFixed(2))})
+                    </strong> руб.
+            </span><br>
+            `;
+        } else {
+            totalResultHTML = `
+            <span>
+                Всего: <strong>${numberWithSpace(totalTotalTotalCost.toFixed(2))} / ${numberWithSpace(rss.total_total_cost.toFixed(2))}</strong> руб.
+            </span><br>`;
+        }
+
+        let volumeResultHTML = "";
+        volumeResultHTML = `
+        <span class="${(totalVolume * 100 / rss.volume) > 100 ? 'text-danger' : ''}">
+            Объём: <strong>${numberWithSpace(totalVolume.toFixed(2))} / ${numberWithSpace(rss.volume.toFixed(2))}</strong> ${rss.unit} (${numberWithSpace((totalVolume * 100 / rss.volume).toFixed(2))}%)
+        </span><br>    
+        `;
+
+        document.getElementById("resultBlock").innerHTML = `
+            <h5>Суммарные показтели:</h5>
+            ${volumeResultHTML}
+            <span class="${totalBasicMaterialsTotalCost.toFixed(2) > rss.basic_materials_total_cost.toFixed(2) > 0 ? 'text-danger' : ''}">Основные материалы: <strong>${numberWithSpace(totalBasicMaterialsTotalCost.toFixed(2))} / ${numberWithSpace(rss.basic_materials_total_cost.toFixed(2))}</strong> руб.</span><br>
+            <span class="${totalSmrTotalCost - rss.smr_total_cost > 0 ? 'text-danger' : ''}">СМР: <strong>${numberWithSpace(totalSmrTotalCost.toFixed(2))} / ${numberWithSpace(rss.smr_total_cost.toFixed(2))}</strong> руб.</span><br>
+            ${totalResultHTML}
+        `;
+    }
+
+    function renderMainSector() {
+        const totalVolume = getArrayAttrSum(rss.stages, "volume") + rss.new_volume
+        const totalBasicMaterialsTotalCost =  getArrayAttrSum(rss.stages, "basic_materials_total_cost");
+        const totalSmrTotalCost = (rss.new_volume ?? 0) * rss.smr_unit_cost;
+        const totalTotalTotalCost = totalBasicMaterialsTotalCost + totalSmrTotalCost;
+
+        let workNameTdHTML = `<td>${rss.work_name}</td>`;;
+        if (rss.stages.length !== 0) {
+            const workNamesList = new Array();
+            
+            rss.stages.forEach(stage => {
+                if (stage.work_name && !workNamesList.includes(stage.work_name)) {
+                    workNamesList.push(stage.work_name);
+                }
+            });
+
+            if (workNamesList.length !== 0) {
+                let workNamesText = "";
+                for (let i = 0; i < workNamesList.length; i++) {
+                    workNamesText += `${workNamesList[i]}`;
+                    if (i === workNamesList.length - 1) {
+                        workNamesText += ` | <b>(${rss.work_name})</b>`;
+                    } else {
+                        workNamesText += " | ";
+                    }
+                }
+                workNameTdHTML = `<td class="text-danger">${workNamesText}</td>`;
+            }
+        }
+
+
+        let totalTdHTML = "";
+        const stagesSum = getArrayAttrSum(rss.stages, "total_total_cost");
+        if (totalTotalTotalCost.toFixed(2) > rss.total_total_cost.toFixed(2)) {
+            const totalDiff = numberWithSpace((stagesSum - rss.total_total_cost).toFixed(2))
+            totalTdHTML = `<td class="text-danger" style="width: 130px; min-width: 130px; max-width: 130px;">${numberWithSpace(totalTotalTotalCost.toFixed(2))} / ${numberWithSpace(rss.total_total_cost)}</td>`;
+        } else {
+            totalTdHTML = `<td style="width: 130px; min-width: 130px; max-width: 130px;">${numberWithSpace(totalTotalTotalCost.toFixed(2))} / ${numberWithSpace(rss.total_total_cost)}</td>`;
+        }
+
+        let volumeTdHTML = "";
+        if (rss.new_volume) {
+            volumeTdHTML = `
+            <td class="text-danger">${numberWithSpace(rss.new_volume.toFixed(2))} / ${numberWithSpace(rss.volume)}</td>
+            `;
+        } else {
+            volumeTdHTML = `<td>${numberWithSpace(rss.volume)}</td>`;
+        }
+
+        document.getElementById("MainStageInfo").innerHTML = `
+        <table class="table table-bordered table-hover p-5">
+            <thead>
+                <tr>
+                    <th class="text-center" rowspan="2">№<br></th>
+                    <th class="text-center" rowspan="2">Код</th>
+                    <th class="text-center" rowspan="2">Наименование работ<br></th>
+                    <th class="text-center" rowspan="2">Наименование работ<br></th>
+                    <th class="text-center" rowspan="2">Ед. изм.<br></th>
+                    <th class="text-center" rowspan="2">Способ учёта<br></th>
+                    <th class="text-center" rowspan="2">Норма расхода материала<br></th>
+                    <th class="text-center" rowspan="2">Объём</th>
+                    <th class="text-center" colspan="3">Стоимость единицы, руб., в т.ч. НДС 20%<br></th>
+                    <th class="text-center" colspan="3">Стоимость всего, руб., в т.ч. НДС 20%<br></th>
+                    <th class="text-center" rowspan="2">Примечания</th>
+                </tr>
+                <tr>
+                    <th class="text-center"><div>Основные<div>материалы<br></th>
+                    <th class="text-center">СМР</th>
+                    <th class="text-center">Всего</th>
+                    <th class="text-center"><div>Основные<div>материалы<br></th>
+                    <th class="text-center">СМР</th>
+                    <th class="text-center">Всего</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>${rss.npp}</td>
+                    <td>${rss.code}</td>
+                    <td>${rss.parent_work_name}</td>
+                    ${workNameTdHTML}
+                    <td>${rss.unit}</td>
+                    <td>${rss.accounting_method}</td>
+                    <td>${numberWithSpace(rss.material_consumption_rate)}</td>
+                    ${volumeTdHTML}
+                    <td>${numberWithSpace(rss.basic_materials_unit_cost)}</td>
+                    <td>${numberWithSpace(rss.smr_unit_cost)}</td>
+                    <td>${numberWithSpace(rss.total_unit_cost)}</td>
+                    <td>${numberWithSpace(rss.basic_materials_total_cost)}</td>
+                    <td class="${totalSmrTotalCost > rss.smr_total_cost ? 'text-danger' : ''}">${numberWithSpace(totalSmrTotalCost)} / ${numberWithSpace(rss.smr_total_cost)}</td>
+                    ${totalTdHTML}
+                    <td>${rss.note}</td>
+                </tr>
+            </tbody>
+        </table>
+        `;
+
+    }
+
+    function renderSubStagesBlock(rss_stages) {
+        let tableHTML = '';
+        if (rss_stages.length === 0) {
+            tableHTML = `
+            <tr>
+                <td class="text-center" colspan="10">Нет этапов</td>
+            </tr>
+            `;
+        } else {
+            rss_stages.forEach(stage => {
+            tableHTML += `
+            <tr>
+                <td style="cursor: pointer;" class="text-center"><input name="${stage.id}_application_submitted" type="checkbox" ${stage.application_submitted ? 'checked' : ''}/></td>
+                <td style="cursor: pointer;" class="text-center"><input name="${stage.id}_counterparty_offer" type="checkbox" ${stage.counterparty_offer ? 'checked' : ''}/></td>
+                <td style="cursor: pointer;" class="text-center"><input name="${stage.id}_has_distribution_letter" type="checkbox" ${stage.has_distribution_letter ? 'checked' : ''}/></td>
+                <td style="cursor: pointer;" class="text-center"><input name="${stage.id}_product_on_object" type="checkbox" ${stage.product_on_object ? 'checked' : ''}/></td>
+                <td class="text-center"><input name="${stage.id}_work_name" type="text" value="${stage.work_name ?? ""}" /></td>
+                <td class="text-center"><input name="${stage.id}_volume" type="text" value="${numberWithSpace(stage.volume.toFixed(2))}" /></td>
+                <td class="text-center"><input name="${stage.id}_unit_material_cost" type="text" value="${numberWithSpace(stage.unit_material_cost.toFixed(2))}" /></td>
+                <td class="text-center">${numberWithSpace(stage.basic_materials_total_cost.toFixed(2))}</td>
+                <td class="text-center">${numberWithSpace(stage.smr_total_cost.toFixed(2))}</td>
+                <td class="text-center">${numberWithSpace(stage.total_total_cost.toFixed(2))}</td>
+                <td style="cursor: pointer;" onclick="deleteStage('${stage.deleteUrl}')" class="p-3"><i style="color: #a83232;" class="fas fa-trash"></i></td>
+            </tr>
+            `;
+        });
+        }
+
+        document.getElementById("SubStagesBlock").innerHTML = `
+            <form method="POST">
+                <div class="d-flex mb-3">
+                    <table id="submitted_for_approvalTable" class="table table-bordered table-hover ms-5" style="width: 500px;">
+                        <thead>
+                            <tr>
+                                <th class="text-center align-middle" colspan="7">Власко В.</th>
+                            </tr>
+                            <tr>
+                                <th class="text-center align-middle" rowspan="2">Подано на<div>согласование<div>с технадзором</th>
+                                <th class="text-center align-middle" rowspan="2">Согласовано<div>технадзором</th>
+                                <th class="text-center align-middle" rowspan="2">Подписаны<div>оригиналы</th>
+                                <th class="text-center align-middle" colspan="3">КС</th>
+                                <th class="text-center align-middle" rowspan="2">Фактический объём</th>
+                            </tr>
+                            <tr>
+                                <th class="text-center align-middle">ПТО</th>
+                                <th class="text-center align-middle">ИВЕА</th>
+                                <th class="text-center align-middle">ПС</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-center align-middle" style="cursor: pointer;"><input id="submitted_for_approval" name="submitted_for_approval" type="checkbox" ${rss.submitted_for_approval ? "checked" : ""}/></td>
+                                <td class="text-center align-middle" style="cursor: pointer;"><input id="approved_by_supervision" name="approved_by_supervision" type="checkbox" ${rss.approved_by_supervision ? "checked" : ""}/></td>
+                                <td class="text-center align-middle" style="cursor: pointer;"><input id="originals_is_signed" name="originals_is_signed" type="checkbox" ${rss.originals_is_signed ? "checked" : ""}/></td>
+                                <td class="text-center align-middle" style="cursor: pointer;"><input id="ks_pto_flag" name="ks_pto_flag" type="checkbox" ${rss.ks_pto_flag ? "checked" : ""}/></td>
+                                <td class="text-center align-middle" style="cursor: pointer;"><input id="ks_ivea_flag" name="ks_ivea_flag" type="checkbox" ${rss.ks_ivea_flag ? "checked" : ""}/></td>
+                                <td class="text-center align-middle" style="cursor: pointer;"><input id="ks_ps_flag" name="ks_ps_flag" type="checkbox" ${rss.ks_ps_flag ? "checked" : ""}/></td>
+                                <td class="text-center align-middle" style="cursor: pointer;"><input id="new_volume" name="new_volume" type="text" value="${rss.new_volume ?? ""}"/></td>
+                            </tr>
+                            <tr>
+                                <td title="Показать файлы" onclick="openFiles('submitted_for_approval_file_paths')" class="text-center align-middle" style="cursor: pointer;"><i class="fas fa-folder-open fa-2x"></i></td>
+                                <td class="text-center" style="cursor: pointer;"></td>
+                                <td title="Показать файлы" onclick="openFiles('originals_is_signed_file_paths')" class="text-center align-middle" style="cursor: pointer;"><i class="fas fa-folder-open fa-2x"></i></td>
+                                <td colspan="3" title="Показать файлы" onclick="openFiles('pto_ivea_file_paths')" class="text-center align-middle" style="cursor: pointer;"><i class="fas fa-folder-open fa-2x"></i></td>
+                                <td colspan="1"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <table id="additional_is_requiredTable" class="table table-bordered table-hover ms-5" style="width: 200px;">
+                        <thead>
+                            <tr>
+                                <th class="text-center align-middle">Требуется допник на материалы</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-center align-middle" style="cursor: pointer;"><input type="checkbox" ${rss.additional_is_required ? "checked" : ""} disabled/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <a class="btn h-100 ms-5" onclick="openRelatedRSS()">Связанные РСС (${rss.related_rss.length})</a>
+
+                </div>
+                <table id="stagesTable" class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th class="text-center align-middle" colspan="6">Кузнецов С.</th>
+                            <th class="text-center align-middle" colspan="1">Стоимость единицы, руб., в т.ч. НДС 20%</th>
+                            <th class="text-center align-middle" colspan="3">ИТОГО</th>
+                            <th></th>
+                         </tr>
+                        <tr>    
+                            <th class="text-center align-middle">Подана заявка</th>
+                            <th class="text-center align-middle">Получено предложение контрагента</th>
+                            <th class="text-center align-middle">Есть распределительное письмо</th>
+                            <th class="text-center align-middle">Товар на объекте</th>
+                            <th class="text-center align-middle">Наименование работ</th>
+                            <th class="text-center align-middle">Объём (${rss.unit})</th>
+                            <th class="text-center align-middle">Основные материалы</th>
+                            <th class="text-center align-middle">Основные материалы</th>
+                            <th class="text-center align-middle">СМР</th>
+                            <th class="text-center align-middle">Всего</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableHTML}
+                        <tr>
+                            <td colspan="2"></td>
+                            <td title="Показать файлы" onclick="openFiles('distribution_letter_file_paths')" class="text-center" style="cursor: pointer;"><i class="fas fa-folder-open fa-2x"></i></td>
+                            <td title="Показать файлы" onclick="openFiles('product_on_object_file_paths')" class="text-center" style="cursor: pointer;"><i class="fas fa-folder-open fa-2x"></i></td>
+                            <td colspan="7"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h5 class="text-center">Создание нового этапа</h5>
+                <table id="newStageTable" class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th class="text-center align-middle" colspan="6">Кузнецов С.</th>
+                            <th class="text-center align-middle" colspan="1">Стоимость единицы, руб., в т.ч. НДС 20%</th>
+                        </tr>
+                        <tr>
+                            <th class="text-center">Подана заявка</th>
+                            <th class="text-center">Получено предложение контрагента</th>
+                            <th class="text-center">Есть распределительное письмо</th>
+                            <th class="text-center">Товар на объекте</th>
+                            <th class="text-center">Наименование работ</th>
+                            <th class="text-center">Объём (${rss.unit})</th>
+                            <th class="text-center">Основные материалы</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="text-center" style="cursor: pointer;"><input name="application_submitted" type="checkbox" /></td>
+                            <td class="text-center" style="cursor: pointer;"><input name="counterparty_offer" type="checkbox" /></td>
+                            <td class="text-center" style="cursor: pointer;"><input name="has_distribution_letter" type="checkbox" /></td>
+                            <td class="text-center" style="cursor: pointer;"><input name="product_on_object" type="checkbox" /></td>
+                            <td class="text-center"><input name="work_name" type="text" /></td>
+                            <td class="text-center"><input name="volume" type="number" /></td>
+                            <td class="text-center"><input name="unit_material_cost" type="number" /></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="d-flex flex-column align-items-center">
+                    <button type="button" class="btn btn-primary text-center" onclick="onChangeAttrs(this.form)">Сохранить</button>
+                    <a class="btn" href="{% url 'dmitorv_rss' %}">Назад к РСС</a>
+                </div>
+            </form>
+        `;
+    }
+
+    function openRelatedRSS() {
+        savedShowArea = showArea.innerHTML;
+
+        let relatedRssHTML = "";
+        if (rss.related_rss.length === 0) {
+            relatedRssHTML = `<td class="text-center" colspan="2">Связей не найдено</td>`;
+        } else {
+            rss.related_rss.forEach(rss => {
+                relatedRssHTML += `
+                <tr>
+                    <td>${rss.npp}</td>
+                    <td><a href="${rss.url}">${rss.work_name}</a></td>
+                </tr>
+                `;
+            });
+        }
+
+        let selectOptionsListHTML = "";
+        rssForAdd.forEach(rss => {
+            selectOptionsListHTML += `
+            <option value="${rss.id}">${rss.npp} - ${rss.work_name}</option>
+            `;
+        });
+
+        showArea.innerHTML = `
+        <h2 class="text-center">Связанные РСС</h2>
+        <table class="table m-auto mt-5 mb-5" style="width: 50vw;">
+            <thead>
+                <th>№</th>
+                <th>Наименование работ</th>
+            </thead>
+            <tbody>
+                ${relatedRssHTML}
+            </tbody>
+        </table>
+
+        <h2 class="text-center mt-5">Добавление:</h2>
+
+        <div class="d-flex justify-content-center">
+            <input type="text" id="searchItemsInput" oninput="filterOptions('new_related_rss_id', 'searchItemsInput')" placeholder="Поиск..." size="10">
+        </div>
+        <form method="POST" class="d-flex flex-column align-items-center justify-content-center" action="{% url 'update_rss_connections' rss.id %}">
+            {% csrf_token %}
+            <select size="10" class="m-auto w-50" id="new_related_rss_id" name="new_related_rss_id" multiple>
+                ${selectOptionsListHTML}
+            </select>
+
+            <button class="btn btn-primary mt-2" type="submit">Добавить</button>
+            <button class="btn mt-2" type="button" onclick="closeModal()">Назад</button>
+        </form>
+        `;
+    }
+
+    function filterOptions(selectId, searchInputId) {
+        const searchInput = document.getElementById(searchInputId);
+        const select = document.getElementById(selectId);
+        const initOptions = select.options;
+
+        let filter, option;
+        filter = searchInput.value.toUpperCase();
+
+        for (let i = 0; i < initOptions.length; i++) {
+            const option = initOptions[i];
+
+            if (option.textContent.toUpperCase().includes(filter)) {
+                option.style.display = "";
+            } else {
+                option.style.display = "none";
+            }
+        }
+    }
+
+    function openFiles(key) {
+        savedShowArea = showArea.innerHTML;
+        const paths = rss[key];
+        let filesName = "";
+        if (key === "submitted_for_approval_file_paths") {
+            filesName = "Подано на согласование с технадзором";
+        } else if (key === "originals_is_signed_file_paths") {
+            filesName = "Подписаны оригиналы";
+        } else if (key === "distribution_letter_file_paths") {
+            filesName = "Есть распределительное письмо";
+        } else if (key === "product_on_object_file_paths") {
+            filesName = "Товар на объекте";
+        } else if (key === "pto_ivea_file_paths") {
+            filesName = "КС ПТО/ИВЕА";
+        } else {
+            alert(`Ошибка ключа наименования. ${key}`);
+            return;
+        }
+
+        showArea.innerHTML = `
+        <h2 class="text-center">${filesName}. Прикрепленные файлы</h2>
+        `;
+
+        if (paths.length === 0) {
+            showArea.innerHTML += `
+            <h2 class="text-center mt-5">Файлы не найдены</h2>
+            `;
+        } else {
+            let filesHtml = "";
+
+            paths.forEach(path => {
+                let name = path.split("/");
+                name = name[name.length - 1];
+                filesHtml += `
+                    <tr id="row-${path}">
+                       <td>${name}</td>
+                       <td id="downloadRow${path}"><i style="cursor: pointer;" onclick="downloadDoc('${path}')" title="Скачать" class="fas fa-download fa-2x"></i></td>
+                       <td id="deleteRow${path}"><i style="cursor: pointer;" onclick="deleteDoc('${path}', '${key}')" title="Удалить" class="fas fa-trash fa-2x"></i></td>
+                    </tr>
+                `;
+            });
+
+            let tableHTML = `
+            <div class="d-flex justify-content-center mt-2 mb-5">
+                <table style="width: 80vw" class="table">
+                    <thead>
+                        <th style="width:70%">Наименование документа</th>
+                        <th>Загрузка</th>
+                        <th>Удаление</th>
+                    </thead>
+                    <tbody>
+                        ${filesHtml}
+                    </tbody>
+                </table>
+            </div>
+            `;
+
+            showArea.innerHTML += tableHTML;
+        }
+
+        let rssListForUploading = "";
+        if (key === "distribution_letter_file_paths" || key === "product_on_object_file_paths") {
+            let optionsHTML = "";
+            allRSS.forEach(rss => {
+                optionsHTML += `
+                <option value="${rss.id}">${rss.npp} - ${rss.work_name}</option>
+                `;
+            });
+            rssListForUploading = `
+            <div class="d-flex justify-content-center">
+                <input type="text" id="searchItemsInput" oninput="filterOptions('forSaveFileSelect', 'searchItemsInput')" placeholder="Поиск..." size="10">
+            </div>
+            <select id="forSaveFileSelect" name="selectedRSS" style="width: 50vw;" size="10" multiple>
+                ${optionsHTML}
+            </select>
+            `;
+        }
+
+        showArea.innerHTML += `
+            <div class="d-flex justify-content-center mt-5">
+                <form method="post" enctype="multipart/form-data" action="${rss.uploadUrl}">
+                    {% csrf_token %}
+                    <h5>Загрузить документ:</h5>
+                    ${rssListForUploading}
+                    <label for="updateFileInput">(множественный выбор осуществляется с помощью Ctrl)</label>
+                    <input id="updateFileInput" type="file" name="files" multiple>
+                    <input type="hidden" name="key" value="${key}">
+
+                    <div class="mt-3">
+                        <input class="btn btn-primary" type="submit" value="Сохранить">
+                        <a onclick="closeModal()" class="btn btn-secondary">Назад</a>
+                    </div>
+                </form>
+            </div>
+            `;
+    }
+
+    function renderInvoicesTable(invoices) {
+		invoices = invoices.sort((a,b) => (a.total > b.total) ? -1 : ((b.total > a.total) ? 1 : 0))
+
+		let sum = invoices.reduce((accumulator, invoice) => {
+			return accumulator + invoice.total;
+		}, 0);
+		let totalPercent = 0;
+		let tableHtmlText = "";
+
+		for (let i = 0; i < invoices.length; i++) {
+			let currTotal = parseFloat(invoices[i].total.toString().replaceAll(',', '.').replaceAll('\u00A0', ''));
+			let currPercent = (currTotal * 100) / sum;
+			totalPercent += currPercent;
+
+			let tableType = "table-danger";
+			if (totalPercent < 80) {
+				tableType = 'table-success';
+			} else if (totalPercent < 95) {
+				tableType = 'table-warning';
+			}
+
+			let idHTML = "";
+			if (invoices[i].id instanceof Array) {
+				invoices[i].id.forEach(id => {
+					idHTML += `
+				<a href="/documents/list_doc/${id}/">${id} </a>
+			`;
+				});
+			} else {
+				idHTML = `<a href="/documents/list_doc/${invoices[i].id}/">${invoices[i].id}</a>`;
+			}
+
+			tableHtmlText += `
+			<tr class="${tableType}" style="cursor: pointer;">
+				<td>${invoices[i].date}</td>
+				<td>${invoices[i].counterparty}</td>
+				<td>${invoices[i].nomenclature}</td>
+				<td>${numberWithSpace(invoices[i].amount)}</td>
+				<td>${invoices[i].unit}</td>
+				<td>${numberWithSpace(invoices[i].price)}</td>
+				<td>${numberWithSpace(invoices[i].second_sum)}</td>
+				<td>${numberWithSpace(invoices[i].vat)}</td>
+				<td>${numberWithSpace(invoices[i].total)}</td>
+				<td class="text-center align-moddle"><input type="checkbox" onchange="updateInvoiceConnection('${invoices[i].id}')" ${rss.connected_invoices_id_array.includes(invoices[i].id) ? "checked" : ""}/></td>
+			</tr>
+		`
+		}
+
+		let tableDiv = document.getElementById('invoicesDiv');
+		tableDiv.innerHTML = `
+	</br>
+	<p>Общие затраты: <strong>${numberWithSpace(sum.toFixed(2))} руб.</strong></p>
+	<table id="invoicesTable" class="table table-sm table-hover">
+		<thead class="thead-dark" style="position: sticky; top: 0; background-color: white;">
+			<tr>
+				<th class="header" scope="col">Дата</th>
+				<th class="header" scope="col">Контрагент</th>
+				<th class="header" scope="col">Номенклатура</th>
+				<th class="header" scope="col">Кол</th>
+				<th class="header" scope="col">Ед.изм.</th>
+				<th class="header" scope="col">Цена, руб.</th>
+				<th class="header" scope="col">Сумма, руб.</th>
+				<th class="header" scope="col">НДС, руб.</th>
+				<th class="header" scope="col">Всего, руб.</th>
+				<th class="header" scope="col"></th>
+			</tr>
+		</thead>
+		<tbody>
+			${tableHtmlText}
+		</tbody>
+	</table>
+		`;
+	}
+
+    function updateInvoiceConnection(invoiceId) {
+        fetch("{{ rss.get_update_invoices_connection_url }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            },
+            body: JSON.stringify({
+                invoice_id: invoiceId,
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Ошибка сети.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data.success) {
+                throw new Error(data.message);
+            } else {
+                if (rss.connected_invoices_id_array.includes(Number(invoiceId))) {
+                    rss.connected_invoices_id_array.pop(rss.connected_invoices_id_array.indexOf(Number(invoiceId)));
+                } else {
+                    rss.connected_invoices_id_array.push(Number(invoiceId));
+                }
+            }
+        })
+        .catch(error => {
+            alert(`Ошибка во время обновления. ${error.message}`);
+        });
+    }
+
+    function closeModal() {
+        showArea.innerHTML = savedShowArea;
+        updateTdInputSwitcherListener();
+    }
+
+    function numberWithSpace(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u00A0").replace('.', ',');
+    }
+
+    function updateTdInputSwitcherListener() {
+        createTdInputSwitcherListener("newStageTable");
+        createTdInputSwitcherListener("submitted_for_approvalTable");
+        createTdInputSwitcherListener("stagesTable");
+        createTrInputSwitcherListener("invoicesTable");
+    }
+
+    function deleteStage(deleteUrl) {
+        fetch(deleteUrl, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            },
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Ошибка сети.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data.success) {
+                throw new Error(data.message);
+            } else {
+                location.reload();
+            }
+        })
+        .catch(error => {
+            alert(`Ошибка во время удаления. ${error.message}`);
+        });
+    }
+
+    function onChangeAttrs(form) {
+        const formData = new FormData(form);
+
+        rss.stages.forEach(stage => {
+            const str_volume_value = formData.get(`${stage.id}_volume`);
+            const number_volume_value = str_volume_value.replaceAll("\xa0", "").replaceAll(",", ".");
+            formData.set(`${stage.id}_volume`, number_volume_value);
+
+            const str_unit_material_cost_value = formData.get(`${stage.id}_unit_material_cost`);
+            const number_unit_material_cost_value = str_unit_material_cost_value.replaceAll("\xa0", "").replaceAll(",", ".");
+            formData.set(`${stage.id}_unit_material_cost`, number_unit_material_cost_value);
+        });
+
+        fetch("{{ rss.get_absolute_url }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            },
+            body: JSON.stringify({
+                form: Object.fromEntries(formData),
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Ошибка сети.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data.success) {
+                throw new Error(data.message);
+            } else {
+                location.reload();
+            }
+        })
+        .catch(error => {
+            alert(`Ошибка во время обновления. ${error.message}`);
+        });
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            let cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function createTdInputSwitcherListener(tableId) {
+        document.getElementById(tableId).addEventListener("click", function(event) {
+            let target = event.target;
+            if (target.tagName === "TD") {
+                let checkbox = target.querySelector("input[type='checkbox']");
+                if (checkbox !== null) {
+                    checkbox.checked = !checkbox.checked;
+                }
+            }
+        });
+    }
+
+    function createTrInputSwitcherListener(tableId) {
+        const table = document.getElementById('invoicesTable');
+  
+        if (table) {
+          table.addEventListener('click', function (event) {
+            const target = event.target;
+            if (target.tagName === 'TD') {
+              const row = target.parentElement;
+              const checkbox = row.querySelector('input[type="checkbox"]');
+              if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+                if ('createEvent' in document) {
+                    const evt = document.createEvent('HTMLEvents');
+                  evt.initEvent('change', false, true);
+                  checkbox.dispatchEvent(evt);
+                } else {
+                  checkbox.fireEvent('onchange');
+                }
+              }
+            }
+          });
+        }
+    }
+
+    function getArrayAttrSum(array, key) {
+        return array.reduce((accumulator, object) => {
+                if (typeof object[key] === "number") {
+                    return accumulator + object[key];
+                } else {
+                    return accumulator;
+                }
+            }, 0);
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        updateTdInputSwitcherListener();
+    });
+
+    function downloadDoc(path) {
+            let downloadIcon = document.getElementById(`downloadRow${path}`);
+            downloadIcon.innerHTML = `
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            `;
+
+            let xhr = new XMLHttpRequest();
+            let url = '{% url 'document_path_generator' %}';
+
+            xhr.open('POST', url,);
+
+            xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            xhr.onload = function () {
+                let response = JSON.parse(xhr.response)
+                if (response.status) {
+                    if (response.path.replaceAll(" ", "") === "") {
+                        alert("Документ не привязан");
+                    } else {
+                        window.open(response.path);
+                    }
+                } else {
+                    alert(response.msg);
+                }
+                downloadIcon.innerHTML = `<i style="cursor: pointer;" onclick="downloadDoc('${path}')" title="Скачать" class="fas fa-download fa-2x"></i>`;
+            };
+
+            xhr.onerror = function () {
+                alert(xhr.response);
+            };
+
+            xhr.send(`{"path": "${path}"}`);
+        }
+
+    function deleteDoc(path, key) {
+        let deleteIcon = document.getElementById(`deleteRow${path}`);
+        deleteIcon.innerHTML = `
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        `;
+
+        fetch("{% url 'delete_rss_file' rss.id %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            },
+            body: JSON.stringify({
+                path: path,
+                key: key,
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Ошибка сети.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data.success) {
+                throw new Error(data.message);
+            } else {
+                location.reload();
+            }
+        })
+        .catch(error => {
+            alert(`Ошибка во время удаления. ${error.message}`);
+            deleteIcon.innerHTML = `
+            <i style="cursor: pointer;" onclick="deleteDoc('${path}', '${key}')" title="Удалить" class="fas fa-trash fa-2x"></i>
+            `;
+        });
+    }
+
+    function compareNpp(a, b) {
+        let aParts = a.npp.split('.').map(Number);
+        let bParts = b.npp.split('.').map(Number);
+
+        for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+            if (aParts[i] !== bParts[i]) {
+                return aParts[i] - bParts[i];
+            }
+        }
+
+        return 0;
+    }
+
+    function removeDuplicates(arr) {
+        return arr.filter((item,
+            index) => arr.indexOf(item) === index);
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,304 @@
+{% extends 'counterparties/base.html' %}
+
+{% block title2 %}
+    {{ counterparty.title }}
+{% endblock %}
+
+{% block content %}
+    <div id='counterpartyCard' class="container mt-5">
+
+    </div>
+
+    {% if counterparty_info %}
+        <div class="d-flex justify-content-center mt-4">
+            <div id="paymentTable"></div>
+            <div style="width: 15rem"></div>
+            <div id="nomenclatureTable"></div>
+        </div>
+    {% endif %}
+
+    <script>
+        const title = '{{ counterparty.title }}';
+        const inn = '{{ counterparty.inn }}';
+        const group_k = '{{ counterparty.group_k }}';
+        const type_k = '{{ counterparty.type_k }}';
+        const counterTotal =  {{ counterparty.total|stringformat:".2f" }};
+        const standardDeviation = {{ counterparty.standard_deviation|stringformat:".2f" }};
+        const loadByMonth = {{ counterparty.load_by_month|stringformat:".2f" }};
+
+        document.getElementById('counterpartyCard').innerHTML = `
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <h1 class="my-4">${title}</h1>
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">Информация о контрагенте</h3>
+                            <ul class="list-group">
+                                <li class="list-group-item">ИНН: ${inn}</li>
+                                <li class="list-group-item">Группа: ${group_k}</li>
+                                <li class="list-group-item">Вид контракта: ${type_k}</li>
+                                {% if counterparty.trade_name %}
+                                    <li class="list-group-item">Торговое название: {{ counterparty.trade_name }}</li>
+                                {% endif %}
+                                {% if counterparty.url %}
+                                    <li class="list-group-item">Сайт: <a href="{{ counterparty.url }}">
+            {{ counterparty.url }}</a></li>
+                                {% endif %}
+                                {% if counterparty.tel %}
+                                    <li class="list-group-item">Телефон: {{ counterparty.tel }}</li>
+                                {% endif %}
+                                <li class="list-group-item">Дата создания: {{ counterparty.date_time|date:"d.m.Y" }}</li>
+                                <li class="list-group-item">Сумма: <strong>${numberWithSpace(counterTotal.toFixed(2))} руб</strong></li>
+                                <li class="list-group-item">Стандартное отклонение (текущий год): ${numberWithSpace(standardDeviation.toFixed(2))}</li>
+                                <li class="list-group-item">Загрузка по месяцам (текущий год): ${numberWithSpace(loadByMonth.toFixed(2))}</li>
+                                {% if counterparty.description %}
+                                    <li class="list-group-item">Описание: {{ counterparty.description }}</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'counterparty_list' %}" class="btn btn-secondary">Назад</a>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const monthNames = new Map();
+        monthNames.set(1, "Январь");
+        monthNames.set(2, "Февраль");
+        monthNames.set(3, "Март");
+        monthNames.set(4, "Апрель");
+        monthNames.set(5, "Май");
+        monthNames.set(6, "Июнь");
+        monthNames.set(7, "Июль");
+        monthNames.set(8, "Август");
+        monthNames.set(9, "Сентябрь");
+        monthNames.set(10, "Октябрь");
+        monthNames.set(11, "Ноябрь");
+        monthNames.set(12, "Декабрь");
+
+        let isDesc = true;
+
+        let counterpartyLogs = [
+            {% for log in counterparty.changing_logs.all %}
+                {
+                    minPrice: {{ log.min_price|stringformat:".2f" }},
+                    maxPrice: {{ log.max_price|stringformat:".2f" }},
+                    amount: {{ log.amount|stringformat:".2f" }},
+                    nomenclature: '{{ log.nomenclature }}',
+                },
+            {% endfor %}
+        ];
+
+        let detailData = [
+            {% for invoice in counterparty_info %}
+                {
+                    date: '{{ invoice.Дата|date:"d.m.Y" }}'.replaceAll(" ", ""),
+                    total: {{ invoice.Всего|stringformat:".2f" }},
+                    {% if invoice.Цена > 0 %}
+                        price: {{ invoice.Цена|stringformat:".2f" }},
+                    {% else %}
+                        price: {{ invoice.Всего|stringformat:".2f" }},
+                    {% endif %}
+                    vat: isNumeric('{{ invoice.НДС|stringformat:".2f" }}') ? {{ invoice.НДС|stringformat:".2f" }} : 0,
+                    nomenclature: '{{ invoice.Номенклатура }}',
+                    amount: {{ invoice.Количество|stringformat:".2f" }},
+                },
+            {% endfor %}
+        ];
+
+        detailData = detailData.sort((a, b) => {
+            return a.nomenclature.localeCompare(b.nomenclature);
+        });
+
+        let paymentData = new Map();
+        let sdData = new Map();
+        for (let invoice of detailData) {
+            const date = seeStringToDate(convertDateToSupported(invoice.date));
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+
+            if (!sdData.has(year)) {
+                sdData.set(year, []);
+            }
+            sdData.get(year).push(invoice.total);
+
+            if (!paymentData.has(year)) {
+                paymentData.set(year, new Map());
+                let year_map = paymentData.get(year);
+                for (let i = 1; i < 13; i++) {
+                    year_map.set(i, 0);
+                }
+            }
+
+            let year_map = paymentData.get(year);
+            year_map.set(month, year_map.get(month) + invoice.total);
+        }
+
+        paymentData = Array.from(paymentData[Symbol.iterator]()).sort((a, b) => {
+            return b[1] - a[1];
+        });
+
+        buildPaymentTable(paymentData, sdData)
+        buildNomenclatureTable(counterpartyLogs)
+        sortPaymentTableByDate()
+
+        function buildPaymentTable(paymentData, sdData) {
+            paymentData.forEach((dateInfo) => {
+                let invoicesHTML = '';
+                const year = dateInfo[0];
+                const monthsTotals = dateInfo[1];
+                const sd = calculateStandardDeviation(sdData.get(year));
+
+                let counter = 0;
+                Array.from(monthsTotals.keys()).forEach((key, i) => {
+                    if (monthsTotals.get(key) != 0) {
+                        counter++;
+                    }
+
+                    invoicesHTML += `
+                        <tr>
+                            <td>${i + 1}</td>
+                            <td>${monthNames.get(key)}</td>
+                            <td>${numberWithSpace(monthsTotals.get(key).toFixed(2))}</td>
+                        </tr>
+                    `
+                });
+
+                let loadByMonth = counter / 12;
+
+                document.getElementById('paymentTable').innerHTML += `
+                    <div class="ms-5">
+                        <h2>${year} год</h2>
+                        <span>Стандартное отклонение: ${numberWithSpace(sd.toFixed(2))}</span>
+                    </br>
+                    <span>Загрузка по месяцам: ${numberWithSpace(loadByMonth.toFixed(2))}</span>
+                    <table class="table">
+                        <thead>
+                            <th>№</th>
+                            <th>Месяц</th>
+                            <th>Сумма</th>
+                        </thead>
+                        <tbody>
+                            ${invoicesHTML}
+                        </tbody>
+                    </table>
+                </div>
+                `;
+
+            });
+        }
+
+        function buildNomenclatureTable(logs) {
+            if (logs.length === 0) return;
+
+            let logsHTML = '';
+
+            logs.forEach((log, i) => {
+                let changeTd = '<td>&mdash;</td>';
+                const priceChange = log.minPrice - log.maxPrice;
+                if (Math.abs(priceChange) >= 11) {
+                    changeTd = `<td style="color: red;">${numberWithSpace(priceChange.toFixed(2))}</td>`;
+                }
+
+                logsHTML += `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${log.nomenclature}</td>
+                        <td>${log.amount}</td>
+                        <td>${numberWithSpace(log.minPrice)}</td>
+                        <td>${numberWithSpace(log.maxPrice)}</td>
+                        ${changeTd}
+                    </tr>
+                `
+            });
+
+            document.getElementById('nomenclatureTable').innerHTML = `
+                <div class="me-5">
+                    <table class="table">
+                        <thead>
+                        <th style="vertical-align: middle;">№</th>
+                        <th style="vertical-align: middle;">Наименование</th>
+                        <th style="vertical-align: middle;">Количество</th>
+                        <th style="vertical-align: middle;">Минимальная цена</th>
+                        <th style="vertical-align: middle;">Максимальная цена</th>
+                        <th style="vertical-align: middle;">Изменение цены</th>
+                    </thead>
+                    <tbody>
+                        ${logsHTML}
+                    </tbody>
+                </table>
+            </div>
+            `;
+
+        }
+
+        function addSortHandlers() {
+            const tableColumns = document.querySelectorAll('[data-sortable]')
+
+            tableColumns.forEach(column => {
+                column.addEventListener('click', (event) => {
+                    const {sortable} = event.target.dataset
+                    let newPaymentData = undefined;
+                    if (sortable == "date") {
+                        sortPaymentTableByDate();
+                    } else if (sortable == "total") {
+                        sortPaymentTableByTotal();
+                    }
+                })
+            })
+        }
+
+        function sortPaymentTableByDate() {
+            newPaymentData = [...paymentData.sort((a, b) => {
+                let a_date = new Date(a[0].slice(6, 10) + "-" + a[0].slice(3, 5) + "-" + a[0].slice(0, 2))
+                let b_date = new Date(b[0].slice(6, 10) + "-" + b[0].slice(3, 5) + "-" + b[0].slice(0, 2))
+                return isDesc ? a_date - b_date : b_date - a_date
+            })]
+            buildPaymentTable(newPaymentData);
+            isDesc = !isDesc
+        }
+
+        function sortPaymentTableByTotal() {
+            newPaymentData = [...paymentData.sort((a, b) => {
+                return isDesc ? a[1] - b[1] : b[1] - a[1]
+            })]
+            buildPaymentTable(newPaymentData);
+            isDesc = !isDesc
+        }
+
+        function numberWithSpace(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u00A0").replace('.', ',');
+        }
+
+        function convertDateToSupported(date) {
+            return date.replaceAll(" ", "").slice(0, 10);
+        }
+
+        function seeStringToDate(date) {
+            return new Date(date.slice(6, 10) + "-" + date.slice(3, 5) + "-" + date.slice(0, 2))
+        }
+
+        function calculateStandardDeviation(numbers) {
+            if (numbers.length === 0 || numbers.length === 1) {
+                return 0;
+            }
+
+            const sum = numbers.reduce((acc, num) => acc + num, 0);
+            const mean = sum / numbers.length;
+
+            const squaredDifferences = numbers.map(num => Math.pow(num - mean, 2));
+
+            const meanSquaredDifference = squaredDifferences.reduce((acc, val) => acc + val, 0) / (numbers.length - 1);
+
+            return Math.sqrt(meanSquaredDifference);
+        }
+
+        function isNumeric(str) {
+            if (typeof str != "string") return false // we only process strings!
+            return !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
+                !isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
+        }
+    </script>
+{% endblock %}

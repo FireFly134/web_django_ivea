@@ -1,0 +1,224 @@
+{% extends 'main/base.html' %}
+
+{% load static %}
+
+{% load user_tags %}
+
+{% block title %}Список документов{% endblock %}
+{% block style %}
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+		<link href="{% static 'css/modal_window.css' %}" rel="stylesheet" type="text/css">
+<style>.doc_table {
+  font-size: 12pt;
+  font-family: Arial;
+  color: black;
+}</style>
+
+{% endblock %}
+
+{% block body %}
+
+<div class="d-flex justify-content-between align-items-center" style="margin-left: 25px; margin-right: 25px;">
+	<div class="btn-group" role="group" aria-label="Первая группа">
+		<button type="button" class="btn btn-primary" onclick="filterTableButton('true', 'true')" id="btn-group-1">Активные договоры</button>
+		<button type="button" class="btn btn-dark" onclick="filterTableButton('false', 'true')" id="btn-group-2">Архивированные договоры</button>
+		<button type="button" class="btn btn-dark" onclick="filterTableButton('true', 'false')" id="btn-group-3">Нет строительной готовности</button>
+	</div>
+</div>
+&nbsp;&nbsp;&nbsp;<input type="text" id="filterInput" placeholder="Введите значение для фильтрации" oninput="handleInput(event)">
+<input type="image" src="{% static 'img/icon-deletelink.svg' %}" alt="Очистить фильтр" title="Очистить фильтр" onclick="NullFilterTable()" style="width: 20px; height: 20px; margin-top: -10px;">
+		<table class="table_center_by_css table table-sm table-bordered" border="1" cellpadding="1" cellspacing="1" style="width:98%" id="DocTable">
+				<thead style="position: sticky;top: 0">
+							<tr>
+								<td class="doc_table" scope="col" style="background: #ebebeb;text-align:center; width:30px">№ п/п</td>
+								<td class="doc_table" scope="col" style="background: #ebebeb;text-align:center; width:40px">ID</td>
+								<td class="doc_table" scope="col" style="background: #ebebeb;text-align:center;">Контрагент</td>
+								<td class="doc_table" scope="col" style="background: #ebebeb;text-align:center;">Договор</td>
+								<td class="doc_table" scope="col" style="background: #ebebeb;text-align:center;">Краткое название</td>
+								<td class="doc_table" scope="col" style="text-align:center; display: none">Договор открыт</td>
+								<td class="doc_table" scope="col" style="text-align:center; display: none">Нет строительной готовности</td>
+							</tr>
+				</thead>
+				<tbody id="tbody"></tbody>
+		</table>
+{% endblock %}
+{% block script %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Получите JSON из контекста шаблона и преобразуйте его в JavaScript объект
+    var info = JSON.parse('{{ info_json|escapejs }}');
+    let user = {
+      {% if user.is_superuser %}
+        admin: true,
+      {% else %}
+        admin: false,
+      {% endif %}
+      {% if user|has_group:"RSS_Dmitrov" %}
+        rssPermission: true,
+      {% else %}
+        rssPermission: false,
+      {% endif %}
+    }
+    var flag_N = false
+
+    // Найдите table элемент таблицы
+    var table = document.getElementById("DocTable");
+    // Найдите tbody элемент таблицы
+    var tbody = document.getElementById("tbody");
+
+    // Переменная для отслеживания направления сортировки
+    var sortDirection = {};
+    // Функция для отрисовки таблицы после сортировки
+    function renderTable() {
+        tbody.innerHTML = "";
+        // Проверяем, существует ли массив "N" в объекте JSON
+        if (!info[0].hasOwnProperty("N")) {
+          flag_N = true;
+        }
+        // Заполните таблицу данными из JavaScript объекта
+        for (var i = 0; i < info.length; i++) {
+            var row = document.createElement("tr");
+            if (flag_N){
+                // Добавление цифры i в массив "N"
+                info[i]["N"] = i+1;
+            };
+
+
+            if (Number(info[i]["id"]) === 260 && (user.admin || user.rssPermission)) {
+              info[i]["counterparty"] = `${info[i]["counterparty"]} (<a href={% url 'dmitorv_rss' %}>РСС</a>)`;
+            }
+
+            row.innerHTML = `
+                <td class="doc_table">${info[i]["N"]}</td>
+                <td class="doc_table">${info[i]["id"]}</td>
+                <td class="doc_table">${info[i]["counterparty"]}</td>
+                <td class="doc_table">${info[i]["number_doc"]}</td>
+                <td class="doc_table">${info[i]["short_name"]}</td>
+                <td class="doc_table" style="text-align:center; display: none">${info[i]["doc_open"]}</td>
+                <td class="doc_table" style="text-align:center; display: none">${info[i]["doc_bild_done"]}</td>
+            `;
+            tbody.appendChild(row);
+        }
+        flag_N = false;
+    }
+    renderTable();
+});
+</script>
+<script>
+var doc_open="True"
+var doc_bild_done="True"
+var do_index = -1; // Индекс столбца для doc_open
+var dbd_index = -1; // Индекс столбца для doc_bild_done
+
+function correction_index(tr){
+	if (do_index === -1 && dbd_index === -1){
+		  // Находим заголовочную строку таблицы (первую строку)
+		  var headerRow = tr[0];
+		  td = headerRow.getElementsByTagName("td");
+
+		  // Ищем индексы столбцов, соответствующих поиску
+
+		  for (var j = 0; j < td.length; j++) {
+			var headerText = td[j].textContent || td[j].innerText;
+			if (headerText.trim() === "Договор открыт") {
+			   window.do_index = j;
+			}
+			if (headerText.trim() === "Нет строительной готовности") {
+			   window.dbd_index = j;
+			}
+		  }
+	  }
+};
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+ //Фильтр по значениям в таблице открыт договор и строительная готовность, работает через кнопки//
+/////////////////////////////////////////////////////////////////////////////////////////////////
+function filterTableButton(doc_open_value="true", doc_bild_done_value="true") {
+    window.doc_open=doc_open_value
+    window.doc_bild_done=doc_bild_done_value
+  var table, tr, td;
+  table = document.getElementById("DocTable");
+  tr = table.getElementsByTagName("tr");
+
+  let button1 = document.getElementById("btn-group-1");
+  let button2 = document.getElementById("btn-group-2");
+  let button3 = document.getElementById("btn-group-3");
+  if (doc_open_value === "true" && doc_bild_done_value === "true"){
+    button1.className = 'btn btn-primary';
+    button2.className = 'btn btn-dark';
+    button3.className = 'btn btn-dark';
+  }else{
+      if (doc_open_value === "false" && doc_bild_done_value === "true"){
+        button1.className = 'btn btn-dark';
+        button2.className = 'btn btn-primary';
+        button3.className = 'btn btn-dark';
+      }else{
+        button1.className = 'btn btn-dark';
+        button2.className = 'btn btn-dark';
+        button3.className = 'btn btn-primary';
+      }
+  }
+  correction_index(tr)
+  // Проходим по каждой строке таблицы, начиная с индекса 1 (пропускаем первые две строки)
+  for (var i = 1; i < tr.length; i++) {
+    td = tr[i].getElementsByTagName("td");
+
+    // Получаем содержимое ячеек в нужных столбцах
+    var docOpenValue = td[do_index].textContent || td[do_index].innerText;
+    var docBuildDoneValue = td[dbd_index].textContent || td[dbd_index].innerText;
+
+    // Проверяем значения и скрываем строки, если необходимо
+    if (docOpenValue.trim() === doc_open_value && docBuildDoneValue.trim() === doc_bild_done_value) {
+      tr[i].style.display = "";
+    } else {
+      tr[i].style.display = "none";
+    }
+  }
+}
+  //////////////////////////////////////////////////////////////////////
+ //Фильтр по значениям в таблицах , работает через окошко ввода input//
+//////////////////////////////////////////////////////////////////////
+function NullFilterTable() {
+// Обновляем значение скрытого поля
+    document.getElementById('filterInput').value = '';
+    filterTable()
+    }
+function filterTable(inputElement = document.getElementById("filterInput").value) {
+  var filter, table, tr, td, i, j, txtValue;
+  filter = inputElement.toUpperCase();
+  table = document.getElementById("DocTable");
+  tr = table.getElementsByTagName("tr");
+  correction_index(tr)
+
+  // Проходим по каждой строке таблицы, начиная с индекса 2 (пропускаем первые две строки)
+  for (i = 1; i < tr.length; i++) {
+    td = tr[i].getElementsByTagName("td");
+    var rowVisible = false;
+    // Получаем содержимое ячеек в нужных столбцах
+    var docOpenValue = td[do_index].textContent || td[do_index].innerText;
+    var docBuildDoneValue = td[dbd_index].textContent || td[dbd_index].innerText;
+
+    if (docOpenValue.trim() === doc_open && docBuildDoneValue.trim() === doc_bild_done) {
+        for (j = 0; j < td.length-2; j++) {
+          if (td[j]) {
+            txtValue = td[j].textContent || td[j].innerText;
+
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+              rowVisible = true;
+              break;
+            }
+          }
+        }
+    }
+
+    // Показываем или скрываем строку в зависимости от значения флага
+    tr[i].style.display = rowVisible ? "" : "none";
+  }
+}
+function handleInput(event) {
+    filterTable(event.target.value);
+}
+//console.log("filterTableButton()")
+filterTableButton()
+</script>
+
+{% endblock %}

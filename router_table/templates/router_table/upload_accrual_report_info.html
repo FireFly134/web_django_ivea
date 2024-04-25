@@ -1,0 +1,38 @@
+{% extends "router_table/base.html" %}
+
+{% block title2 %}Загрузка файлов{% endblock%}
+
+{% block content %}
+    <div class="container">
+        <div class="container d-flex justify-content-center mt-5">
+            <div class="col-md-6">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="mb-5">
+                        <h2 class="mb-1">Загрузить отчёт по начислениям</h2>
+                        <h5 class="mb-4">Файл должен иметь формат CSV</h5>
+                        <div class="form-group">
+                            {{ form.report_file }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <h2 class="mb-1">Загрузить список абонентов</h2>
+                        <h5 class="mb-4">Файл должен иметь формат XLSX или XLS</h5>
+                        <div class="form-group">
+                            {{ form.sim_list_file }}
+                        </div>
+                    </div>
+
+                    <div class="form-group mt-5">
+                        <button type="submit" class="btn btn-success" value="Create">Загрузить</button>
+                        <a href="{% url 'router_list' %}" class="btn btn-secondary">Назад</a>
+                    </div>
+                </form>
+    
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+

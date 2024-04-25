@@ -1,0 +1,116 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Создание новой детали{% endblock %}
+
+{% block style %}
+    <style>
+        .modalDialog {
+            position: fixed;
+            font-family: Arial, Helvetica, sans-serif;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 99999;
+            -webkit-transition: opacity 400ms ease-in;
+            -moz-transition: opacity 400ms ease-in;
+            transition: opacity 400ms ease-in;
+            display: none;
+            pointer-events: none;
+        }
+
+        .modalDialog:target {
+            display: block;
+            pointer-events: auto;
+        }
+
+        .modalDialog > div {
+            width: 1400px;
+            position: relative;
+            margin: 10% auto;
+            padding: 5px 20px 13px 20px;
+            border-radius: 10px;
+            background: #fff;
+
+        }
+
+        .close {
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            border-radius: 5px;
+            -moz-box-shadow: 1px 1px 1px #000;
+            -webkit-box-shadow: 1px 1px 3px #000;
+            box-shadow: 5px 5px 5px #000;
+
+    </style>
+
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous">
+    </script>
+{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-center mt-5">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-group mt-3">
+                {{ form.name.label_tag }}
+                <div class="d-flex">
+                    {{ form.name }}
+
+                    <a class="ms-2 mt-1 related-widget-wrapper-link add-related" id="add_id_purchased" href="#openModal"
+                       title='Добавить новое оборудование'><i style="color: #563181" class="fas fa-plus"></i></a><br/>
+                </div>
+
+            </div>
+
+
+            <div class="d-flex flex-column form-group mt-3">
+                <label>Документы (множественный выбор осуществляется с помощью Ctrl):</label>
+
+                {{ form.file }}
+            </div>
+
+            <div class="form-group mt-3">
+                {{ form.link.label_tag }}
+                {{ form.link }}
+            </div>
+
+            <div class="mt-5">
+                <button class="btn btn-primary" type="submit" value="Create">Сохранить</button>
+                <a class="btn btn-secondary" href="{% url 'details' %}">Назад к деталям</a>
+            </div>
+
+        </form>
+    </div>
+
+    <div id="openModal" class="modalDialog">
+        <div style="width: 50rem;">
+            <form method="POST" id="id_save_new_purchased" name="save" action="{% url 'create_new_equipment' %}">
+                {% csrf_token %}
+                <div class="d-flex justify-content-between mt-2">
+                    <p><label class="mt-1 fs-5" for="id_name">Наименование покупного оборудования:</label></p>
+                    <a href="" title="Закрыть" class="btn-close"></a>
+                </div>
+                <p><input style="height: 2rem;" type="text" name="name" class="form-control mt-2" required id="id_name"></p>
+                <input type="hidden" value="detail_create" name="redirect">
+                <button class="btn btn-primary" type="submit" onchange="document.getElementById('id_save_new_purchased').submit()">Добавить
+                </button>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        $(document).ready(function () {
+            $('.select2').select2(); // Инициализация Select2 для полей с классом select2
+        });
+
+        document.getElementsByClassName('alert alert-danger alert-dismissible fade show')[0].remove();
+
+    </script>
+{% endblock %}

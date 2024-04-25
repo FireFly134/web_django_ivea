@@ -1,0 +1,231 @@
+{% extends 'fuel_cards/base.html' %}
+
+{% block title2 %}
+    Топливные карты
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h2 class="mt-2">Топливные карты</h2>
+        <div class="d-flex justify-content-center align-items-center mb-3 mt-5">
+            <a href="{% url 'fuel_cards_create' %}" class="btn btn-primary col-md-3"><i class="fas fa-plus"></i> Создать
+                топливную карту</a>
+            <div style="width: 5px"></div>
+            <a href="{% url 'upload_fuel_card_info' %}" title="Загрузка файла" class="btn btn-success">
+                <i class="fas fa-arrow-up"></i>
+            </a>
+        </div>
+
+        {% if not fuel_cards %}
+            <h1 class="d-flex justify-content-center align-items-center mt-5">Нет данных</h1>
+        {% else %}
+            <div class="row">
+                <div class="col-2">
+                    <div class="form-floating mb-3">
+                        <input class="form-control" type="date" id="startYearInput" onchange="onStartYearInput()"
+                               placeholder="Начало периода">
+                        <label for="startYearInput">Начало периода</label>
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="form-floating mb-3">
+                        <input class="form-control" type="date" id="endYearInput" onchange="onEndYearInput()"
+                               placeholder="Конец периода">
+                        <label for="endYearInput">Конец периода</label>
+                    </div>
+                </div>
+                <div class="col-8">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="searchInput" placeholder="name@example.com"
+                               oninput="onSearchInput()">
+                        <label for="searchInput">Поиск по сотруднику</label>
+                    </div>
+                </div>
+            </div>
+
+            <div id="showArea">
+
+            </div>
+        {% endif %}
+    </div>
+    <script>
+
+        let fuelCardData = [
+            {% for fuel_card in fuel_cards %}
+                {
+                    employee: '{{ fuel_card.employee }}',
+                    card_number: '{{ fuel_card.services.first.card_number }}',
+                    update_url: '{{ fuel_card.get_update_url }}',
+                    services: [
+                        {% for service in fuel_card.services.all %}
+                            {
+                                service: '{{ service.service }}',
+                                count: {{ service.count|stringformat:".2f" }},
+                                total: {{ service.total|stringformat:".2f" }},
+                                start_period: '{{ service.start_period|date:"d.m.Y" }}',
+                                end_period: '{{ service.end_period|date:"d.m.Y" }}',
+                            },
+                        {% endfor %}
+                    ],
+                },
+            {% endfor %}
+        ]
+
+        let startYearFilter = "";
+        let endYearFilter = "";
+        let employeeFilter = ""
+
+        const debounce = (cb, ms = 100) => {
+            let timer;
+            return (...args) => {
+                clearTimeout(timer);
+                timer = setTimeout(() => {
+                    cb.apply(this, args);
+                }, ms);
+            };
+        }
+
+        function onStartYearInput() {
+            startYearFilter = document.getElementById('startYearInput').value;
+            let filteredFuelCardData = JSON.parse(JSON.stringify(fuelCardData));
+            rebuildTable(filteredFuelCardData);
+        }
+
+        function onEndYearInput() {
+            endYearFilter = document.getElementById('endYearInput').value;
+            let filteredFuelCardData = JSON.parse(JSON.stringify(fuelCardData));
+            rebuildTable(filteredFuelCardData);
+        }
+
+        function onSearchInput() {
+            employeeFilter = document.getElementById('searchInput').value;
+            let filteredFuelCardData = JSON.parse(JSON.stringify(fuelCardData));
+            rebuildTable(filteredFuelCardData);
+        }
+
+        rebuildTable(fuelCardData);
+
+        function rebuildTable(filteredFuelCardData) {
+            if (startYearFilter !== "" || endYearFilter !== "") {
+                let filterStartDate = new Date(startYearFilter);
+                let filterEndDate = new Date(endYearFilter);
+
+                filteredFuelCardData.forEach(fuelCard => {
+
+                    fuelCard.services = fuelCard.services.filter(service => {
+                        let serviceStartDate = stringToDate(service.start_period);
+                        let serviceEndDate = stringToDate(service.end_period);
+
+                        if (startYearFilter !== "" && endYearFilter === "") {
+                            return serviceStartDate >= filterStartDate;
+                        } else if (startYearFilter === "" && endYearFilter !== "") {
+                            return serviceEndDate <= filterEndDate;
+                        } else if (startYearFilter !== "" && endYearFilter !== "") {
+                            if (filterEndDate < filterStartDate) return true
+                            return serviceStartDate >= filterStartDate && serviceEndDate <= filterEndDate;
+                        }
+                    });
+                });
+            }
+
+            filteredFuelCardData.forEach(fc => {
+                let cardTotal = 0;
+                let cardCount = 0;
+                fc.services.forEach(service => {
+                    cardTotal += service.total;
+                    cardCount += service.count;
+                });
+                fc.total = cardTotal;
+                fc.count = cardCount;
+            });
+
+            if (employeeFilter !== "") {
+                filteredFuelCardData = filteredFuelCardData.filter(function (fuelCard) {
+                    return fuelCard.employee.toLowerCase().includes(employeeFilter.toLowerCase());
+                });
+            }
+
+            let currentTotal = 0;
+            filteredFuelCardData.forEach(fuelCard => {
+                if (fuelCard.services.length !== 0) {
+                    currentTotal += fuelCard.total;
+                }
+            });
+
+            let servicesHTMLInTableMap = new Map();
+            for (let i = 0; i < filteredFuelCardData.length; i++) {
+                let htmlText = ""
+                filteredFuelCardData[i].services.forEach(service => {
+                    htmlText += `
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>${service.service}</td>
+                    <td>${numberWithSpace(service.total)}</td>
+                    <td>${service.count}</td>
+                    <td>${service.start_period}</td>
+                    <td>${service.end_period}</td>
+                </tr>
+            `;
+                });
+                servicesHTMLInTableMap.set(filteredFuelCardData[i].card_number + filteredFuelCardData[i].employee, htmlText);
+            }
+
+            let tableHTMLText = "";
+            filteredFuelCardData.forEach((fuelCard, i) => {
+                if (fuelCard.services.length !== 0) {
+                    tableHTMLText += `
+            <tr class="table-active">
+                <td>${i + 1}</td>
+                <td>${fuelCard.employee}</td>
+                <td>${fuelCard.card_number}</td>
+                <td></td>
+                <td><strong>${numberWithSpace(fuelCard.total.toFixed(2))}</strong></td>
+                <td><strong>${numberWithSpace(fuelCard.count.toFixed(2))}</strong></td>
+                <td></td>
+                <td></td>
+                <td>
+                    <a title="Изменить" href="${fuelCard.update_url}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
+                </td>
+            </tr>
+            ${servicesHTMLInTableMap.get(fuelCard.card_number + fuelCard.employee)}
+            `;
+                }
+            });
+
+            let showArea = document.getElementById('showArea');
+            showArea.innerHTML = `
+        <p>Общие затраты по выборке: <strong>${numberWithSpace(currentTotal.toFixed(2))} руб.</strong></p>
+        <table class="table">
+            <thead style="position: sticky;top: 0" class="thead-dark">
+                <tr>
+                    <th scope="col">№</th>
+                    <th scope="col">ФИО</th>
+                    <th scope="col">Номер карты</th>
+                    <th scope="col">Сервис</th>
+                    <th scope="col">Сумма</th>
+                    <th scope="col">Количество</th>
+                    <th scope="col">Начало</th>
+                    <th scope="col">Конец</th>
+                    <th scope="col">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${tableHTMLText}
+            </tbody>
+        </table>
+    `;
+        }
+
+        function numberWithSpace(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u00A0").replace(".", ",");
+        }
+
+        function stringToDate(string) {
+            return new Date(string.slice(6, 10) + "-" + string.slice(3, 5) + '-' + string.slice(0, 2));
+        }
+
+    </script>
+{% endblock %}
+

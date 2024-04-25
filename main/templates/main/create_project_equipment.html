@@ -1,0 +1,31 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Добавление проектного оборудования{% endblock %}
+
+{% block style %}
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous">
+    </script>
+{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-center mt-5">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-group mt-3">
+                {{ form.name.label_tag }}
+                <div class="d-flex">
+                    {{ form.name }}
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <button class="btn btn-primary" type="submit" value="Create">Сохранить</button>
+                <a class="btn btn-secondary" href="{% url 'project_equipment_list' %}">Назад к проектному оборудованию</a>
+            </div>
+
+        </form>
+    </div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "main/base.html" %}
+
+{% block title %}
+    Создание подзаписи
+{% endblock  %}
+
+{% block body %}
+    <div class="container mt-5">
+    <h2>Создание подзаписи для - {{ parent.name }}</h2>
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-row">
+                <div class="form-group col-md-5">
+                    {{ form.name.label_tag }}
+                    {{ form.name }}
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" value="Create">Сохранить</button>
+            <a href="{% url 'aosae' %}" class="btn btn-secondary">Отмена</a>
+        </form>
+    </div>
+{% endblock  %}

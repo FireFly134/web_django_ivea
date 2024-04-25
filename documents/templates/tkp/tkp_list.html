@@ -1,0 +1,542 @@
+{% extends 'main/base.html' %}
+{% block title %}ТКП{% endblock %}
+
+{% block body %}
+<h2 class="text-center mt-3">ТЕХНИКО-КОММЕРЧЕСКОЕ ПРЕДЛОЖЕНИЕ (ТКП)</h2>
+
+<div class="container" id="controlArea">
+    <div class="form-floating mb-3">
+        <input type="text" class="form-control" id="searchInput" placeholder="Поиск" oninput="onFilterValuesChange()">
+        <label for="searchInput">Поиск</label>
+    </div>
+    <div class="d-flex flex-column">
+        <div class="d-flex">
+            <div class="d-flex mb-1 me-2">
+                <label class="mt-1" for="groupCheckbox">Группировать:</label>
+                <input class="ms-1 mb-3" id="groupCheckbox" type="checkbox" onchange="onFilterValuesChange()">
+            </div>
+            <div class="d-flex mb-1">
+                <label class="mt-1" for="codeSelect">Код:</label>
+                <select style="width: 50px;" id="codeSelect" class="ms-1" onchange="onFilterValuesChange()">
+                    <option value="all" selected>---</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="tkpTableWrapper" class="p-3">
+
+</div>
+
+<script>
+    const tkpTableWrapper = document.getElementById('tkpTableWrapper');
+
+    const tkpList = [
+    {% for tkp in tkp_list %}
+    {
+        id: {{ tkp.id }},
+        parent_costs_name: "{{ tkp.parent_costs_name }}",
+        npp: "{{ tkp.npp }}",
+        {% if tkp.code %}
+            code: "{{ tkp.code }}",
+        {% else %}
+            code: null,
+        {% endif %}
+        costs_name: "{{ tkp.costs_name }}",
+        {% if tkp.contractor_comment %}
+            contractor_comment: `{{ tkp.contractor_comment }}`,
+        {% else %}
+            contractor_comment: null,
+        {% endif %}
+        {% if tkp.unit %}
+            unit: "{{ tkp.unit }}",
+        {% else %}
+            unit: null,
+        {% endif %}
+        {% if tkp.consumption_coefficient %}
+            consumption_coefficient: {{ tkp.consumption_coefficient|stringformat:".2f" }},
+        {% else %}
+            consumption_coefficient: null,
+        {% endif %}
+        {% if tkp.amount %}
+            amount: {{ tkp.amount|stringformat:".2f" }},
+        {% else %}
+            amount: null,
+        {% endif %}
+        {% if tkp.material_unit_cost %}
+            material_unit_cost: {{ tkp.material_unit_cost|stringformat:".2f" }},
+        {% else %}
+            material_unit_cost: null,
+        {% endif %}
+        {% if tkp.smr_unit_cost %}
+            smr_unit_cost: {{ tkp.smr_unit_cost|stringformat:".2f" }},
+        {% else %}
+            smr_unit_cost: null,
+        {% endif %}
+        {% if tkp.price %}
+            price: {{ tkp.price|stringformat:".2f" }},
+        {% else %}
+            price: null,
+        {% endif %}
+        {% if tkp.material_total_cost %}
+            material_total_cost: {{ tkp.material_total_cost|stringformat:".2f" }},
+        {% else %}
+            material_total_cost: null,
+        {% endif %}
+        {% if tkp.smr_total_cost %}
+            smr_total_cost: {{ tkp.smr_total_cost|stringformat:".2f" }},
+        {% else %}
+            smr_total_cost: null,
+        {% endif %}
+        {% if tkp.total_cost %}
+            total_cost: {{ tkp.total_cost|stringformat:".2f" }},
+        {% else %}
+            total_cost: null,
+        {% endif %}
+        children: [],
+    },
+    {% endfor %}
+    ].sort(compareNpp);
+
+    const tkpForRemove = new Array();
+    let lastParentIndex = -1;
+    tkpList.forEach((tkp, index) => {
+        if (tkp.unit && tkp.total_cost) {
+            lastParentIndex = index;
+            return;
+        }
+        if (tkp.unit && !tkp.total_cost) {
+            tkpForRemove.push(index);
+            tkpList[lastParentIndex].children.push({...tkp});
+        }
+    });
+
+    for (let i = tkpForRemove.length - 1; i >= 0; i--) {
+        tkpList.splice(tkpForRemove[i], 1);
+    }
+
+    tkpList.forEach(tkp => {
+        const childrenCount = tkp.children.length;
+        tkp.children.forEach((child, i) => {
+            if (i === 0) {
+                tkp.costs_name += ". ";
+
+                if (tkp.contractor_comment === null) {
+                    tkp.contractor_comment = "";
+                } else {
+                    tkp.contractor_comment += ". ";
+                }
+
+                if (!tkp.amount) {
+                    tkp.amount = 0;
+                }
+            }
+
+            tkp.costs_name += child.costs_name;
+            if (child.contractor_comment) {
+                tkp.contractor_comment += child.contractor_comment;
+            }
+            if (child.code) {
+                tkp.code = child.code;
+            }
+            if (child.amount) {
+                tkp.amount += child.amount;
+            }
+
+            if (child.contractor_comment) {
+                tkp.contractor_comment += ".";
+            }
+
+            if (i === childrenCount - 1) {
+                tkp.costs_name += ".";
+            } else {
+                tkp.costs_name += ". ";
+            }
+        });
+    });
+
+    let selectOptions = new Map();
+    tkpList.forEach(tkp => {
+        if (!tkp.code) return;
+        if (!selectOptions.has(tkp.code)) {
+            selectOptions.set(tkp.code, tkp.code);
+        }
+    });
+    selectOptions.forEach(option => {
+        let newOption = document.createElement("option");
+        newOption.value = option;
+        newOption.text = option;
+        document.getElementById('codeSelect').appendChild(newOption);
+    });
+
+    const nppNamesMap = new Map();
+    tkpList.forEach(tkp => {
+        if (tkp.npp.split(".").length === 5) {
+            nppNamesMap.set(tkp.npp, tkp.costs_name);
+        }
+    });
+
+    onFilterValuesChange();
+
+    function onFilterValuesChange() {
+        const isChecked = document.getElementById('groupCheckbox').checked;
+        let filteredRows = getFilteredRows();
+        
+        if (isChecked) {
+            renderGrouppedTable(filteredRows);
+        } else {
+            filteredRows = filteredRows.sort(compareNpp);
+            filteredRows = mergeRecords(filteredRows);
+            renderMainTable(filteredRows);
+        }
+
+        document.getElementById('totalColumn').addEventListener('click', () => {
+            sortTableByColumn(11);
+        });
+    }
+
+
+function sortTableByColumn(columnIndex) {
+    const table = document.getElementById('tkpTable');
+    const rows = Array.from(table.querySelectorAll('tr')).slice(3);
+
+    const isAscending = table.dataset.sorted === 'asc';
+
+    const headerRows = Array.from(table.querySelectorAll('tr')).slice(0, 3);
+
+    rows.sort((rowA, rowB) => {
+        const cellA = rowA.cells[columnIndex];
+        const cellB = rowB.cells[columnIndex];
+        
+        if (!cellA || !cellB) {
+            return 0;
+        }
+
+        const valueA = parseFloat(cellA.textContent.trim().replaceAll("\u00A0", "").replaceAll(",", "."));
+        const valueB = parseFloat(cellB.textContent.trim().replaceAll("\u00A0", "").replaceAll(",", "."));
+
+        if (valueA < valueB) return isAscending ? -1 : 1;
+        if (valueA > valueB) return isAscending ? 1 : -1;
+        return 0;
+    });
+
+    const tbody = table.querySelector('tbody');
+    tbody.innerHTML = '';
+    
+    rows.forEach(row => tbody.appendChild(row));
+
+    const thead = table.querySelector('thead');
+    headerRows.forEach(row => thead.appendChild(row));
+
+    table.dataset.sorted = isAscending ? 'desc' : 'asc';
+}
+
+    function mergeRecords(records) {
+        let forRemove = new Array();
+        for (let i = records.length - 1; i > 0; i--) {
+            const currRecord = records[i];
+            const prevRecord = records[i - 1];
+
+            if (isChildNumber(currRecord.npp, prevRecord.npp)) {
+                if (currRecord.total_cost === prevRecord.total_cost) {
+                    prevRecord.costs_name += ` | ${currRecord.costs_name}`;
+                    prevRecord.unit = currRecord.unit;
+                    prevRecord.amount = currRecord.amount;
+
+                    if (currRecord.contractor_comment) {
+                        if (prevRecord.contractor_comment) {
+                            prevRecord.contractor_comment += ` | ${currRecord.contractor_comment}`;
+                        } else {
+                            prevRecord.contractor_comment = currRecord.contractor_comment;
+                        }
+                    }
+
+                    forRemove.push(i);
+                }
+            }
+        }
+
+        forRemove = forRemove.sort((a, b) => b - a);
+        forRemove.forEach(i => records.splice(i, 1));
+
+        return records;
+    }
+    
+
+    function isChildNumber(child, parent) {
+        const childParts = child.split('.');
+        const parentParts = parent.split('.');
+    
+        for (let i = 0; i < parentParts.length; i++) {
+            if (childParts[i] !== parentParts[i] || childParts.length <= i) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function renderMainTable(rows) {
+        let tableHTML = "";
+        let totalTotalAmount = 0;
+        let totalTotalMaterial_total_cost = 0;
+        let totalTotalSmr_total_cost = 0;
+        let totalTotalTotal_cost = 0;
+
+
+
+        rows.forEach(row => {
+            if (row.unit && row.total_cost) {
+                totalTotalAmount += row.amount;
+                totalTotalMaterial_total_cost += row.material_total_cost;
+                totalTotalSmr_total_cost += row.smr_total_cost;
+                totalTotalTotal_cost += row.total_cost;
+            }
+
+            style = '';
+            if (!row.unit) {
+                style = "font-weight: bold;";
+            }
+
+            tableHTML += `
+            <tr>
+                <td>${row.npp}</td>
+                <td>${row.code ?? "" ?? ""}</td>
+                <td style="${style}">${row.costs_name ?? ""}</td>
+                <td>${row.contractor_comment ?? ""}</td>
+                <td>${row.unit ?? ""}</td>
+                <td style="${style}">${row.amount ? numberWithSpace(row.amount.toFixed(2)) : ""}</td>
+                <td style="${style}">${row.material_unit_cost ? numberWithSpace(row.material_unit_cost.toFixed(2)) : ""}</td>
+                <td style="${style}">${row.smr_unit_cost ? numberWithSpace(row.smr_unit_cost.toFixed(2)) : ""}</td>
+                <td style="${style}">${row.price ? numberWithSpace(row.price.toFixed(2)) : ""}</td>
+                <td style="${style}">${row.material_total_cost ? numberWithSpace(row.material_total_cost.toFixed(2)) : ""}</td>
+                <td style="${style}">${row.smr_total_cost ? numberWithSpace(row.smr_total_cost.toFixed(2)) : ""}</td>
+                <td style="${style}">${row.total_cost ? numberWithSpace(row.total_cost.toFixed(2)) : ""}</td>
+            </tr>
+            `;
+        });
+
+        tkpTableWrapper.innerHTML = `
+        <div class="d-flex flex-row">
+            <div class="p-2">
+                Количество: <strong>${numberWithSpace(totalTotalAmount.toFixed(2))}</strong><br>
+                Материалы / оборудование: <strong>${numberWithSpace(totalTotalMaterial_total_cost.toFixed(2))}</strong> руб.<br>
+                СМР, ПНР: <strong>${numberWithSpace(totalTotalSmr_total_cost.toFixed(2))}</strong> руб.<br>
+                Общая стоимость: <strong>${numberWithSpace(totalTotalTotal_cost.toFixed(2))}</strong> руб.<br>
+            </div>
+        </div>
+        <table id="tkpTable" class="table table-bordered table-hover p-2">
+            <thead style="position: sticky;top: 0">
+                <tr>
+                    <th class="text-center align-middle" rowspan="3">Номер п/п</th>
+                    <th class="text-center align-middle" rowspan="3">Код</th>
+                    <th class="text-center align-middle" rowspan="3">Наименование затрат</th>
+                    <th class="text-center align-middle" rowspan="3">Комментарий подрядчика</th>
+                    <th class="text-center align-middle" rowspan="3">Ед. изм.</th>
+                    <th class="text-center align-middle" rowspan="3">Кол-во</th>
+                    <th class="text-center align-middle" colspan="6">ООО "ИВЕА" (ИНН: 7716782520)</th>
+                </tr>
+                <tr>
+                    <th class="text-center align-middle" colspan="2">Цена, руб. с НДС</th>
+                    <th class="text-center align-middle" rowspan="2">Цена, руб. с НДС</th>
+                    <th class="text-center align-middle" colspan="2">Стоимость, руб с НДС</th>
+                    <th id="totalColumn" style="cursor: pointer;" class="text-center align-middle" rowspan="2">Общая стоимость,
+                        руб. с НДС</td>
+                </tr>
+                <tr>
+                    <th class="text-center align-middle">Материалы /
+                        оборудование</td>
+                    <th class="text-center align-middle">СМР, ПНР</th>
+                    <th class="text-center align-middle">Материалы /
+                        оборудование</td>
+                    <th class="text-center align-middle">СМР, ПНР</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${tableHTML}
+            </tbody>
+        </table>
+        `;
+    }
+
+    function renderGrouppedTable(rows) {
+        const nppStagesMap = new Map();
+
+        rows.forEach(row => {
+            if (row.unit && row.total_cost) {
+                const foundKey = findKeyByStartString(row.npp, nppNamesMap);
+                const finalKey = `${foundKey} ` + nppNamesMap.get(foundKey);
+
+                if (!nppStagesMap.has(finalKey)) {
+                    nppStagesMap.set(finalKey, new Array());
+                }
+
+                const currentArray = nppStagesMap.get(finalKey);
+                currentArray.push(row);
+                nppStagesMap.set(finalKey, currentArray);
+            }
+        });
+        
+        let tableHTML = "";
+        let totalTotalAmount = 0;
+        let totalTotalMaterial_total_cost = 0;
+        let totalTotalSmr_total_cost = 0;
+        let totalTotalTotal_cost = 0;
+        [...nppStagesMap.entries()].forEach(nppNameStages => {
+            const nppName = nppNameStages[0];
+            const npp = nppName.split(" ")[0]
+            const name = nppName.split(" ").slice(1, nppName.split(" ").length).join(" ");
+            const stages = nppNameStages[1];
+
+            const contractor_comment = stages.map(obj => {
+                if (obj['contractor_comment'] !== null && obj['contractor_comment'].replaceAll(" ", "") !== "") {
+                    return obj['contractor_comment'];
+                }
+            }).join('');
+
+            const totalAmount = getArrayAttrSum(stages, 'amount');
+            const totalMaterial_unit_cost = getArrayAttrSum(stages, 'material_unit_cost');
+            const totalSmr_unit_cost = getArrayAttrSum(stages, 'smr_unit_cost');
+            const totalPrice = getArrayAttrSum(stages, 'price');
+            const totalMaterial_total_cost = getArrayAttrSum(stages, 'material_total_cost');
+            const totalSmr_total_cost = getArrayAttrSum(stages, 'smr_total_cost');
+            const totalTotal_cost = getArrayAttrSum(stages, 'total_cost');
+
+            totalTotalAmount += totalAmount;
+            totalTotalMaterial_total_cost += totalMaterial_total_cost;
+            totalTotalSmr_total_cost += totalSmr_total_cost;
+            totalTotalTotal_cost += totalTotal_cost;
+            tableHTML += `
+            <tr>
+                <td>${npp}</td>
+                <td></td>
+                <td>${name}</td>
+                <td>${contractor_comment}</td>
+                <td></td>
+                <td>${numberWithSpace(totalAmount.toFixed(2))}</td>
+                <td>${numberWithSpace(totalMaterial_unit_cost.toFixed(2))}</td>
+                <td>${numberWithSpace(totalSmr_unit_cost.toFixed(2))}</td>
+                <td>${numberWithSpace(totalPrice.toFixed(2))}</td>
+                <td>${numberWithSpace(totalMaterial_total_cost.toFixed(2))}</td>
+                <td>${numberWithSpace(totalSmr_total_cost.toFixed(2))}</td>
+                <td>${numberWithSpace(totalTotal_cost.toFixed(2))}</td>
+            </tr>
+            `;
+        });
+
+        tkpTableWrapper.innerHTML = `
+        <div class="d-flex flex-row">
+            <div class="p-2">
+                Количество: <strong>${numberWithSpace(totalTotalAmount.toFixed(2))}</strong><br>
+                Материалы / оборудование: <strong>${numberWithSpace(totalTotalMaterial_total_cost.toFixed(2))}</strong> руб.<br>
+                СМР, ПНР: <strong>${numberWithSpace(totalTotalSmr_total_cost.toFixed(2))}</strong> руб.<br>
+                Общая стоимость: <strong>${numberWithSpace(totalTotalTotal_cost.toFixed(2))}</strong> руб.<br>
+            </div>
+        </div>
+        <table id="tkpTable" class="table table-bordered table-hover p-2">
+            <thead style="position: sticky;top: 0">
+                <tr>
+                    <th class="text-center align-middle" rowspan="3">Номер п/п</th>
+                    <th class="text-center align-middle" rowspan="3">Код</th>
+                    <th class="text-center align-middle" rowspan="3">Наименование затрат</th>
+                    <th class="text-center align-middle" rowspan="3">Комментарий подрядчика</th>
+                    <th class="text-center align-middle" rowspan="3">Ед. изм.</th>
+                    <th class="text-center align-middle" rowspan="3">Кол-во</th>
+                    <th class="text-center align-middle" colspan="6">ООО "ИВЕА" (ИНН: 7716782520)</th>
+                </tr>
+                <tr>
+                    <th class="text-center align-middle" colspan="2">Цена, руб. с НДС</th>
+                    <th class="text-center align-middle" rowspan="2">Цена, руб. с НДС</th>
+                    <th class="text-center align-middle" colspan="2">Стоимость, руб с НДС</th>
+                    <th id="totalColumn" style="cursor: pointer;" class="text-center align-middle" rowspan="2">Общая стоимость,
+                        руб. с НДС</td>
+                </tr>
+                <tr>
+                    <th class="text-center align-middle">Материалы /
+                        оборудование</td>
+                    <th class="text-center align-middle">СМР, ПНР</th>
+                    <th class="text-center align-middle">Материалы /
+                        оборудование</td>
+                    <th class="text-center align-middle">СМР, ПНР</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${tableHTML}
+            </tbody>
+        </table>
+        `;
+    }
+
+    function findKeyByStartString(startString, map) {
+        while (startString.length > 0) {
+            if (map.has(startString)) {
+                return startString;
+            }
+            startString = startString.split('.').slice(0, -1).join('.');
+        }
+        return null;
+    }
+
+    function getFilteredRows() {
+        const searchValue = document.getElementById('searchInput').value;
+        const codeSelect = document.getElementById('codeSelect').value;
+
+        let filteredRows = tkpList.filter(tkp => {
+            const searchString = `${tkp.parent_costs_name} ${tkp.costs_name} ${tkp.contractor_comment}`.toLowerCase();
+            return searchString.includes(searchValue.toLowerCase());
+        });
+
+        if (codeSelect !== "all") {
+            filteredRows = filteredRows.filter(row => {
+                if (!row.code) return false;
+                return row.code.toLowerCase().includes(codeSelect.toLowerCase());
+            });
+        }
+
+        return deepCopy(filteredRows);
+    }
+
+    function deepCopy(obj) {
+        if (typeof obj !== "object" || obj === null) {
+          return obj;
+        }
+      
+        const newObj = Array.isArray(obj) ? [] : {};
+      
+        for (const key in obj) {
+          newObj[key] = deepCopy(obj[key]);
+        }
+      
+        return newObj;
+      }
+      
+
+    function compareNpp(a, b) {
+        let aParts = a.npp.split('.').map(Number);
+        let bParts = b.npp.split('.').map(Number);
+
+        for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+            if (aParts[i] !== bParts[i]) {
+                return aParts[i] - bParts[i];
+            }
+        }
+
+        return 0;
+    }
+
+    function numberWithSpace(x) {
+		return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u00A0").replace('.', ',');
+	}
+
+    function getArrayAttrSum(array, key) {
+        return array.reduce((accumulator, object) => {
+                if (typeof object[key] === "number") {
+                    return accumulator + object[key];
+                } else {
+                    return accumulator;
+                }
+            }, 0);
+    }
+</script>
+{% endblock %}
+ 

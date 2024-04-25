@@ -1,0 +1,32 @@
+{% extends "fuel_cards/base.html" %}
+
+{% block title2 %}Загрузка{% endblock%}
+
+{% block content %}
+    <div class="container">
+        <div class="container d-flex justify-content-center mt-5">
+            <div class="col-md-6">
+                <h2 class="mb-1">Загрузка файла</h2>
+                <h5 class="mb-4"><b>ВАЖНО!</b> Файл должен представлять из себя excel таблицу (формат XLSX или XLS) и иметь название <b>"Oborot po uslugam po kartam"</b>. </h5>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+    
+                    <div class="form-group">
+                        {{ form.file }}
+                    </div>
+    
+                    <div class="form-group mt-2">
+                        <button type="submit" class="btn btn-success" value="Create">Загрузить</button>
+                        <a href="{% url 'fuel_cards_list' %}" class="btn btn-secondary">Назад</a>
+                    </div>
+                </form>
+    
+            </div>
+        </div>
+
+
+        </form>
+    </div>
+{% endblock content %}
+
